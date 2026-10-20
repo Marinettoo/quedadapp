@@ -1,0 +1,13 @@
+.ayuda {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ayudaTitulo {
+  font-weight: 700;
+  font-size: 16px;
+}

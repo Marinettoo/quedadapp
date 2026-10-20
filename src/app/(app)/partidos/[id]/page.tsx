@@ -23,6 +23,7 @@ import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
 import { EditarPartido } from "./EditarPartido";
+import { Apuestas } from "./Apuestas";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -80,6 +81,15 @@ export default async function DetallePartido({
       enfrentamientos: { orderBy: { registradoEn: "asc" } },
       invitados: { orderBy: { creadoEn: "asc" } },
       coloresEquipo: true,
+      apuestas: {
+        orderBy: { creadaEn: "asc" },
+        include: {
+          pronosticos: {
+            include: { usuario: { select: { id: true, nombreUsuario: true } } },
+            orderBy: { creadoEn: "asc" },
+          },
+        },
+      },
     },
   });
 
@@ -530,6 +540,14 @@ export default async function DetallePartido({
           )}
         </section>
       )}
+
+      <Apuestas
+        partidoId={partido.id}
+        apuestas={partido.apuestas}
+        usuarioId={usuario.id}
+        puedeGenerar={puedeGenerar}
+        abierto={abierto}
+      />
     </main>
   );
 }

@@ -52,6 +52,7 @@
   color: var(--ink);
   padding: 7px 14px;
   border-radius: var(--radius-pill, 40px);
+  white-space: nowrap;
 }
 
 .enlace:hover {
@@ -131,7 +132,7 @@
   display: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 920px) {
   .enlaces {
     display: none;
   }

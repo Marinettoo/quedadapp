@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AyudaContenido } from "@/components/AyudaContenido";
 import styles from "../page.module.css";
+import ayudaStyles from "./page.module.css";
 
 export default function RegistroEnviado() {
   return (
@@ -10,6 +12,12 @@ export default function RegistroEnviado() {
         revisará y, cuando la apruebe, podrás entrar con tu nombre de
         usuario y contraseña.
       </p>
+
+      <div className={ayudaStyles.ayuda}>
+        <h2 className={ayudaStyles.ayudaTitulo}>Mientras tanto, así funciona la app</h2>
+        <AyudaContenido />
+      </div>
+
       <Link className={styles.back} href="/">
         Volver al acceso
       </Link>

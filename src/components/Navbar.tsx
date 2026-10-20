@@ -16,6 +16,7 @@ const ENLACES_BASE = [
   { href: "/panel", etiqueta: "Inicio" },
   { href: "/jugadores", etiqueta: "Jugadores" },
   { href: "/historial", etiqueta: "Historial" },
+  { href: "/bote", etiqueta: "Bote" },
 ];
 
 const ENLACES_ADMIN = [
@@ -23,10 +24,12 @@ const ENLACES_ADMIN = [
   { href: "/admin/usuarios", etiqueta: "Usuarios" },
 ];
 
+const ENLACE_AYUDA = { href: "/ayuda", etiqueta: "¿Cómo funciona?" };
+
 export function Navbar({ esAdmin, solicitudesPendientes }: NavbarProps) {
   const pathname = usePathname();
   const [abierto, setAbierto] = useState(false);
-  const enlaces = esAdmin ? [...ENLACES_BASE, ...ENLACES_ADMIN] : ENLACES_BASE;
+  const enlaces = [...ENLACES_BASE, ...(esAdmin ? ENLACES_ADMIN : []), ENLACE_AYUDA];
 
   return (
     <nav className={styles.nav}>

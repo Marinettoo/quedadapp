@@ -43,6 +43,9 @@ model Usuario {
   pagosConfirmados     Pago[]              @relation("PagosConfirmadosPor")
   enfrentamientos      Enfrentamiento[]
   invitadosAnadidos    Invitado[]
+  apuestasCreadas      Apuesta[]
+  pronosticos          Pronostico[]        @relation("PronosticosDelJugador")
+  aportesConfirmados   Pronostico[]        @relation("AportacionesConfirmadas")
 }
 
 model Sesion {
@@ -70,6 +73,47 @@ model Partido {
   enfrentamientos Enfrentamiento[]
   invitados     Invitado[]
   coloresEquipo ColorEquipo[]
+  apuestas      Apuesta[]
+}
+
+model Apuesta {
+  id            String       @id @default(cuid())
+  partidoId     String
+  partido       Partido      @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  pregunta      String
+  // cantidad que se juega cada uno; es solo un registro informativo,
+  // la app nunca procesa ni mueve dinero real.
+  importe       Float
+  // cuota que aporta todo el que participa, acierte o falle, para que
+  // el bote crezca siempre que haya gente jugando.
+  cuota         Float        @default(0.2)
+  creadaPorId   String
+  creadaPor     Usuario      @relation(fields: [creadaPorId], references: [id])
+  resultado     String?
+  resueltaEn    DateTime?
+  creadaEn      DateTime     @default(now())
+  pronosticos   Pronostico[]
+}
+
+model Pronostico {
+  id                    String    @id @default(cuid())
+  apuestaId             String
+  apuesta               Apuesta   @relation(fields: [apuestaId], references: [id], onDelete: Cascade)
+  usuarioId             String
+  usuario               Usuario   @relation("PronosticosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  respuesta             String
+  creadoEn              DateTime  @default(now())
+  // null hasta que se resuelve la apuesta
+  acierto               Boolean?
+  // importe que debe aportar al bote: la cuota si acertó, cuota + importe
+  // si falló. Se calcula y se fija al resolver la apuesta.
+  importeDebido         Float?
+  indicadoAporteEn      DateTime?
+  confirmadoAporteEn    DateTime?
+  confirmadoAportePorId String?
+  confirmadoAportePor   Usuario?  @relation("AportacionesConfirmadas", fields: [confirmadoAportePorId], references: [id])
+
+  @@unique([apuestaId, usuarioId])
 }
 
 model ColorEquipo {
