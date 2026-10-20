@@ -39,6 +39,8 @@ model Usuario {
   valoracionesHechas   Valoracion[]        @relation("ValoracionesHechas")
   generacionesCreadas  GeneracionEquipos[]
   asignaciones         AsignacionEquipo[]
+  pagos                Pago[]              @relation("PagosDelJugador")
+  pagosConfirmados     Pago[]              @relation("PagosConfirmadosPor")
 }
 
 model Sesion {
@@ -61,6 +63,8 @@ model Partido {
   creadoEn      DateTime           @default(now())
   asistencias   Asistencia[]
   generacion    GeneracionEquipos?
+  importeTotal  Float?
+  pagos         Pago[]
 }
 
 model Asistencia {
@@ -113,4 +117,19 @@ model AsignacionEquipo {
   usuario      Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   // 0 = lista de espera; 1, 2 (y 3 en triangular) = número de equipo
   equipo       Int
+}
+
+model Pago {
+  id              String    @id @default(cuid())
+  partidoId       String
+  partido         Partido   @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  usuarioId       String
+  usuario         Usuario   @relation("PagosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  indicadoEn      DateTime?
+  confirmadoEn    DateTime?
+  confirmadoPorId String?
+  confirmadoPor   Usuario?  @relation("PagosConfirmadosPor", fields: [confirmadoPorId], references: [id])
+  creadoEn        DateTime  @default(now())
+
+  @@unique([partidoId, usuarioId])
 }

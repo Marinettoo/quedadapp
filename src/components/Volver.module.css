@@ -1,0 +1,9 @@
+.volver {
+  font-size: 14px;
+  color: var(--meta);
+  align-self: flex-start;
+}
+
+.volver:hover {
+  color: var(--ink);
+}

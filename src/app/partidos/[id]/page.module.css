@@ -110,3 +110,75 @@
   font-size: 15px;
   margin-bottom: 8px;
 }
+
+.importeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.importeCampos {
+  display: flex;
+  gap: 8px;
+}
+
+.importeCampos input {
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: 120px;
+}
+
+.nombre {
+  font-weight: 500;
+}
+
+.pagoFila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.pagoAcciones {
+  display: flex;
+  gap: 8px;
+}
+
+.pagoBoton,
+.pagoBotonSecundario {
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.pagoBoton {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.pagoBoton:hover {
+  opacity: 0.85;
+}
+
+.pagoBotonSecundario {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pagoBotonSecundario:hover {
+  background: var(--surface);
+}

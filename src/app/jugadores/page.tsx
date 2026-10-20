@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Volver } from "@/components/Volver";
 import { valorar } from "./actions";
 import styles from "./page.module.css";
 
@@ -26,6 +27,7 @@ export default async function Jugadores() {
 
   return (
     <main className={styles.screen}>
+      <Volver />
       <h1 className={styles.title}>Valorar jugadores</h1>
       <p className={styles.body}>
         De 1 a 5 estrellas. Tu valoración es anónima: solo se muestra la

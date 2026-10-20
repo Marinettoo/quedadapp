@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Volver } from "@/components/Volver";
 import { CrearPartidoForm } from "./CrearPartidoForm";
 import styles from "./page.module.css";
 
@@ -23,6 +24,7 @@ export default async function NuevoPartido() {
 
   return (
     <main className={styles.screen}>
+      <Volver />
       <h1 className={styles.title}>Crear partido</h1>
       <p className={styles.nota}>
         El formato (triangular o 2 equipos) se decide solo al generar los

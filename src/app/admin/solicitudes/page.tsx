@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Volver } from "@/components/Volver";
 import { aprobarUsuario, rechazarUsuario } from "./actions";
 import styles from "./page.module.css";
 
@@ -23,6 +24,7 @@ export default async function Solicitudes() {
 
   return (
     <main className={styles.screen}>
+      <Volver />
       <h1 className={styles.title}>Solicitudes de acceso</h1>
 
       {pendientes.length === 0 ? (

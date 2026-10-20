@@ -2,8 +2,16 @@ import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
+import { Volver } from "@/components/Volver";
 import { apuntarse, cancelarAsistencia } from "../actions";
 import { generarEquiposPartido } from "../generarActions";
+import {
+  establecerImporte,
+  indicarPago,
+  deshacerIndicacion,
+  confirmarPago,
+  corregirConfirmacion,
+} from "../pagosActions";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -50,6 +58,7 @@ export default async function DetallePartido({
           },
         },
       },
+      pagos: true,
     },
   });
 
@@ -79,8 +88,20 @@ export default async function DetallePartido({
     : [];
   const listaEspera = generacion?.asignaciones.filter((a) => a.equipo === 0) ?? [];
 
+  const jugadoresQueJuegan = equipos.flat();
+  const puedeVerPagos =
+    usuario.rol === "ADMIN" ||
+    partido.encargadoId === usuario.id ||
+    asistenciasActivas.some((a) => a.usuarioId === usuario.id);
+  const pagosPorUsuario = new Map(partido.pagos.map((p) => [p.usuarioId, p]));
+  const parteImporte =
+    partido.importeTotal !== null && jugadoresQueJuegan.length > 0
+      ? partido.importeTotal / jugadoresQueJuegan.length
+      : null;
+
   return (
     <main className={styles.screen}>
+      <Volver />
       <h1 className={styles.title}>{formatearFecha(partido.fechaHora)}</h1>
       <p className={styles.meta}>{partido.ubicacion}</p>
       <p className={styles.meta}>Encargado de la reserva: {partido.encargado.nombreUsuario}</p>
@@ -156,6 +177,104 @@ export default async function DetallePartido({
               </ul>
             </div>
           )}
+        </section>
+      )}
+
+      {generacion && puedeVerPagos && jugadoresQueJuegan.length > 0 && (
+        <section>
+          <h2 className={styles.subtitulo}>Pagos</h2>
+
+          {puedeGenerar ? (
+            <form action={establecerImporte} className={styles.importeForm}>
+              <input type="hidden" name="partidoId" value={partido.id} />
+              <label htmlFor="importeTotal" className={styles.meta}>
+                Importe total de la reserva (€)
+              </label>
+              <div className={styles.importeCampos}>
+                <input
+                  id="importeTotal"
+                  name="importeTotal"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  defaultValue={partido.importeTotal ?? ""}
+                  required
+                />
+                <button type="submit" className={styles.generar}>
+                  Guardar
+                </button>
+              </div>
+            </form>
+          ) : (
+            partido.importeTotal !== null && (
+              <p className={styles.meta}>Importe total: {partido.importeTotal.toFixed(2)} €</p>
+            )
+          )}
+
+          {parteImporte !== null && (
+            <p className={styles.meta}>
+              Parte por jugador: {parteImporte.toFixed(2)} € ({jugadoresQueJuegan.length} jugadores)
+            </p>
+          )}
+
+          <ul className={styles.lista}>
+            {jugadoresQueJuegan.map((a) => {
+              const pago = pagosPorUsuario.get(a.usuarioId);
+              const estado = pago?.confirmadoEn
+                ? `Confirmado el ${formatearFecha(pago.confirmadoEn)}`
+                : pago?.indicadoEn
+                  ? "Indicado, pendiente de confirmación"
+                  : "Pendiente de indicar";
+
+              return (
+                <li key={a.usuarioId} className={styles.pagoFila}>
+                  <div>
+                    <span className={styles.nombre}>{a.usuario.nombreUsuario}</span>
+                    <span className={styles.meta}> · {estado}</span>
+                  </div>
+                  <div className={styles.pagoAcciones}>
+                    {a.usuarioId === usuario.id &&
+                      (!pago?.confirmadoEn ? (
+                        !pago?.indicadoEn ? (
+                          <form action={indicarPago}>
+                            <input type="hidden" name="partidoId" value={partido.id} />
+                            <button type="submit" className={styles.pagoBoton}>
+                              He pagado
+                            </button>
+                          </form>
+                        ) : (
+                          <form action={deshacerIndicacion}>
+                            <input type="hidden" name="partidoId" value={partido.id} />
+                            <button type="submit" className={styles.pagoBotonSecundario}>
+                              Deshacer
+                            </button>
+                          </form>
+                        )
+                      ) : null)}
+
+                    {puedeGenerar &&
+                      (!pago?.confirmadoEn ? (
+                        <form action={confirmarPago}>
+                          <input type="hidden" name="partidoId" value={partido.id} />
+                          <input type="hidden" name="usuarioId" value={a.usuarioId} />
+                          <button type="submit" className={styles.pagoBoton}>
+                            Confirmar
+                          </button>
+                        </form>
+                      ) : (
+                        <form action={corregirConfirmacion}>
+                          <input type="hidden" name="partidoId" value={partido.id} />
+                          <input type="hidden" name="usuarioId" value={a.usuarioId} />
+                          <button type="submit" className={styles.pagoBotonSecundario}>
+                            Corregir
+                          </button>
+                        </form>
+                      ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
     </main>
