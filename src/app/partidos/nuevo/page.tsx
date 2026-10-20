@@ -24,6 +24,10 @@ export default async function NuevoPartido() {
   return (
     <main className={styles.screen}>
       <h1 className={styles.title}>Crear partido</h1>
+      <p className={styles.nota}>
+        El formato (triangular o 2 equipos) se decide solo al generar los
+        equipos, según cuántos se hayan apuntado.
+      </p>
       <CrearPartidoForm encargados={encargados} />
     </main>
   );

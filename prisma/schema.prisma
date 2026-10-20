@@ -24,17 +24,21 @@ enum EstadoCuenta {
 }
 
 model Usuario {
-  id                 String       @id @default(cuid())
-  nombreUsuario      String       @unique
-  email              String       @unique
-  passwordHash       String
-  rol                Rol          @default(USUARIO)
-  estado             EstadoCuenta @default(PENDIENTE)
-  creadoEn           DateTime     @default(now())
-  sesiones           Sesion[]
-  partidosEncargados Partido[]    @relation("PartidosEncargados")
-  partidosCreados    Partido[]    @relation("PartidosCreados")
-  asistencias        Asistencia[]
+  id                   String              @id @default(cuid())
+  nombreUsuario        String              @unique
+  email                String              @unique
+  passwordHash         String
+  rol                  Rol                 @default(USUARIO)
+  estado               EstadoCuenta        @default(PENDIENTE)
+  creadoEn             DateTime            @default(now())
+  sesiones             Sesion[]
+  partidosEncargados   Partido[]           @relation("PartidosEncargados")
+  partidosCreados      Partido[]           @relation("PartidosCreados")
+  asistencias          Asistencia[]
+  valoracionesRecibidas Valoracion[]       @relation("ValoracionesRecibidas")
+  valoracionesHechas   Valoracion[]        @relation("ValoracionesHechas")
+  generacionesCreadas  GeneracionEquipos[]
+  asignaciones         AsignacionEquipo[]
 }
 
 model Sesion {
@@ -45,23 +49,18 @@ model Sesion {
   expiraEn    DateTime
 }
 
-enum Formato {
-  TRIANGULAR
-  DOS_EQUIPOS
-}
-
 model Partido {
-  id            String       @id @default(cuid())
+  id            String             @id @default(cuid())
   fechaHora     DateTime
   ubicacion     String
-  formato       Formato
-  horasCierre   Int          @default(2)
+  horasCierre   Int                @default(2)
   encargadoId   String
-  encargado     Usuario      @relation("PartidosEncargados", fields: [encargadoId], references: [id])
+  encargado     Usuario            @relation("PartidosEncargados", fields: [encargadoId], references: [id])
   creadoPorId   String
-  creadoPor     Usuario      @relation("PartidosCreados", fields: [creadoPorId], references: [id])
-  creadoEn      DateTime     @default(now())
+  creadoPor     Usuario            @relation("PartidosCreados", fields: [creadoPorId], references: [id])
+  creadoEn      DateTime           @default(now())
   asistencias   Asistencia[]
+  generacion    GeneracionEquipos?
 }
 
 model Asistencia {
@@ -75,4 +74,43 @@ model Asistencia {
   canceladoEn DateTime?
 
   @@unique([partidoId, usuarioId])
+}
+
+model Valoracion {
+  id            String   @id @default(cuid())
+  valoradoId    String
+  valorado      Usuario  @relation("ValoracionesRecibidas", fields: [valoradoId], references: [id], onDelete: Cascade)
+  autorId       String
+  autor         Usuario  @relation("ValoracionesHechas", fields: [autorId], references: [id], onDelete: Cascade)
+  estrellas     Int
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@unique([valoradoId, autorId])
+}
+
+enum Formato {
+  TRIANGULAR
+  DOS_EQUIPOS
+}
+
+model GeneracionEquipos {
+  id            String             @id @default(cuid())
+  partidoId     String             @unique
+  partido       Partido            @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  formato       Formato
+  generadoEn    DateTime           @default(now())
+  generadoPorId String
+  generadoPor   Usuario            @relation(fields: [generadoPorId], references: [id])
+  asignaciones  AsignacionEquipo[]
+}
+
+model AsignacionEquipo {
+  id           String            @id @default(cuid())
+  generacionId String
+  generacion   GeneracionEquipos @relation(fields: [generacionId], references: [id], onDelete: Cascade)
+  usuarioId    String
+  usuario      Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  // 0 = lista de espera; 1, 2 (y 3 en triangular) = número de equipo
+  equipo       Int
 }

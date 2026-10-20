@@ -8,11 +8,6 @@ import styles from "./page.module.css";
 // Página protegida: necesita la sesión (cookie) en cada petición.
 export const instant = false;
 
-const FORMATOS: Record<string, string> = {
-  TRIANGULAR: "Triangular",
-  DOS_EQUIPOS: "2 equipos",
-};
-
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
     weekday: "short",
@@ -43,16 +38,21 @@ export default async function Panel() {
         Has entrado como {usuario.rol === "ADMIN" ? "administrador" : "usuario"}.
       </p>
 
-      {usuario.rol === "ADMIN" && (
-        <div className={styles.enlaces}>
-          <Link className={styles.adminLink} href="/admin/solicitudes">
-            Revisar solicitudes de acceso
-          </Link>
-          <Link className={styles.adminLink} href="/partidos/nuevo">
-            Crear partido
-          </Link>
-        </div>
-      )}
+      <div className={styles.enlaces}>
+        <Link className={styles.adminLink} href="/jugadores">
+          Valorar jugadores
+        </Link>
+        {usuario.rol === "ADMIN" && (
+          <>
+            <Link className={styles.adminLink} href="/admin/solicitudes">
+              Revisar solicitudes de acceso
+            </Link>
+            <Link className={styles.adminLink} href="/partidos/nuevo">
+              Crear partido
+            </Link>
+          </>
+        )}
+      </div>
 
       <section>
         <h2 className={styles.subtitulo}>Próximos partidos</h2>
@@ -65,7 +65,7 @@ export default async function Panel() {
                 <Link className={styles.partido} href={`/partidos/${p.id}`}>
                   <span className={styles.partidoFecha}>{formatearFecha(p.fechaHora)}</span>
                   <span className={styles.partidoMeta}>
-                    {p.ubicacion} · {FORMATOS[p.formato]} · {p._count.asistencias} apuntados
+                    {p.ubicacion} · {p._count.asistencias} apuntados
                   </span>
                 </Link>
               </li>

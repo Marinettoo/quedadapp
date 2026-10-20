@@ -13,6 +13,12 @@
   letter-spacing: -0.02em;
 }
 
+.nota {
+  font-size: 14px;
+  color: var(--meta);
+  margin-top: -8px;
+}
+
 .form {
   display: flex;
   flex-direction: column;

@@ -27,7 +27,6 @@ export async function crearPartido(
   const fecha = String(formData.get("fecha") ?? "");
   const hora = String(formData.get("hora") ?? "");
   const ubicacion = String(formData.get("ubicacion") ?? "").trim();
-  const formato = String(formData.get("formato") ?? "");
   const encargadoId = String(formData.get("encargadoId") ?? "");
   const horasCierre = Number(formData.get("horasCierre") ?? 2);
 
@@ -36,9 +35,6 @@ export async function crearPartido(
   }
   if (!ubicacion) {
     return { error: "Indica la ubicación." };
-  }
-  if (formato !== "TRIANGULAR" && formato !== "DOS_EQUIPOS") {
-    return { error: "Elige un formato válido." };
   }
   if (!encargadoId) {
     return { error: "Elige quién se encarga de la reserva." };
@@ -61,7 +57,6 @@ export async function crearPartido(
     data: {
       fechaHora,
       ubicacion,
-      formato: formato as "TRIANGULAR" | "DOS_EQUIPOS",
       horasCierre,
       encargadoId,
       creadoPorId: usuario.id,

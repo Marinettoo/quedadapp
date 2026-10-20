@@ -65,3 +65,48 @@
   gap: 6px;
   font-size: 15px;
 }
+
+.aviso {
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.generar {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 20px;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.generar:hover {
+  opacity: 0.85;
+}
+
+.equipos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.equipo {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 14px 18px;
+  margin-top: 10px;
+}
+
+.equipoTitulo {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+}

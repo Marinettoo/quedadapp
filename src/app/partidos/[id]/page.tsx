@@ -3,6 +3,7 @@ import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
 import { apuntarse, cancelarAsistencia } from "../actions";
+import { generarEquiposPartido } from "../generarActions";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -39,9 +40,15 @@ export default async function DetallePartido({
     include: {
       encargado: { select: { nombreUsuario: true } },
       asistencias: {
-        where: { cancelado: false },
-        include: { usuario: { select: { id: true, nombreUsuario: true } } },
         orderBy: { apuntadoEn: "asc" },
+        include: { usuario: { select: { id: true, nombreUsuario: true } } },
+      },
+      generacion: {
+        include: {
+          asignaciones: {
+            include: { usuario: { select: { id: true, nombreUsuario: true } } },
+          },
+        },
       },
     },
   });
@@ -50,15 +57,32 @@ export default async function DetallePartido({
     notFound();
   }
 
+  const asistenciasActivas = partido.asistencias.filter((a) => !a.cancelado);
   const abierto = asistenciaAbierta(partido.fechaHora, partido.horasCierre);
   const cierre = cierreAsistencia(partido.fechaHora, partido.horasCierre);
-  const yaApuntado = partido.asistencias.some((a) => a.usuarioId === usuario.id);
+  const yaApuntado = asistenciasActivas.some((a) => a.usuarioId === usuario.id);
+  const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
+
+  const generacion = partido.generacion;
+  const ultimoCambioAsistencia = partido.asistencias.reduce<Date | null>((max, a) => {
+    const cambio = a.canceladoEn ?? a.apuntadoEn;
+    return !max || cambio > max ? cambio : max;
+  }, null);
+  const hayCambiosTrasGenerar =
+    generacion && ultimoCambioAsistencia && ultimoCambioAsistencia > generacion.generadoEn;
+
+  const numEquipos = generacion?.formato === "TRIANGULAR" ? 3 : 2;
+  const equipos = generacion
+    ? Array.from({ length: numEquipos }, (_, i) =>
+        generacion.asignaciones.filter((a) => a.equipo === i + 1),
+      )
+    : [];
+  const listaEspera = generacion?.asignaciones.filter((a) => a.equipo === 0) ?? [];
 
   return (
     <main className={styles.screen}>
       <h1 className={styles.title}>{formatearFecha(partido.fechaHora)}</h1>
       <p className={styles.meta}>{partido.ubicacion}</p>
-      <p className={styles.meta}>{FORMATOS[partido.formato]}</p>
       <p className={styles.meta}>Encargado de la reserva: {partido.encargado.nombreUsuario}</p>
       <p className={styles.meta}>
         {abierto
@@ -76,19 +100,64 @@ export default async function DetallePartido({
       )}
 
       <section>
-        <h2 className={styles.subtitulo}>
-          Apuntados ({partido.asistencias.length})
-        </h2>
-        {partido.asistencias.length === 0 ? (
+        <h2 className={styles.subtitulo}>Apuntados ({asistenciasActivas.length})</h2>
+        {asistenciasActivas.length === 0 ? (
           <p className={styles.meta}>Todavía no se ha apuntado nadie.</p>
         ) : (
           <ul className={styles.lista}>
-            {partido.asistencias.map((a) => (
+            {asistenciasActivas.map((a) => (
               <li key={a.id}>{a.usuario.nombreUsuario}</li>
             ))}
           </ul>
         )}
       </section>
+
+      {puedeGenerar && (
+        <section>
+          <h2 className={styles.subtitulo}>Equipos</h2>
+          {hayCambiosTrasGenerar && (
+            <p className={styles.aviso}>
+              Los apuntados han cambiado desde que se generaron los equipos. Puedes regenerarlos.
+            </p>
+          )}
+          <form action={generarEquiposPartido}>
+            <input type="hidden" name="partidoId" value={partido.id} />
+            <button type="submit" className={styles.generar}>
+              {generacion ? "Regenerar equipos" : "Generar equipos"}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {generacion && (
+        <section>
+          <p className={styles.meta}>
+            Formato: {FORMATOS[generacion.formato]} · generado el {formatearFecha(generacion.generadoEn)}
+          </p>
+          <div className={styles.equipos}>
+            {equipos.map((equipo, i) => (
+              <div key={i} className={styles.equipo}>
+                <h3 className={styles.equipoTitulo}>Equipo {i + 1}</h3>
+                <ul className={styles.lista}>
+                  {equipo.map((a) => (
+                    <li key={a.id}>{a.usuario.nombreUsuario}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          {listaEspera.length > 0 && (
+            <div className={styles.equipo}>
+              <h3 className={styles.equipoTitulo}>Lista de espera</h3>
+              <ul className={styles.lista}>
+                {listaEspera.map((a) => (
+                  <li key={a.id}>{a.usuario.nombreUsuario}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

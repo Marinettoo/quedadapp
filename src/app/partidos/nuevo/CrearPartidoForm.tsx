@@ -27,16 +27,6 @@ export function CrearPartidoForm({ encargados }: { encargados: Encargado[] }) {
         <input id="ubicacion" name="ubicacion" type="text" required />
       </div>
       <div className={styles.field}>
-        <label htmlFor="formato">Formato</label>
-        <select id="formato" name="formato" required defaultValue="">
-          <option value="" disabled>
-            Elige un formato
-          </option>
-          <option value="TRIANGULAR">Triangular (3 equipos)</option>
-          <option value="DOS_EQUIPOS">2 equipos</option>
-        </select>
-      </div>
-      <div className={styles.field}>
         <label htmlFor="encargadoId">Persona encargada de la reserva</label>
         <select id="encargadoId" name="encargadoId" required defaultValue="">
           <option value="" disabled>

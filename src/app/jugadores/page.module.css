@@ -1,0 +1,80 @@
+.screen {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--meta);
+}
+
+.lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nombre {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.media {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.estrellas {
+  display: flex;
+  gap: 4px;
+}
+
+.estrellaLlena,
+.estrellaVacia {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.estrellaLlena {
+  color: var(--ink);
+}
+
+.estrellaVacia {
+  color: var(--border);
+}
+
+.estrellaVacia:hover {
+  color: var(--meta);
+}
