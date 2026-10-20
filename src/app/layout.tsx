@@ -19,10 +19,22 @@ export const metadata: Metadata = {
   description: "Organiza los partidos de la peña: asistencia, equipos, pagos y resultados.",
 };
 
+const SCRIPT_TEMA = `
+  try {
+    var t = localStorage.getItem("tema");
+    if (t === "dark" || t === "light") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) {}
+`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={dmSans.variable}>
-      <body>{children}</body>
+    <html lang="es" className={dmSans.variable} suppressHydrationWarning>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+        {children}
+      </body>
     </html>
   );
 }

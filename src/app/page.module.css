@@ -1,4 +1,15 @@
 .screen {
+  /* El acceso es la pantalla cinematográfica de la marca: se mantiene
+     siempre clara, sin seguir el modo oscuro del resto de la app. */
+  --ink: #000000;
+  --paper: #ffffff;
+  --surface: #f3f3f3;
+  --border: #e2e2e2;
+  --meta: #757575;
+  --lime: #b8ff65;
+  color: var(--ink);
+  background: var(--paper);
+
   display: flex;
   flex-direction: column;
   min-height: 100vh;

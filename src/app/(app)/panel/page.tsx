@@ -3,9 +3,8 @@ import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
-import { Chip } from "@/components/Chip";
 import { BallMark } from "@/components/BallMark";
-import { salir } from "../actions";
+import { salir } from "@/app/actions";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -36,32 +35,20 @@ export default async function Panel() {
 
   const [proximo, ...resto] = partidos;
 
-  const solicitudesPendientes =
-    usuario.rol === "ADMIN"
-      ? await prisma.usuario.count({ where: { estado: "PENDIENTE" } })
-      : 0;
-
   return (
     <main className={styles.screen}>
       <AppHeader
-        enPanel
         titulo={`Hola, ${usuario.nombreUsuario}`}
         subtitulo={usuario.rol === "ADMIN" ? "Administrador" : "Jugador"}
       />
 
-      <div className={styles.enlaces}>
-        <Chip href="/jugadores">Valorar jugadores</Chip>
-        <Chip href="/historial">Historial</Chip>
-        {usuario.rol === "ADMIN" && (
-          <>
-            <Chip href="/admin/solicitudes" badge={solicitudesPendientes}>
-              Solicitudes de acceso
-            </Chip>
-            <Chip href="/admin/usuarios">Usuarios</Chip>
-            <Chip href="/partidos/nuevo">Crear partido</Chip>
-          </>
-        )}
-      </div>
+      {usuario.rol === "ADMIN" && (
+        <div className={styles.enlaces}>
+          <Link href="/partidos/nuevo" className={styles.crearPartido}>
+            Crear partido
+          </Link>
+        </div>
+      )}
 
       <section className={styles.seccion}>
         <h2 className={styles.subtitulo}>Próximos partidos</h2>

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { crearPartido } from "../actions";
-import type { ResultadoFormulario } from "../../actions";
+import type { ResultadoFormulario } from "@/app/actions";
 import styles from "./page.module.css";
 
 const estadoInicial: ResultadoFormulario = null;

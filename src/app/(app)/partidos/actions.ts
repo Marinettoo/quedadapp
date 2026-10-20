@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { asistenciaAbierta } from "@/lib/partidos";
-import type { ResultadoFormulario } from "../actions";
+import type { ResultadoFormulario } from "@/app/actions";
 
 async function exigirUsuarioAprobado() {
   const usuario = await obtenerUsuarioSesion();

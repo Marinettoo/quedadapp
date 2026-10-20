@@ -1,0 +1,159 @@
+.nav {
+  /* Bloque de marca: siempre lima/negro, no sigue el modo oscuro. */
+  --ink: #000000;
+  --paper: #ffffff;
+  --surface: #f3f3f3;
+  --border: #e2e2e2;
+
+  background: var(--lime, #b8ff65);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.contenido {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  margin-right: auto;
+}
+
+.icono {
+  width: 20px;
+  height: 20px;
+  color: var(--ink);
+}
+
+.enlaces {
+  list-style: none;
+  display: flex;
+  gap: 4px;
+}
+
+.enlace,
+.enlaceActivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: var(--radius-pill, 40px);
+}
+
+.enlace:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.enlaceActivo {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.enlaceActivo .badge {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: var(--paper);
+}
+
+.hamburguesa {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.hamburguesa span {
+  display: block;
+  width: 14px;
+  height: 2px;
+  background: var(--ink);
+  margin: 0 auto;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.hamburguesaAbierta span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.hamburguesaAbierta span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburguesaAbierta span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.menuMovil {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .enlaces {
+    display: none;
+  }
+
+  .hamburguesa {
+    display: flex;
+  }
+
+  .menuMovil {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 20px 16px;
+    list-style: none;
+  }
+
+  .menuMovil .enlace,
+  .menuMovil .enlaceActivo {
+    width: 100%;
+  }
+
+  .contenido {
+    padding: 12px 20px;
+  }
+}

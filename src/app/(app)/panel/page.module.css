@@ -14,6 +14,21 @@
   flex-wrap: wrap;
 }
 
+.crearPartido {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 9px 18px;
+}
+
+.crearPartido:hover {
+  opacity: 0.85;
+}
+
 .seccion {
   display: flex;
   flex-direction: column;
@@ -62,6 +77,9 @@
 }
 
 .destacado {
+  /* Bloque de marca (lima): texto siempre negro, no sigue el modo oscuro. */
+  --ink: #000000;
+
   display: flex;
   flex-direction: column;
   gap: 4px;
