@@ -1,0 +1,28 @@
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--meta);
+}
+
+.back {
+  font-weight: 500;
+  text-decoration: underline;
+  align-self: flex-start;
+}

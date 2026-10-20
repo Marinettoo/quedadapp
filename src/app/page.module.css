@@ -1,0 +1,208 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---- Bloque póster (lima) ---- */
+
+.poster {
+  position: relative;
+  overflow: hidden;
+  background: var(--lime);
+  padding: 28px 24px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: posterIn 0.5s ease-out;
+}
+
+@keyframes posterIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster {
+    animation: none;
+  }
+}
+
+.wordmarkOnPoster {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.headline {
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  max-width: 11ch;
+}
+
+.subhead {
+  font-size: 16px;
+  line-height: 1.4;
+  max-width: 34ch;
+  color: var(--ink);
+}
+
+.ball {
+  position: absolute;
+  right: -70px;
+  bottom: -70px;
+  width: 220px;
+  height: 220px;
+  color: var(--ink);
+}
+
+/* ---- Panel de acceso (blanco) ---- */
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.wordmark {
+  font-weight: 700;
+  font-size: 16px;
+  display: none;
+}
+
+.panelInner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.formTitle {
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.field input {
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.field input:focus-visible {
+  outline-offset: 0;
+}
+
+.submit {
+  margin-top: 4px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit:hover {
+  opacity: 0.85;
+}
+
+.aviso {
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.registroLink {
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+.registroLink a {
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.meta {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+/* ---- Composición de escritorio ---- */
+
+@media (min-width: 960px) {
+  .screen {
+    flex-direction: row;
+  }
+
+  .poster {
+    flex: 0 0 55%;
+    padding: 48px;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .headline {
+    font-size: 58px;
+    max-width: 10ch;
+  }
+
+  .subhead {
+    font-size: 18px;
+  }
+
+  .ball {
+    right: -90px;
+    bottom: -90px;
+    width: 340px;
+    height: 340px;
+  }
+
+  .panel {
+    flex: 0 0 45%;
+    padding: 48px;
+  }
+
+  .wordmark {
+    display: block;
+  }
+}
