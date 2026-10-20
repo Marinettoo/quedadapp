@@ -17,6 +17,11 @@
   background: var(--border);
 }
 
+.icono {
+  width: 17px;
+  height: 17px;
+}
+
 .espacio {
   display: inline-block;
   width: 32px;

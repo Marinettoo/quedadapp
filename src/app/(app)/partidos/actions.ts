@@ -66,6 +66,65 @@ export async function crearPartido(
   redirect(`/partidos/${partido.id}`);
 }
 
+async function exigirEncargadoOAdmin(partidoId: string) {
+  const usuario = await exigirUsuarioAprobado();
+  const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
+  if (!partido) {
+    throw new Error("El partido no existe.");
+  }
+  if (usuario.rol !== "ADMIN" && partido.encargadoId !== usuario.id) {
+    throw new Error("Solo un administrador o la persona encargada pueden hacer esto.");
+  }
+  return { usuario, partido };
+}
+
+export async function editarPartido(
+  _estadoPrevio: ResultadoFormulario,
+  formData: FormData,
+): Promise<ResultadoFormulario> {
+  const partidoId = String(formData.get("partidoId"));
+  await exigirEncargadoOAdmin(partidoId);
+
+  const fecha = String(formData.get("fecha") ?? "");
+  const hora = String(formData.get("hora") ?? "");
+  const ubicacion = String(formData.get("ubicacion") ?? "").trim();
+  const horasCierre = Number(formData.get("horasCierre") ?? 2);
+
+  if (!fecha || !hora) {
+    return { error: "Indica fecha y hora del partido." };
+  }
+  if (!ubicacion) {
+    return { error: "Indica la ubicación." };
+  }
+  if (!Number.isFinite(horasCierre) || horasCierre < 0) {
+    return { error: "Las horas de antelación para cerrar asistencia no son válidas." };
+  }
+
+  const fechaHora = new Date(`${fecha}T${hora}`);
+  if (Number.isNaN(fechaHora.getTime())) {
+    return { error: "La fecha u hora no son válidas." };
+  }
+
+  await prisma.partido.update({
+    where: { id: partidoId },
+    data: { fechaHora, ubicacion, horasCierre },
+  });
+
+  revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath("/panel");
+  return { ok: true };
+}
+
+export async function eliminarPartido(formData: FormData) {
+  const partidoId = String(formData.get("partidoId"));
+  await exigirEncargadoOAdmin(partidoId);
+
+  await prisma.partido.delete({ where: { id: partidoId } });
+
+  revalidatePath("/panel");
+  redirect("/panel");
+}
+
 export async function apuntarse(formData: FormData) {
   const usuario = await exigirUsuarioAprobado();
   const partidoId = String(formData.get("partidoId"));

@@ -1,8 +1,10 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
+import type { ResultadoFormulario } from "@/app/actions";
 
 export async function cambiarRol(formData: FormData) {
   const admin = await obtenerUsuarioSesion();
@@ -36,4 +38,36 @@ export async function cambiarRol(formData: FormData) {
   });
 
   revalidatePath("/admin/usuarios");
+}
+
+export async function restablecerContrasena(
+  _estadoPrevio: ResultadoFormulario,
+  formData: FormData,
+): Promise<ResultadoFormulario> {
+  const admin = await obtenerUsuarioSesion();
+  if (!admin || admin.rol !== "ADMIN") {
+    throw new Error("No autorizado.");
+  }
+
+  const usuarioId = String(formData.get("usuarioId"));
+  const password = String(formData.get("password") ?? "");
+  const password2 = String(formData.get("password2") ?? "");
+
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+  if (password !== password2) {
+    return { error: "Las contraseñas no coinciden." };
+  }
+
+  const objetivo = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!objetivo || objetivo.estado !== "APROBADA") {
+    return { error: "Ese usuario no existe o no está aprobado." };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await prisma.usuario.update({ where: { id: usuarioId }, data: { passwordHash } });
+
+  revalidatePath("/admin/usuarios");
+  return { ok: true };
 }

@@ -60,20 +60,18 @@ export function Navbar({ esAdmin, solicitudesPendientes }: NavbarProps) {
         </div>
       </div>
 
-      {abierto && (
-        <ul className={styles.menuMovil}>
-          {enlaces.map((enlace) => (
-            <li key={enlace.href}>
-              <EnlaceNav
-                enlace={enlace}
-                pathname={pathname}
-                solicitudesPendientes={solicitudesPendientes}
-                onNavigate={() => setAbierto(false)}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className={abierto ? `${styles.menuMovil} ${styles.menuMovilAbierto}` : styles.menuMovil}>
+        {enlaces.map((enlace) => (
+          <li key={enlace.href}>
+            <EnlaceNav
+              enlace={enlace}
+              pathname={pathname}
+              solicitudesPendientes={solicitudesPendientes}
+              onNavigate={() => setAbierto(false)}
+            />
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }

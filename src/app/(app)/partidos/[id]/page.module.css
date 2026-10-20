@@ -280,3 +280,16 @@
   font-size: 16px;
   font-weight: 500;
 }
+
+.editarSeccion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editarAcciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}

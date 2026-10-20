@@ -22,6 +22,7 @@ import { establecerColorEquipo } from "../coloresActions";
 import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
+import { EditarPartido } from "./EditarPartido";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -162,6 +163,8 @@ export default async function DetallePartido({
           </AccionBoton>
         )}
       </div>
+
+      {puedeGenerar && <EditarPartido partido={partido} />}
 
       <section>
         <h2 className={styles.subtitulo}>
