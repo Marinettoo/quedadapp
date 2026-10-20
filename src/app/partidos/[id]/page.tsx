@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
-import { Volver } from "@/components/Volver";
+import { AppHeader } from "@/components/AppHeader";
 import { apuntarse, cancelarAsistencia } from "../actions";
 import { generarEquiposPartido } from "../generarActions";
 import {
@@ -30,6 +30,10 @@ const FORMATOS: Record<string, string> = {
   TRIANGULAR: "Triangular (3 equipos)",
   DOS_EQUIPOS: "2 equipos",
 };
+
+function capitalizar(texto: string) {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
 
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -137,24 +141,27 @@ export default async function DetallePartido({
 
   return (
     <main className={styles.screen}>
-      <Volver />
-      <h1 className={styles.title}>{formatearFecha(partido.fechaHora)}</h1>
-      <p className={styles.meta}>{partido.ubicacion}</p>
-      <p className={styles.meta}>Encargado de la reserva: {partido.encargado.nombreUsuario}</p>
-      <p className={styles.meta}>
-        {abierto
-          ? `Puedes apuntarte o cancelar hasta ${formatearFecha(cierre)}.`
-          : "El plazo para apuntarse o cancelar ya ha cerrado."}
-      </p>
+      <AppHeader
+        titulo={capitalizar(formatearFecha(partido.fechaHora))}
+        subtitulo={`${partido.ubicacion} · encargado: ${partido.encargado.nombreUsuario}`}
+      />
 
-      {abierto && (
-        <form action={yaApuntado ? cancelarAsistencia : apuntarse}>
-          <input type="hidden" name="partidoId" value={partido.id} />
-          <button type="submit" className={yaApuntado ? styles.cancelar : styles.apuntarse}>
+      <div className={styles.infoCard}>
+        <p className={styles.meta}>
+          {abierto
+            ? `Puedes apuntarte o cancelar hasta ${formatearFecha(cierre)}.`
+            : "El plazo para apuntarse o cancelar ya ha cerrado."}
+        </p>
+        {abierto && (
+          <AccionBoton
+            accion={yaApuntado ? cancelarAsistencia : apuntarse}
+            campos={{ partidoId: partido.id }}
+            className={yaApuntado ? styles.cancelar : styles.apuntarse}
+          >
             {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
-          </button>
-        </form>
-      )}
+          </AccionBoton>
+        )}
+      </div>
 
       <section>
         <h2 className={styles.subtitulo}>
@@ -188,13 +195,13 @@ export default async function DetallePartido({
                   <span>
                     {i.nombre} · {i.estrellas} ★
                   </span>
-                  <form action={quitarInvitado}>
-                    <input type="hidden" name="partidoId" value={partido.id} />
-                    <input type="hidden" name="id" value={i.id} />
-                    <button type="submit" className={styles.pagoBotonSecundario}>
-                      Quitar
-                    </button>
-                  </form>
+                  <AccionBoton
+                    accion={quitarInvitado}
+                    campos={{ partidoId: partido.id, id: i.id }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    Quitar
+                  </AccionBoton>
                 </li>
               ))}
             </ul>
@@ -224,12 +231,13 @@ export default async function DetallePartido({
               Los apuntados han cambiado desde que se generaron los equipos. Puedes regenerarlos.
             </p>
           )}
-          <form action={generarEquiposPartido}>
-            <input type="hidden" name="partidoId" value={partido.id} />
-            <button type="submit" className={styles.generar}>
-              {generacion ? "Regenerar equipos" : "Generar equipos"}
-            </button>
-          </form>
+          <AccionBoton
+            accion={generarEquiposPartido}
+            campos={{ partidoId: partido.id }}
+            className={styles.generar}
+          >
+            {generacion ? "Regenerar equipos" : "Generar equipos"}
+          </AccionBoton>
         </section>
       )}
 
@@ -427,13 +435,13 @@ export default async function DetallePartido({
                         {e.equipoVisitante}
                       </span>
                       {puedeGenerar && (
-                        <form action={eliminarEnfrentamiento}>
-                          <input type="hidden" name="partidoId" value={partido.id} />
-                          <input type="hidden" name="id" value={e.id} />
-                          <button type="submit" className={styles.pagoBotonSecundario}>
-                            Eliminar
-                          </button>
-                        </form>
+                        <AccionBoton
+                          accion={eliminarEnfrentamiento}
+                          campos={{ partidoId: partido.id, id: e.id }}
+                          className={styles.pagoBotonSecundario}
+                        >
+                          Eliminar
+                        </AccionBoton>
                       )}
                     </li>
                   ))}

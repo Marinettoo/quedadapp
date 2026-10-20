@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "QuedadApp",
+  title: "Quedadapp",
   description: "Organiza los partidos de la peña: asistencia, equipos, pagos y resultados.",
 };
 

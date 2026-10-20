@@ -7,9 +7,10 @@ type AccionBotonProps = {
   campos: Record<string, string>;
   className?: string;
   children: React.ReactNode;
+  ariaLabel?: string;
 };
 
-export function AccionBoton({ accion, campos, className, children }: AccionBotonProps) {
+export function AccionBoton({ accion, campos, className, children, ariaLabel }: AccionBotonProps) {
   const [pending, startTransition] = useTransition();
 
   return (
@@ -17,6 +18,7 @@ export function AccionBoton({ accion, campos, className, children }: AccionBoton
       type="button"
       disabled={pending}
       className={className}
+      aria-label={ariaLabel}
       onClick={() => {
         const formData = new FormData();
         for (const [clave, valor] of Object.entries(campos)) {

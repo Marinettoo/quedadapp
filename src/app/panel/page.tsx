@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { AppHeader } from "@/components/AppHeader";
+import { Chip } from "@/components/Chip";
+import { BallMark } from "@/components/BallMark";
 import { salir } from "../actions";
 import styles from "./page.module.css";
 
@@ -31,49 +34,77 @@ export default async function Panel() {
     include: { _count: { select: { asistencias: { where: { cancelado: false } } } } },
   });
 
+  const [proximo, ...resto] = partidos;
+
+  const solicitudesPendientes =
+    usuario.rol === "ADMIN"
+      ? await prisma.usuario.count({ where: { estado: "PENDIENTE" } })
+      : 0;
+
   return (
     <main className={styles.screen}>
-      <h1 className={styles.title}>Hola, {usuario.nombreUsuario}</h1>
-      <p className={styles.body}>
-        Has entrado como {usuario.rol === "ADMIN" ? "administrador" : "usuario"}.
-      </p>
+      <AppHeader
+        enPanel
+        titulo={`Hola, ${usuario.nombreUsuario}`}
+        subtitulo={usuario.rol === "ADMIN" ? "Administrador" : "Jugador"}
+      />
 
       <div className={styles.enlaces}>
-        <Link className={styles.adminLink} href="/jugadores">
-          Valorar jugadores
-        </Link>
-        <Link className={styles.adminLink} href="/historial">
-          Historial
-        </Link>
+        <Chip href="/jugadores">Valorar jugadores</Chip>
+        <Chip href="/historial">Historial</Chip>
         {usuario.rol === "ADMIN" && (
           <>
-            <Link className={styles.adminLink} href="/admin/solicitudes">
-              Revisar solicitudes de acceso
-            </Link>
-            <Link className={styles.adminLink} href="/partidos/nuevo">
-              Crear partido
-            </Link>
+            <Chip href="/admin/solicitudes" badge={solicitudesPendientes}>
+              Solicitudes de acceso
+            </Chip>
+            <Chip href="/admin/usuarios">Usuarios</Chip>
+            <Chip href="/partidos/nuevo">Crear partido</Chip>
           </>
         )}
       </div>
 
-      <section>
+      <section className={styles.seccion}>
         <h2 className={styles.subtitulo}>Próximos partidos</h2>
+
         {partidos.length === 0 ? (
-          <p className={styles.body}>No hay partidos programados todavía.</p>
+          <div className={styles.vacio}>
+            <BallMark className={styles.vacioIcono} />
+            <p className={styles.vacioTexto}>
+              {usuario.rol === "ADMIN"
+                ? "No hay partidos programados. Anímate a organizar el próximo."
+                : "No hay partidos programados. En cuanto un administrador cree uno, aparecerá aquí."}
+            </p>
+            {usuario.rol === "ADMIN" && (
+              <Link href="/partidos/nuevo" className={styles.vacioBoton}>
+                Crear partido
+              </Link>
+            )}
+          </div>
         ) : (
-          <ul className={styles.lista}>
-            {partidos.map((p) => (
-              <li key={p.id}>
-                <Link className={styles.partido} href={`/partidos/${p.id}`}>
-                  <span className={styles.partidoFecha}>{formatearFecha(p.fechaHora)}</span>
-                  <span className={styles.partidoMeta}>
-                    {p.ubicacion} · {p._count.asistencias} apuntados
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <Link href={`/partidos/${proximo.id}`} className={styles.destacado}>
+              <span className={styles.destacadoEtiqueta}>El próximo</span>
+              <span className={styles.destacadoFecha}>{formatearFecha(proximo.fechaHora)}</span>
+              <span className={styles.destacadoMeta}>
+                {proximo.ubicacion} · {proximo._count.asistencias} apuntados
+              </span>
+            </Link>
+
+            {resto.length > 0 && (
+              <ul className={styles.lista}>
+                {resto.map((p) => (
+                  <li key={p.id}>
+                    <Link className={styles.partido} href={`/partidos/${p.id}`}>
+                      <span className={styles.partidoFecha}>{formatearFecha(p.fechaHora)}</span>
+                      <span className={styles.partidoMeta}>
+                        {p.ubicacion} · {p._count.asistencias} apuntados
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </section>
 

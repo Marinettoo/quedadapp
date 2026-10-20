@@ -16,7 +16,7 @@ export default async function Home() {
   return (
     <main className={styles.screen}>
       <section className={styles.poster}>
-        <span className={styles.wordmarkOnPoster}>QuedadApp</span>
+        <span className={styles.wordmarkOnPoster}>Quedadapp</span>
         <h1 className={styles.headline}>
           El equipo se decide solo si te apuntas.
         </h1>
@@ -27,7 +27,7 @@ export default async function Home() {
       </section>
 
       <section className={styles.panel}>
-        <span className={styles.wordmark}>QuedadApp</span>
+        <span className={styles.wordmark}>Quedadapp</span>
         <div className={styles.panelInner}>
           <h2 className={styles.formTitle}>Entrar</h2>
           <LoginForm />

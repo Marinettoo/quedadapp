@@ -3,7 +3,7 @@ import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { calcularTabla } from "@/lib/resultados";
-import { Volver } from "@/components/Volver";
+import { AppHeader } from "@/components/AppHeader";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -51,11 +51,10 @@ export default async function Historial() {
 
   return (
     <main className={styles.screen}>
-      <Volver />
-      <h1 className={styles.title}>Historial</h1>
+      <AppHeader titulo="Historial" />
 
       {partidos.length === 0 ? (
-        <p className={styles.body}>Todavía no hay partidos jugados.</p>
+        <p className={styles.vacio}>Todavía no hay partidos jugados.</p>
       ) : (
         <ul className={styles.lista}>
           {partidos.map((p) => (

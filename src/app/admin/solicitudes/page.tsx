@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Volver } from "@/components/Volver";
+import { AppHeader } from "@/components/AppHeader";
+import { AccionBoton } from "@/components/AccionBoton";
 import { aprobarUsuario, rechazarUsuario } from "./actions";
 import styles from "./page.module.css";
 
@@ -24,11 +25,10 @@ export default async function Solicitudes() {
 
   return (
     <main className={styles.screen}>
-      <Volver />
-      <h1 className={styles.title}>Solicitudes de acceso</h1>
+      <AppHeader titulo="Solicitudes de acceso" />
 
       {pendientes.length === 0 ? (
-        <p className={styles.body}>No hay solicitudes pendientes.</p>
+        <p className={styles.vacio}>No hay solicitudes pendientes.</p>
       ) : (
         <ul className={styles.lista}>
           {pendientes.map((p) => (
@@ -38,18 +38,20 @@ export default async function Solicitudes() {
                 <p className={styles.email}>{p.email}</p>
               </div>
               <div className={styles.acciones}>
-                <form action={aprobarUsuario}>
-                  <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" className={styles.aprobar}>
-                    Aprobar
-                  </button>
-                </form>
-                <form action={rechazarUsuario}>
-                  <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" className={styles.rechazar}>
-                    Rechazar
-                  </button>
-                </form>
+                <AccionBoton
+                  accion={aprobarUsuario}
+                  campos={{ id: p.id }}
+                  className={styles.aprobar}
+                >
+                  Aprobar
+                </AccionBoton>
+                <AccionBoton
+                  accion={rechazarUsuario}
+                  campos={{ id: p.id }}
+                  className={styles.rechazar}
+                >
+                  Rechazar
+                </AccionBoton>
               </div>
             </li>
           ))}

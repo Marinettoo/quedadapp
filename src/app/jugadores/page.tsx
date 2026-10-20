@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Volver } from "@/components/Volver";
+import { AppHeader } from "@/components/AppHeader";
+import { AccionBoton } from "@/components/AccionBoton";
 import { valorar } from "./actions";
 import styles from "./page.module.css";
 
@@ -27,12 +28,10 @@ export default async function Jugadores() {
 
   return (
     <main className={styles.screen}>
-      <Volver />
-      <h1 className={styles.title}>Valorar jugadores</h1>
-      <p className={styles.body}>
-        De 1 a 5 estrellas. Tu valoración es anónima: solo se muestra la
-        media de todos los votos, no quién puso cada nota.
-      </p>
+      <AppHeader
+        titulo="Valorar jugadores"
+        subtitulo="De 1 a 5 estrellas, anónimo: solo se ve la media de los votos."
+      />
 
       <ul className={styles.lista}>
         {jugadores.map((j) => {
@@ -55,17 +54,15 @@ export default async function Jugadores() {
               </div>
               <div className={styles.estrellas}>
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <form action={valorar} key={n}>
-                    <input type="hidden" name="valoradoId" value={j.id} />
-                    <input type="hidden" name="estrellas" value={n} />
-                    <button
-                      type="submit"
-                      className={n <= tuValoracion ? styles.estrellaLlena : styles.estrellaVacia}
-                      aria-label={`${n} ${n === 1 ? "estrella" : "estrellas"}`}
-                    >
-                      ★
-                    </button>
-                  </form>
+                  <AccionBoton
+                    key={n}
+                    accion={valorar}
+                    campos={{ valoradoId: j.id, estrellas: String(n) }}
+                    className={n <= tuValoracion ? styles.estrellaLlena : styles.estrellaVacia}
+                    ariaLabel={`${n} ${n === 1 ? "estrella" : "estrellas"}`}
+                  >
+                    ★
+                  </AccionBoton>
                 ))}
               </div>
             </li>

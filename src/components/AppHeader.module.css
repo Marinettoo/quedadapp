@@ -1,0 +1,29 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.wordmark {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--meta);
+  letter-spacing: 0.01em;
+}
+
+a.wordmark:hover {
+  color: var(--ink);
+}
+
+.titulo {
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.subtitulo {
+  font-size: 15px;
+  color: var(--meta);
+}
