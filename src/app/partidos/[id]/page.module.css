@@ -182,3 +182,61 @@
 .pagoBotonSecundario:hover {
   background: var(--surface);
 }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla th {
+  color: var(--meta);
+  font-weight: 500;
+}
+
+.resultadoForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.resultadoForm select {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.golesInput {
+  width: 48px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.resultadoFinal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}

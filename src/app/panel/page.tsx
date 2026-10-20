@@ -42,6 +42,9 @@ export default async function Panel() {
         <Link className={styles.adminLink} href="/jugadores">
           Valorar jugadores
         </Link>
+        <Link className={styles.adminLink} href="/historial">
+          Historial
+        </Link>
         {usuario.rol === "ADMIN" && (
           <>
             <Link className={styles.adminLink} href="/admin/solicitudes">

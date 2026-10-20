@@ -12,6 +12,12 @@ import {
   confirmarPago,
   corregirConfirmacion,
 } from "../pagosActions";
+import {
+  agregarEnfrentamiento,
+  editarEnfrentamiento,
+  eliminarEnfrentamiento,
+} from "../resultadosActions";
+import { calcularTabla } from "@/lib/resultados";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -59,6 +65,7 @@ export default async function DetallePartido({
         },
       },
       pagos: true,
+      enfrentamientos: { orderBy: { registradoEn: "asc" } },
     },
   });
 
@@ -98,6 +105,10 @@ export default async function DetallePartido({
     partido.importeTotal !== null && jugadoresQueJuegan.length > 0
       ? partido.importeTotal / jugadoresQueJuegan.length
       : null;
+
+  const esTriangular = generacion?.formato === "TRIANGULAR";
+  const resultadoDosEquipos = !esTriangular ? partido.enfrentamientos[0] : undefined;
+  const tabla = esTriangular ? calcularTabla(partido.enfrentamientos, numEquipos) : [];
 
   return (
     <main className={styles.screen}>
@@ -275,6 +286,143 @@ export default async function DetallePartido({
               );
             })}
           </ul>
+        </section>
+      )}
+
+      {generacion && (
+        <section>
+          <h2 className={styles.subtitulo}>Resultado</h2>
+
+          {esTriangular ? (
+            <>
+              <table className={styles.tabla}>
+                <thead>
+                  <tr>
+                    <th>Equipo</th>
+                    <th>PJ</th>
+                    <th>G</th>
+                    <th>E</th>
+                    <th>P</th>
+                    <th>GF</th>
+                    <th>GC</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tabla.map((fila) => (
+                    <tr key={fila.equipo}>
+                      <td>Equipo {fila.equipo}</td>
+                      <td>{fila.jugados}</td>
+                      <td>{fila.ganados}</td>
+                      <td>{fila.empatados}</td>
+                      <td>{fila.perdidos}</td>
+                      <td>{fila.golesFavor}</td>
+                      <td>{fila.golesContra}</td>
+                      <td>{fila.puntos}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {partido.enfrentamientos.length > 0 && (
+                <ul className={styles.lista}>
+                  {partido.enfrentamientos.map((e) => (
+                    <li key={e.id} className={styles.pagoFila}>
+                      <span>
+                        Equipo {e.equipoLocal} {e.golesLocal} - {e.golesVisitante} Equipo{" "}
+                        {e.equipoVisitante}
+                      </span>
+                      {puedeGenerar && (
+                        <form action={eliminarEnfrentamiento}>
+                          <input type="hidden" name="partidoId" value={partido.id} />
+                          <input type="hidden" name="id" value={e.id} />
+                          <button type="submit" className={styles.pagoBotonSecundario}>
+                            Eliminar
+                          </button>
+                        </form>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {puedeGenerar && (
+                <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
+                  <input type="hidden" name="partidoId" value={partido.id} />
+                  <select name="equipoLocal" defaultValue="1" required>
+                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        Equipo {n}
+                      </option>
+                    ))}
+                  </select>
+                  <input type="number" name="golesLocal" min={0} defaultValue={0} required className={styles.golesInput} />
+                  <span>-</span>
+                  <input type="number" name="golesVisitante" min={0} defaultValue={0} required className={styles.golesInput} />
+                  <select name="equipoVisitante" defaultValue="2" required>
+                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        Equipo {n}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className={styles.generar}>
+                    Añadir
+                  </button>
+                </form>
+              )}
+            </>
+          ) : !resultadoDosEquipos ? (
+            puedeGenerar ? (
+              <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
+                <input type="hidden" name="partidoId" value={partido.id} />
+                <input type="hidden" name="equipoLocal" value={1} />
+                <input type="hidden" name="equipoVisitante" value={2} />
+                <span>Equipo 1</span>
+                <input type="number" name="golesLocal" min={0} defaultValue={0} required className={styles.golesInput} />
+                <span>-</span>
+                <input type="number" name="golesVisitante" min={0} defaultValue={0} required className={styles.golesInput} />
+                <span>Equipo 2</span>
+                <button type="submit" className={styles.generar}>
+                  Guardar resultado
+                </button>
+              </form>
+            ) : (
+              <p className={styles.meta}>Todavía no hay resultado.</p>
+            )
+          ) : (
+            <div className={styles.resultadoFinal}>
+              <span>
+                Equipo 1 {resultadoDosEquipos.golesLocal} - {resultadoDosEquipos.golesVisitante} Equipo 2
+              </span>
+              {puedeGenerar && (
+                <form action={editarEnfrentamiento} className={styles.resultadoForm}>
+                  <input type="hidden" name="partidoId" value={partido.id} />
+                  <input type="hidden" name="id" value={resultadoDosEquipos.id} />
+                  <input
+                    type="number"
+                    name="golesLocal"
+                    min={0}
+                    defaultValue={resultadoDosEquipos.golesLocal}
+                    required
+                    className={styles.golesInput}
+                  />
+                  <span>-</span>
+                  <input
+                    type="number"
+                    name="golesVisitante"
+                    min={0}
+                    defaultValue={resultadoDosEquipos.golesVisitante}
+                    required
+                    className={styles.golesInput}
+                  />
+                  <button type="submit" className={styles.pagoBotonSecundario}>
+                    Corregir
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
         </section>
       )}
     </main>

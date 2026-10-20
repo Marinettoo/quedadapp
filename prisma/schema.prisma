@@ -41,6 +41,7 @@ model Usuario {
   asignaciones         AsignacionEquipo[]
   pagos                Pago[]              @relation("PagosDelJugador")
   pagosConfirmados     Pago[]              @relation("PagosConfirmadosPor")
+  enfrentamientos      Enfrentamiento[]
 }
 
 model Sesion {
@@ -65,6 +66,7 @@ model Partido {
   generacion    GeneracionEquipos?
   importeTotal  Float?
   pagos         Pago[]
+  enfrentamientos Enfrentamiento[]
 }
 
 model Asistencia {
@@ -117,6 +119,21 @@ model AsignacionEquipo {
   usuario      Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   // 0 = lista de espera; 1, 2 (y 3 en triangular) = número de equipo
   equipo       Int
+}
+
+model Enfrentamiento {
+  id              String   @id @default(cuid())
+  partidoId       String
+  partido         Partido  @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  // número de equipo (1, 2 o 3) tal como quedó en la generación
+  equipoLocal     Int
+  equipoVisitante Int
+  golesLocal      Int
+  golesVisitante  Int
+  registradoEn    DateTime @default(now())
+  registradoPorId String
+  registradoPor   Usuario  @relation(fields: [registradoPorId], references: [id])
+  actualizadoEn   DateTime @updatedAt
 }
 
 model Pago {
