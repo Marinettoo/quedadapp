@@ -24,14 +24,17 @@ enum EstadoCuenta {
 }
 
 model Usuario {
-  id             String       @id @default(cuid())
-  nombreUsuario  String       @unique
-  email          String       @unique
-  passwordHash   String
-  rol            Rol          @default(USUARIO)
-  estado         EstadoCuenta @default(PENDIENTE)
-  creadoEn       DateTime     @default(now())
-  sesiones       Sesion[]
+  id                 String       @id @default(cuid())
+  nombreUsuario      String       @unique
+  email              String       @unique
+  passwordHash       String
+  rol                Rol          @default(USUARIO)
+  estado             EstadoCuenta @default(PENDIENTE)
+  creadoEn           DateTime     @default(now())
+  sesiones           Sesion[]
+  partidosEncargados Partido[]    @relation("PartidosEncargados")
+  partidosCreados    Partido[]    @relation("PartidosCreados")
+  asistencias        Asistencia[]
 }
 
 model Sesion {
@@ -40,4 +43,36 @@ model Sesion {
   usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   creadaEn    DateTime @default(now())
   expiraEn    DateTime
+}
+
+enum Formato {
+  TRIANGULAR
+  DOS_EQUIPOS
+}
+
+model Partido {
+  id            String       @id @default(cuid())
+  fechaHora     DateTime
+  ubicacion     String
+  formato       Formato
+  horasCierre   Int          @default(2)
+  encargadoId   String
+  encargado     Usuario      @relation("PartidosEncargados", fields: [encargadoId], references: [id])
+  creadoPorId   String
+  creadoPor     Usuario      @relation("PartidosCreados", fields: [creadoPorId], references: [id])
+  creadoEn      DateTime     @default(now())
+  asistencias   Asistencia[]
+}
+
+model Asistencia {
+  id          String    @id @default(cuid())
+  partidoId   String
+  partido     Partido   @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  usuarioId   String
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  apuntadoEn  DateTime  @default(now())
+  cancelado   Boolean   @default(false)
+  canceladoEn DateTime?
+
+  @@unique([partidoId, usuarioId])
 }

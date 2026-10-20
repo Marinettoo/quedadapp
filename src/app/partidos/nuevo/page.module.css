@@ -1,0 +1,67 @@
+.screen {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.field input,
+.field select {
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.submit {
+  margin-top: 4px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit:hover {
+  opacity: 0.85;
+}
+
+.aviso {
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
