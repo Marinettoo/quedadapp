@@ -1,0 +1,80 @@
+.screen {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  font-size: 16px;
+  color: var(--meta);
+}
+
+.lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 16px 20px;
+}
+
+.nombre {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.email {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.aprobar,
+.rechazar {
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.aprobar {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.aprobar:hover {
+  opacity: 0.85;
+}
+
+.rechazar {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.rechazar:hover {
+  background: var(--surface);
+}

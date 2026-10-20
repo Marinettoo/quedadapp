@@ -1,8 +1,18 @@
+import { redirect } from "next/navigation";
 import { BallMark } from "@/components/BallMark";
+import { obtenerUsuarioSesion } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
 import styles from "./page.module.css";
 
-export default function Home() {
+// Lee la sesión en cada petición para decidir si redirige a /panel.
+export const instant = false;
+
+export default async function Home() {
+  const usuario = await obtenerUsuarioSesion();
+  if (usuario) {
+    redirect("/panel");
+  }
+
   return (
     <main className={styles.screen}>
       <section className={styles.poster}>

@@ -31,4 +31,13 @@ model Usuario {
   rol            Rol          @default(USUARIO)
   estado         EstadoCuenta @default(PENDIENTE)
   creadoEn       DateTime     @default(now())
+  sesiones       Sesion[]
+}
+
+model Sesion {
+  id          String   @id
+  usuarioId   String
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  creadaEn    DateTime @default(now())
+  expiraEn    DateTime
 }

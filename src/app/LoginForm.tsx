@@ -1,19 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
+import { iniciarSesion, type ResultadoFormulario } from "./actions";
 import styles from "./page.module.css";
 
-export function LoginForm() {
-  const [aviso, setAviso] = useState<string | null>(null);
+const estadoInicial: ResultadoFormulario = null;
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setAviso("El acceso todavía no está conectado. Es el siguiente paso.");
-  }
+export function LoginForm() {
+  const [estado, formAction, enviando] = useActionState(iniciarSesion, estadoInicial);
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form className={styles.form} action={formAction}>
       <div className={styles.field}>
         <label htmlFor="nombreUsuario">Nombre de usuario</label>
         <input id="nombreUsuario" name="nombreUsuario" type="text" autoComplete="username" required />
@@ -22,10 +20,10 @@ export function LoginForm() {
         <label htmlFor="password">Contraseña</label>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
-      <button type="submit" className={styles.submit}>
-        Entrar
+      <button type="submit" className={styles.submit} disabled={enviando}>
+        {enviando ? "Entrando…" : "Entrar"}
       </button>
-      {aviso && <p className={styles.aviso}>{aviso}</p>}
+      {estado && "error" in estado && <p className={styles.aviso}>{estado.error}</p>}
       <p className={styles.registroLink}>
         ¿No tienes cuenta? <Link href="/registro">Regístrate</Link>
       </p>
