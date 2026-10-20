@@ -1,0 +1,19 @@
+INICIO
+
+1. Copia la carpeta completa `pena-claude-code-starter` dentro de una carpeta nueva que será la raíz de tu proyecto, por ejemplo `~/Documents/pena-futbol/`.
+2. Abre Claude Code desde esa carpeta raíz. El archivo `CLAUDE.md` debe quedar directamente dentro de la raíz del proyecto.
+3. Comprueba que Claude Code cargó las instrucciones con `/memory`.
+4. Pega el contenido de `primer-mensaje.txt` como primer mensaje.
+5. No hay todavía código ni una tecnología elegida: primero define producto y arquitectura; después se inicializa la aplicación.
+
+La estructura final debe verse así:
+
+pena-futbol/
+├── CLAUDE.md
+├── INICIO.txt
+├── primer-mensaje.txt
+└── docs/
+    ├── decisiones-pendientes.md
+    ├── diseno.md
+    ├── producto.md
+    └── publicacion.md

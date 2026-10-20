@@ -1,0 +1,10 @@
+Lee las instrucciones de `CLAUDE.md` y todos los documentos de `docs/`.
+
+Antes de programar:
+1. Resume el producto y la dirección visual que entendiste.
+2. Separa requisitos confirmados de decisiones pendientes.
+3. Hazme preguntas priorizadas, agrupadas y fáciles de responder. Empieza por formato y asistencia, aprobación de usuarios y reglas para generar equipos.
+4. Recomienda una arquitectura sencilla para una webapp privada de una peña pequeña, con costes recurrentes aproximados y nivel de mantenimiento. Los precios cambian: indica qué habría que verificar antes de contratar.
+5. Propón un plan por etapas para la primera versión y su publicación.
+
+No inicialices el framework ni escribas código todavía. Espera a que acordemos las decisiones principales y el primer alcance. Recuerda: login cinematográfico según `docs/diseno.md`; resto de pantallas ligero y funcional.
