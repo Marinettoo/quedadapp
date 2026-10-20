@@ -1,6 +1,7 @@
 export type JugadorGen = {
-  usuarioId: string;
-  nombreUsuario: string;
+  tipo: "USUARIO" | "INVITADO";
+  id: string;
+  nombre: string;
   estrellas: number;
 };
 

@@ -26,20 +26,51 @@ export async function generarEquiposPartido(formData: FormData) {
     include: { usuario: { select: { id: true, nombreUsuario: true } } },
     orderBy: { apuntadoEn: "asc" },
   });
+  const invitados = await prisma.invitado.findMany({
+    where: { partidoId },
+    orderBy: { creadoEn: "asc" },
+  });
 
-  if (asistencias.length < 2) {
+  if (asistencias.length + invitados.length < 2) {
     throw new Error("Hacen falta al menos 2 jugadores apuntados para generar equipos.");
   }
 
   const promedios = await promediosEstrellas(asistencias.map((a) => a.usuarioId));
 
-  const jugadores: JugadorGen[] = asistencias.map((a) => ({
-    usuarioId: a.usuarioId,
-    nombreUsuario: a.usuario.nombreUsuario,
-    estrellas: promedios[a.usuarioId],
-  }));
+  type Fechado = { fecha: Date; jugador: JugadorGen };
+  const combinados: Fechado[] = [
+    ...asistencias.map((a) => ({
+      fecha: a.apuntadoEn,
+      jugador: {
+        tipo: "USUARIO" as const,
+        id: a.usuarioId,
+        nombre: a.usuario.nombreUsuario,
+        estrellas: promedios[a.usuarioId],
+      },
+    })),
+    ...invitados.map((i) => ({
+      fecha: i.creadoEn,
+      jugador: {
+        tipo: "INVITADO" as const,
+        id: i.id,
+        nombre: `${i.nombre} (invitado)`,
+        estrellas: i.estrellas,
+      },
+    })),
+  ];
+  combinados.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
+  const jugadores: JugadorGen[] = combinados.map((c) => c.jugador);
 
   const resultado = generarEquipos(jugadores);
+
+  function datosAsignacion(j: JugadorGen, equipo: number) {
+    return {
+      generacionId: "",
+      equipo,
+      usuarioId: j.tipo === "USUARIO" ? j.id : null,
+      invitadoId: j.tipo === "INVITADO" ? j.id : null,
+    };
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.generacionEquipos.deleteMany({ where: { partidoId } });
@@ -49,12 +80,11 @@ export async function generarEquiposPartido(formData: FormData) {
 
     const asignaciones = [
       ...resultado.equipos.flatMap((equipo, indice) =>
-        equipo.map((j) => ({ generacionId: generacion.id, usuarioId: j.usuarioId, equipo: indice + 1 })),
+        equipo.map((j) => ({ ...datosAsignacion(j, indice + 1), generacionId: generacion.id })),
       ),
       ...resultado.listaEspera.map((j) => ({
+        ...datosAsignacion(j, 0),
         generacionId: generacion.id,
-        usuarioId: j.usuarioId,
-        equipo: 0,
       })),
     ];
 

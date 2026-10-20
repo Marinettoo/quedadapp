@@ -17,7 +17,11 @@ import {
   editarEnfrentamiento,
   eliminarEnfrentamiento,
 } from "../resultadosActions";
+import { agregarInvitado, quitarInvitado } from "../invitadosActions";
+import { establecerColorEquipo } from "../coloresActions";
 import { calcularTabla } from "@/lib/resultados";
+import { AccionBoton } from "@/components/AccionBoton";
+import { SelectorColor } from "@/components/SelectorColor";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -60,12 +64,17 @@ export default async function DetallePartido({
       generacion: {
         include: {
           asignaciones: {
-            include: { usuario: { select: { id: true, nombreUsuario: true } } },
+            include: {
+              usuario: { select: { id: true, nombreUsuario: true } },
+              invitado: { select: { id: true, nombre: true } },
+            },
           },
         },
       },
       pagos: true,
       enfrentamientos: { orderBy: { registradoEn: "asc" } },
+      invitados: { orderBy: { creadoEn: "asc" } },
+      coloresEquipo: true,
     },
   });
 
@@ -95,12 +104,28 @@ export default async function DetallePartido({
     : [];
   const listaEspera = generacion?.asignaciones.filter((a) => a.equipo === 0) ?? [];
 
+  const COLORES_POR_DEFECTO: Record<number, string> = { 1: "#000000", 2: "#ffffff", 3: "#757575" };
+  const coloresPorEquipo = new Map(partido.coloresEquipo.map((c) => [c.equipo, c.color]));
+  function colorDe(n: number) {
+    return coloresPorEquipo.get(n) ?? COLORES_POR_DEFECTO[n];
+  }
+
   const jugadoresQueJuegan = equipos.flat();
+
+  function nombreAsignacion(a: (typeof jugadoresQueJuegan)[number]) {
+    return a.usuario ? a.usuario.nombreUsuario : `${a.invitado!.nombre} (invitado)`;
+  }
+  function claveAsignacion(a: (typeof jugadoresQueJuegan)[number]) {
+    return a.usuario ? `u:${a.usuario.id}` : `i:${a.invitado!.id}`;
+  }
+
   const puedeVerPagos =
     usuario.rol === "ADMIN" ||
     partido.encargadoId === usuario.id ||
     asistenciasActivas.some((a) => a.usuarioId === usuario.id);
-  const pagosPorUsuario = new Map(partido.pagos.map((p) => [p.usuarioId, p]));
+  const pagosPorClave = new Map(
+    partido.pagos.map((p) => [p.usuarioId ? `u:${p.usuarioId}` : `i:${p.invitadoId}`, p]),
+  );
   const parteImporte =
     partido.importeTotal !== null && jugadoresQueJuegan.length > 0
       ? partido.importeTotal / jugadoresQueJuegan.length
@@ -132,17 +157,64 @@ export default async function DetallePartido({
       )}
 
       <section>
-        <h2 className={styles.subtitulo}>Apuntados ({asistenciasActivas.length})</h2>
-        {asistenciasActivas.length === 0 ? (
+        <h2 className={styles.subtitulo}>
+          Apuntados ({asistenciasActivas.length + partido.invitados.length})
+        </h2>
+        {asistenciasActivas.length === 0 && partido.invitados.length === 0 ? (
           <p className={styles.meta}>Todavía no se ha apuntado nadie.</p>
         ) : (
           <ul className={styles.lista}>
             {asistenciasActivas.map((a) => (
               <li key={a.id}>{a.usuario.nombreUsuario}</li>
             ))}
+            {partido.invitados.map((i) => (
+              <li key={i.id}>{i.nombre} (invitado)</li>
+            ))}
           </ul>
         )}
       </section>
+
+      {usuario.rol === "ADMIN" && (
+        <section>
+          <h2 className={styles.subtitulo}>Invitados</h2>
+          <p className={styles.meta}>
+            Jugadores sin cuenta en la app, solo para este partido. Su valoración la
+            pones tú y solo se usa aquí.
+          </p>
+          {partido.invitados.length > 0 && (
+            <ul className={styles.lista}>
+              {partido.invitados.map((i) => (
+                <li key={i.id} className={styles.pagoFila}>
+                  <span>
+                    {i.nombre} · {i.estrellas} ★
+                  </span>
+                  <form action={quitarInvitado}>
+                    <input type="hidden" name="partidoId" value={partido.id} />
+                    <input type="hidden" name="id" value={i.id} />
+                    <button type="submit" className={styles.pagoBotonSecundario}>
+                      Quitar
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form action={agregarInvitado} className={styles.resultadoForm}>
+            <input type="hidden" name="partidoId" value={partido.id} />
+            <input type="text" name="nombre" placeholder="Nombre del invitado" required />
+            <select name="estrellas" defaultValue="3" required>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n} ★
+                </option>
+              ))}
+            </select>
+            <button type="submit" className={styles.generar}>
+              Añadir invitado
+            </button>
+          </form>
+        </section>
+      )}
 
       {puedeGenerar && (
         <section>
@@ -169,10 +241,27 @@ export default async function DetallePartido({
           <div className={styles.equipos}>
             {equipos.map((equipo, i) => (
               <div key={i} className={styles.equipo}>
-                <h3 className={styles.equipoTitulo}>Equipo {i + 1}</h3>
+                <div className={styles.equipoCabecera}>
+                  <h3 className={styles.equipoTitulo}>Equipo {i + 1}</h3>
+                  {puedeGenerar ? (
+                    <SelectorColor
+                      accion={establecerColorEquipo}
+                      partidoId={partido.id}
+                      equipo={i + 1}
+                      colorInicial={colorDe(i + 1)}
+                      className={styles.colorInput}
+                    />
+                  ) : (
+                    <span
+                      className={styles.colorSwatch}
+                      style={{ backgroundColor: colorDe(i + 1) }}
+                      title={`Color del equipo ${i + 1}`}
+                    />
+                  )}
+                </div>
                 <ul className={styles.lista}>
                   {equipo.map((a) => (
-                    <li key={a.id}>{a.usuario.nombreUsuario}</li>
+                    <li key={a.id}>{nombreAsignacion(a)}</li>
                   ))}
                 </ul>
               </div>
@@ -183,7 +272,7 @@ export default async function DetallePartido({
               <h3 className={styles.equipoTitulo}>Lista de espera</h3>
               <ul className={styles.lista}>
                 {listaEspera.map((a) => (
-                  <li key={a.id}>{a.usuario.nombreUsuario}</li>
+                  <li key={a.id}>{nombreAsignacion(a)}</li>
                 ))}
               </ul>
             </div>
@@ -230,7 +319,10 @@ export default async function DetallePartido({
 
           <ul className={styles.lista}>
             {jugadoresQueJuegan.map((a) => {
-              const pago = pagosPorUsuario.get(a.usuarioId);
+              const clave = claveAsignacion(a);
+              const tipo = a.usuario ? "USUARIO" : "INVITADO";
+              const jugadorId = a.usuario ? a.usuario.id : a.invitado!.id;
+              const pago = pagosPorClave.get(clave);
               const estado = pago?.confirmadoEn
                 ? `Confirmado el ${formatearFecha(pago.confirmadoEn)}`
                 : pago?.indicadoEn
@@ -238,48 +330,50 @@ export default async function DetallePartido({
                   : "Pendiente de indicar";
 
               return (
-                <li key={a.usuarioId} className={styles.pagoFila}>
+                <li key={clave} className={styles.pagoFila}>
                   <div>
-                    <span className={styles.nombre}>{a.usuario.nombreUsuario}</span>
+                    <span className={styles.nombre}>{nombreAsignacion(a)}</span>
                     <span className={styles.meta}> · {estado}</span>
                   </div>
                   <div className={styles.pagoAcciones}>
-                    {a.usuarioId === usuario.id &&
+                    {a.usuario?.id === usuario.id &&
                       (!pago?.confirmadoEn ? (
                         !pago?.indicadoEn ? (
-                          <form action={indicarPago}>
-                            <input type="hidden" name="partidoId" value={partido.id} />
-                            <button type="submit" className={styles.pagoBoton}>
-                              He pagado
-                            </button>
-                          </form>
+                          <AccionBoton
+                            accion={indicarPago}
+                            campos={{ partidoId: partido.id }}
+                            className={styles.pagoBoton}
+                          >
+                            He pagado
+                          </AccionBoton>
                         ) : (
-                          <form action={deshacerIndicacion}>
-                            <input type="hidden" name="partidoId" value={partido.id} />
-                            <button type="submit" className={styles.pagoBotonSecundario}>
-                              Deshacer
-                            </button>
-                          </form>
+                          <AccionBoton
+                            accion={deshacerIndicacion}
+                            campos={{ partidoId: partido.id }}
+                            className={styles.pagoBotonSecundario}
+                          >
+                            Deshacer
+                          </AccionBoton>
                         )
                       ) : null)}
 
                     {puedeGenerar &&
                       (!pago?.confirmadoEn ? (
-                        <form action={confirmarPago}>
-                          <input type="hidden" name="partidoId" value={partido.id} />
-                          <input type="hidden" name="usuarioId" value={a.usuarioId} />
-                          <button type="submit" className={styles.pagoBoton}>
-                            Confirmar
-                          </button>
-                        </form>
+                        <AccionBoton
+                          accion={confirmarPago}
+                          campos={{ partidoId: partido.id, jugadorId, tipo }}
+                          className={styles.pagoBoton}
+                        >
+                          Confirmar
+                        </AccionBoton>
                       ) : (
-                        <form action={corregirConfirmacion}>
-                          <input type="hidden" name="partidoId" value={partido.id} />
-                          <input type="hidden" name="usuarioId" value={a.usuarioId} />
-                          <button type="submit" className={styles.pagoBotonSecundario}>
-                            Corregir
-                          </button>
-                        </form>
+                        <AccionBoton
+                          accion={corregirConfirmacion}
+                          campos={{ partidoId: partido.id, jugadorId, tipo }}
+                          className={styles.pagoBotonSecundario}
+                        >
+                          Corregir
+                        </AccionBoton>
                       ))}
                   </div>
                 </li>

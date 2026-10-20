@@ -42,6 +42,7 @@ model Usuario {
   pagos                Pago[]              @relation("PagosDelJugador")
   pagosConfirmados     Pago[]              @relation("PagosConfirmadosPor")
   enfrentamientos      Enfrentamiento[]
+  invitadosAnadidos    Invitado[]
 }
 
 model Sesion {
@@ -67,6 +68,32 @@ model Partido {
   importeTotal  Float?
   pagos         Pago[]
   enfrentamientos Enfrentamiento[]
+  invitados     Invitado[]
+  coloresEquipo ColorEquipo[]
+}
+
+model ColorEquipo {
+  id        String  @id @default(cuid())
+  partidoId String
+  partido   Partido @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  equipo    Int
+  color     String
+
+  @@unique([partidoId, equipo])
+}
+
+model Invitado {
+  id           String             @id @default(cuid())
+  partidoId    String
+  partido      Partido            @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  nombre       String
+  // valoración puesta directamente por quien lo añade, solo para este partido
+  estrellas    Int
+  anadidoPorId String
+  anadidoPor   Usuario            @relation(fields: [anadidoPorId], references: [id])
+  creadoEn     DateTime           @default(now())
+  asignaciones AsignacionEquipo[]
+  pagos        Pago[]
 }
 
 model Asistencia {
@@ -115,8 +142,11 @@ model AsignacionEquipo {
   id           String            @id @default(cuid())
   generacionId String
   generacion   GeneracionEquipos @relation(fields: [generacionId], references: [id], onDelete: Cascade)
-  usuarioId    String
-  usuario      Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  // exactamente uno de los dos: jugador registrado o invitado
+  usuarioId    String?
+  usuario      Usuario?          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  invitadoId   String?
+  invitado     Invitado?         @relation(fields: [invitadoId], references: [id], onDelete: Cascade)
   // 0 = lista de espera; 1, 2 (y 3 en triangular) = número de equipo
   equipo       Int
 }
@@ -140,8 +170,11 @@ model Pago {
   id              String    @id @default(cuid())
   partidoId       String
   partido         Partido   @relation(fields: [partidoId], references: [id], onDelete: Cascade)
-  usuarioId       String
-  usuario         Usuario   @relation("PagosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  // exactamente uno de los dos: jugador registrado o invitado
+  usuarioId       String?
+  usuario         Usuario?  @relation("PagosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  invitadoId      String?
+  invitado        Invitado? @relation(fields: [invitadoId], references: [id], onDelete: Cascade)
   indicadoEn      DateTime?
   confirmadoEn    DateTime?
   confirmadoPorId String?
@@ -149,4 +182,5 @@ model Pago {
   creadoEn        DateTime  @default(now())
 
   @@unique([partidoId, usuarioId])
+  @@unique([partidoId, invitadoId])
 }

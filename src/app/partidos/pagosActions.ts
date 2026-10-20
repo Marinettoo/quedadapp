@@ -23,9 +23,13 @@ async function exigirEncargadoOAdmin(partidoId: string, usuario: { id: string; r
   return partido;
 }
 
-async function jugadorEnEquipo(partidoId: string, usuarioId: string) {
+async function jugadorEnEquipo(partidoId: string, tipo: "USUARIO" | "INVITADO", id: string) {
   const asignacion = await prisma.asignacionEquipo.findFirst({
-    where: { usuarioId, equipo: { gt: 0 }, generacion: { partidoId } },
+    where: {
+      equipo: { gt: 0 },
+      generacion: { partidoId },
+      ...(tipo === "USUARIO" ? { usuarioId: id } : { invitadoId: id }),
+    },
   });
   return asignacion !== null;
 }
@@ -48,7 +52,7 @@ export async function indicarPago(formData: FormData) {
   const usuario = await exigirUsuarioAprobado();
   const partidoId = String(formData.get("partidoId"));
 
-  if (!(await jugadorEnEquipo(partidoId, usuario.id))) {
+  if (!(await jugadorEnEquipo(partidoId, "USUARIO", usuario.id))) {
     throw new Error("Solo pueden indicar el pago quienes están asignados a un equipo.");
   }
 
@@ -76,19 +80,26 @@ export async function deshacerIndicacion(formData: FormData) {
 export async function confirmarPago(formData: FormData) {
   const usuario = await exigirUsuarioAprobado();
   const partidoId = String(formData.get("partidoId"));
-  const objetivoId = String(formData.get("usuarioId"));
+  const objetivoId = String(formData.get("jugadorId"));
+  const tipo = String(formData.get("tipo")) === "INVITADO" ? "INVITADO" : "USUARIO";
   await exigirEncargadoOAdmin(partidoId, usuario);
 
-  if (!(await jugadorEnEquipo(partidoId, objetivoId))) {
+  if (!(await jugadorEnEquipo(partidoId, tipo, objetivoId))) {
     throw new Error("Ese jugador no está asignado a un equipo en este partido.");
   }
 
+  const clave =
+    tipo === "USUARIO"
+      ? { partidoId_usuarioId: { partidoId, usuarioId: objetivoId } }
+      : { partidoId_invitadoId: { partidoId, invitadoId: objetivoId } };
+  const datosBase = tipo === "USUARIO" ? { usuarioId: objetivoId } : { invitadoId: objetivoId };
+
   await prisma.pago.upsert({
-    where: { partidoId_usuarioId: { partidoId, usuarioId: objetivoId } },
+    where: clave,
     update: { confirmadoEn: new Date(), confirmadoPorId: usuario.id },
     create: {
       partidoId,
-      usuarioId: objetivoId,
+      ...datosBase,
       indicadoEn: new Date(),
       confirmadoEn: new Date(),
       confirmadoPorId: usuario.id,
@@ -97,7 +108,7 @@ export async function confirmarPago(formData: FormData) {
 
   // Si ya existía pero sin indicar, lo marcamos también como indicado.
   await prisma.pago.updateMany({
-    where: { partidoId, usuarioId: objetivoId, indicadoEn: null },
+    where: { partidoId, ...datosBase, indicadoEn: null },
     data: { indicadoEn: new Date() },
   });
 
@@ -107,11 +118,14 @@ export async function confirmarPago(formData: FormData) {
 export async function corregirConfirmacion(formData: FormData) {
   const usuario = await exigirUsuarioAprobado();
   const partidoId = String(formData.get("partidoId"));
-  const objetivoId = String(formData.get("usuarioId"));
+  const objetivoId = String(formData.get("jugadorId"));
+  const tipo = String(formData.get("tipo")) === "INVITADO" ? "INVITADO" : "USUARIO";
   await exigirEncargadoOAdmin(partidoId, usuario);
 
+  const datosBase = tipo === "USUARIO" ? { usuarioId: objetivoId } : { invitadoId: objetivoId };
+
   await prisma.pago.updateMany({
-    where: { partidoId, usuarioId: objetivoId },
+    where: { partidoId, ...datosBase },
     data: { confirmadoEn: null, confirmadoPorId: null },
   });
 
