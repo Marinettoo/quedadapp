@@ -48,3 +48,7 @@ next-env.d.ts
 /dev.db-journal
 /prisma/*.db
 /prisma/*.db-journal
+
+# datos y copias de seguridad del servidor (Docker)
+/data
+/backups
