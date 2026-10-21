@@ -16,6 +16,7 @@ const ENLACES_BASE = [
   { href: "/panel", etiqueta: "Inicio" },
   { href: "/jugadores", etiqueta: "Jugadores" },
   { href: "/historial", etiqueta: "Historial" },
+  { href: "/estadisticas", etiqueta: "Estadísticas" },
   { href: "/bote", etiqueta: "Bote" },
 ];
 

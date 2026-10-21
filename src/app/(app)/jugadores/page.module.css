@@ -7,6 +7,21 @@
   gap: 24px;
 }
 
+.tuValoracion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 16px 20px;
+  background: var(--surface);
+}
+
+.aviso {
+  font-size: 12px;
+  color: var(--meta);
+}
+
 .lista {
   list-style: none;
   display: flex;
@@ -56,13 +71,13 @@
 }
 
 .estrellaLlena {
-  color: var(--ink);
+  color: #f2b705;
 }
 
 .estrellaVacia {
-  color: var(--border);
+  color: #9ca3af;
 }
 
 .estrellaVacia:hover {
-  color: var(--meta);
+  color: #f2b705;
 }

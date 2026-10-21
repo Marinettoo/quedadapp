@@ -273,6 +273,31 @@
   text-align: center;
 }
 
+.golesJugadores {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.golesJugadores summary {
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.golesLista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.golJugadorFila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .resultadoFinal {
   display: flex;
   flex-direction: column;

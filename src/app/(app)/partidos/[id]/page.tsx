@@ -78,7 +78,10 @@ export default async function DetallePartido({
         },
       },
       pagos: true,
-      enfrentamientos: { orderBy: { registradoEn: "asc" } },
+      enfrentamientos: {
+        orderBy: { registradoEn: "asc" },
+        include: { goles: true },
+      },
       invitados: { orderBy: { creadoEn: "asc" } },
       coloresEquipo: true,
       apuestas: {
@@ -132,6 +135,48 @@ export default async function DetallePartido({
   }
   function claveAsignacion(a: (typeof jugadoresQueJuegan)[number]) {
     return a.usuario ? `u:${a.usuario.id}` : `i:${a.invitado!.id}`;
+  }
+
+  type GolesDeEnfrentamiento = {
+    goles: { usuarioId: string | null; invitadoId: string | null; goles: number }[];
+  };
+  function golesExistentes(enfrentamiento?: GolesDeEnfrentamiento) {
+    const mapa = new Map<string, number>();
+    enfrentamiento?.goles.forEach((g) => {
+      const clave = g.usuarioId ? `u:${g.usuarioId}` : `i:${g.invitadoId}`;
+      mapa.set(clave, g.goles);
+    });
+    return mapa;
+  }
+
+  function renderCamposGoles(golesPrevios?: Map<string, number>) {
+    if (jugadoresQueJuegan.length === 0) {
+      return null;
+    }
+    return (
+      <details className={styles.golesJugadores}>
+        <summary>Goles por jugador (opcional)</summary>
+        <div className={styles.golesLista}>
+          {jugadoresQueJuegan.map((a) => {
+            const clave = claveAsignacion(a);
+            const nombreCampo = a.usuario ? `golU_${a.usuario.id}` : `golI_${a.invitado!.id}`;
+            const valorPrevio = golesPrevios?.get(clave) ?? 0;
+            return (
+              <label key={clave} className={styles.golJugadorFila}>
+                <span>{nombreAsignacion(a)}</span>
+                <input
+                  type="number"
+                  name={nombreCampo}
+                  min={0}
+                  defaultValue={valorPrevio}
+                  className={styles.golesInput}
+                />
+              </label>
+            );
+          })}
+        </div>
+      </details>
+    );
   }
 
   const puedeVerPagos =
@@ -481,6 +526,7 @@ export default async function DetallePartido({
                       </option>
                     ))}
                   </select>
+                  {renderCamposGoles()}
                   <button type="submit" className={styles.generar}>
                     Añadir
                   </button>
@@ -498,6 +544,7 @@ export default async function DetallePartido({
                 <span>-</span>
                 <input type="number" name="golesVisitante" min={0} defaultValue={0} required className={styles.golesInput} />
                 <span>Equipo 2</span>
+                {renderCamposGoles()}
                 <button type="submit" className={styles.generar}>
                   Guardar resultado
                 </button>
@@ -531,6 +578,7 @@ export default async function DetallePartido({
                     required
                     className={styles.golesInput}
                   />
+                  {renderCamposGoles(golesExistentes(resultadoDosEquipos))}
                   <button type="submit" className={styles.pagoBotonSecundario}>
                     Corregir
                   </button>

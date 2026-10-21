@@ -18,13 +18,18 @@ export default async function Jugadores() {
     where: { estado: "APROBADA", id: { not: usuario.id } },
     orderBy: { nombreUsuario: "asc" },
     include: {
-      valoracionesRecibidas: { select: { estrellas: true } },
-      valoracionesHechas: {
-        where: { autorId: usuario.id },
-        select: { valoradoId: true, estrellas: true },
-      },
+      valoracionesRecibidas: { select: { estrellas: true, autorId: true } },
     },
   });
+
+  const miValoracion = await prisma.valoracion.findMany({
+    where: { valoradoId: usuario.id },
+    select: { estrellas: true },
+  });
+  const miMedia =
+    miValoracion.length === 0
+      ? null
+      : miValoracion.reduce((s, v) => s + v.estrellas, 0) / miValoracion.length;
 
   return (
     <main className={styles.screen}>
@@ -33,6 +38,16 @@ export default async function Jugadores() {
         subtitulo="De 1 a 5 estrellas, anónimo: solo se ve la media de los votos."
       />
 
+      <div className={styles.tuValoracion}>
+        <span className={styles.nombre}>Tu valoración</span>
+        <span className={styles.media}>
+          {miMedia === null
+            ? "Todavía no tienes valoraciones"
+            : `${miMedia.toFixed(1)} ★ (${miValoracion.length} ${miValoracion.length === 1 ? "voto" : "votos"})`}
+        </span>
+        <span className={styles.aviso}>No puedes valorarte a ti mismo.</span>
+      </div>
+
       <ul className={styles.lista}>
         {jugadores.map((j) => {
           const cuenta = j.valoracionesRecibidas.length;
@@ -40,7 +55,8 @@ export default async function Jugadores() {
             cuenta === 0
               ? null
               : j.valoracionesRecibidas.reduce((s, v) => s + v.estrellas, 0) / cuenta;
-          const tuValoracion = j.valoracionesHechas[0]?.estrellas ?? 0;
+          const tuValoracion =
+            j.valoracionesRecibidas.find((v) => v.autorId === usuario.id)?.estrellas ?? 0;
 
           return (
             <li key={j.id} className={styles.item}>

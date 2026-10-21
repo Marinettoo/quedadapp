@@ -37,6 +37,51 @@ function leerGoles(formData: FormData, campo: string) {
   return valor;
 }
 
+// Goles por jugador: opcionales. Los campos del formulario llevan el
+// prefijo golU_<usuarioId> o golI_<invitadoId>; si vienen a 0 o vacíos no
+// se atribuyen a nadie, pero el resultado del equipo cuenta igual.
+async function guardarGolesJugadores(enfrentamientoId: string, formData: FormData) {
+  for (const [campo, valor] of formData.entries()) {
+    let usuarioId: string | undefined;
+    let invitadoId: string | undefined;
+    if (campo.startsWith("golU_")) {
+      usuarioId = campo.slice("golU_".length);
+    } else if (campo.startsWith("golI_")) {
+      invitadoId = campo.slice("golI_".length);
+    } else {
+      continue;
+    }
+
+    const goles = Number(valor);
+    if (!Number.isInteger(goles) || goles < 0) {
+      continue;
+    }
+
+    if (goles === 0) {
+      await prisma.golJugador.deleteMany({
+        where: usuarioId
+          ? { enfrentamientoId, usuarioId }
+          : { enfrentamientoId, invitadoId },
+      });
+      continue;
+    }
+
+    if (usuarioId) {
+      await prisma.golJugador.upsert({
+        where: { enfrentamientoId_usuarioId: { enfrentamientoId, usuarioId } },
+        create: { enfrentamientoId, usuarioId, goles },
+        update: { goles },
+      });
+    } else if (invitadoId) {
+      await prisma.golJugador.upsert({
+        where: { enfrentamientoId_invitadoId: { enfrentamientoId, invitadoId } },
+        create: { enfrentamientoId, invitadoId, goles },
+        update: { goles },
+      });
+    }
+  }
+}
+
 export async function agregarEnfrentamiento(formData: FormData) {
   const partidoId = String(formData.get("partidoId"));
   const { usuario, partido } = await exigirEncargadoOAdmin(partidoId);
@@ -66,7 +111,7 @@ export async function agregarEnfrentamiento(formData: FormData) {
     }
   }
 
-  await prisma.enfrentamiento.create({
+  const enfrentamiento = await prisma.enfrentamiento.create({
     data: {
       partidoId,
       equipoLocal,
@@ -77,7 +122,10 @@ export async function agregarEnfrentamiento(formData: FormData) {
     },
   });
 
+  await guardarGolesJugadores(enfrentamiento.id, formData);
+
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath("/estadisticas");
 }
 
 export async function editarEnfrentamiento(formData: FormData) {
@@ -93,7 +141,10 @@ export async function editarEnfrentamiento(formData: FormData) {
     data: { golesLocal, golesVisitante },
   });
 
+  await guardarGolesJugadores(id, formData);
+
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath("/estadisticas");
 }
 
 export async function eliminarEnfrentamiento(formData: FormData) {
@@ -104,4 +155,5 @@ export async function eliminarEnfrentamiento(formData: FormData) {
   await prisma.enfrentamiento.delete({ where: { id } });
 
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath("/estadisticas");
 }

@@ -46,6 +46,7 @@ model Usuario {
   apuestasCreadas      Apuesta[]
   pronosticos          Pronostico[]        @relation("PronosticosDelJugador")
   aportesConfirmados   Pronostico[]        @relation("AportacionesConfirmadas")
+  goles                GolJugador[]
 }
 
 model Sesion {
@@ -138,6 +139,7 @@ model Invitado {
   creadoEn     DateTime           @default(now())
   asignaciones AsignacionEquipo[]
   pagos        Pago[]
+  goles        GolJugador[]
 }
 
 model Asistencia {
@@ -208,6 +210,23 @@ model Enfrentamiento {
   registradoPorId String
   registradoPor   Usuario  @relation(fields: [registradoPorId], references: [id])
   actualizadoEn   DateTime @updatedAt
+  goles           GolJugador[]
+}
+
+// Goles individuales anotados en un enfrentamiento concreto. Opcional: si no
+// se rellena, el resultado del equipo cuenta igual pero no se atribuye a nadie.
+model GolJugador {
+  id               String         @id @default(cuid())
+  enfrentamientoId String
+  enfrentamiento   Enfrentamiento @relation(fields: [enfrentamientoId], references: [id], onDelete: Cascade)
+  usuarioId        String?
+  usuario          Usuario?       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  invitadoId       String?
+  invitado         Invitado?      @relation(fields: [invitadoId], references: [id], onDelete: Cascade)
+  goles            Int
+
+  @@unique([enfrentamientoId, usuarioId])
+  @@unique([enfrentamientoId, invitadoId])
 }
 
 model Pago {
