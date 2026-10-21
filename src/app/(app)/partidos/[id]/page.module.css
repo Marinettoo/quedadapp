@@ -450,6 +450,31 @@
   color: #000000;
 }
 
+.apuestaForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.apuestaCantidadLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.apuestaCantidadInput {
+  width: 90px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
 .apuestaOpciones {
   display: flex;
   gap: 8px;

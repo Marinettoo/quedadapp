@@ -98,18 +98,24 @@ model Apuesta {
 }
 
 model Pronostico {
-  id                    String    @id @default(cuid())
-  apuestaId             String
-  apuesta               Apuesta   @relation(fields: [apuestaId], references: [id], onDelete: Cascade)
-  usuarioId             String
-  usuario               Usuario   @relation("PronosticosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
-  respuesta             String
-  creadoEn              DateTime  @default(now())
+  id        String  @id @default(cuid())
+  apuestaId String
+  apuesta   Apuesta @relation(fields: [apuestaId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   Usuario @relation("PronosticosDelJugador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  respuesta String
+  // cantidad que esta persona decide apostar, aparte de la cuota fija
+  // de la apuesta (Apuesta.cuota).
+  cantidad  Float
+  creadoEn  DateTime @default(now())
   // null hasta que se resuelve la apuesta
   acierto               Boolean?
-  // importe que debe aportar al bote: la cuota si acertó, cuota + importe
-  // si falló. Se calcula y se fija al resolver la apuesta.
+  // importe que debe aportar al bote: la cuota si acertó, cuota +
+  // cantidad si falló (pierde lo apostado). Se fija al resolver.
   importeDebido         Float?
+  // si acertó, lo que gana: la mitad de lo apostado (no el doble).
+  // Se fija al resolver; no aplica si falló.
+  importeGanado         Float?
   indicadoAporteEn      DateTime?
   confirmadoAporteEn    DateTime?
   confirmadoAportePorId String?

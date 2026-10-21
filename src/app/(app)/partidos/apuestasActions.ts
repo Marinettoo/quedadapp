@@ -65,9 +65,13 @@ export async function pronosticar(formData: FormData) {
   const apuestaId = String(formData.get("apuestaId"));
   const partidoId = String(formData.get("partidoId"));
   const respuesta = String(formData.get("respuesta") ?? "");
+  const cantidad = Number(formData.get("cantidad"));
 
   if (!esRespuestaValida(respuesta)) {
     throw new Error("Elige victoria, empate o derrota.");
+  }
+  if (!Number.isFinite(cantidad) || cantidad <= 0) {
+    throw new Error("Indica cuánto quieres apostar.");
   }
 
   const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
@@ -77,8 +81,8 @@ export async function pronosticar(formData: FormData) {
 
   await prisma.pronostico.upsert({
     where: { apuestaId_usuarioId: { apuestaId, usuarioId: usuario.id } },
-    update: { respuesta },
-    create: { apuestaId, usuarioId: usuario.id, respuesta },
+    update: { respuesta, cantidad },
+    create: { apuestaId, usuarioId: usuario.id, respuesta, cantidad },
   });
 
   revalidatePath(`/partidos/${partidoId}`);
@@ -124,26 +128,32 @@ export async function resolverApuesta(formData: FormData) {
     }),
     ...apuesta.pronosticos.map((p) => {
       const acierto = p.respuesta === resultado;
-      // La cuota de 0.20 € es obligatoria para todos, acierten o fallen.
+      // La cuota de 0.20 € es obligatoria para todos, acierten o fallen,
+      // y no cuenta como premio. Si falla, además pierde lo apostado. Si
+      // acierta, gana la mitad de lo apostado (no el doble).
       return prisma.pronostico.update({
         where: { id: p.id },
-        data: { acierto, importeDebido: apuesta.cuota },
+        data: {
+          acierto,
+          importeDebido: acierto ? apuesta.cuota : apuesta.cuota + p.cantidad,
+          importeGanado: acierto ? p.cantidad / 2 : null,
+        },
       });
     }),
   ]);
 
   await Promise.all(
-    apuesta.pronosticos.map((p) =>
-      crearNotificacion({
+    apuesta.pronosticos.map((p) => {
+      const acierto = p.respuesta === resultado;
+      return crearNotificacion({
         usuarioId: p.usuarioId,
         tipo: "RESULTADO_APUESTA",
-        mensaje:
-          p.respuesta === resultado
-            ? "Acertaste tu apuesta. Debes 0.20 € al bote, como todos."
-            : "Fallaste tu apuesta. Debes 0.20 € al bote.",
+        mensaje: acierto
+          ? `Acertaste tu apuesta: ganas ${(p.cantidad / 2).toFixed(2)} €. Debes 0.20 € al bote, como todos.`
+          : `Fallaste tu apuesta: debes ${(apuesta.cuota + p.cantidad).toFixed(2)} € al bote.`,
         enlace: `/partidos/${partidoId}/apuestas`,
-      }),
-    ),
+      });
+    }),
   );
 
   revalidatePath(`/partidos/${partidoId}`);

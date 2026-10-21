@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { AccionBoton } from "@/components/AccionBoton";
 import {
   crearApuesta,
@@ -28,8 +28,10 @@ type Pronostico = {
   id: string;
   usuarioId: string;
   respuesta: string;
+  cantidad: number;
   acierto: boolean | null;
   importeDebido: number | null;
+  importeGanado: number | null;
   indicadoAporteEn: Date | null;
   confirmadoAporteEn: Date | null;
   usuario: { id: string; nombreUsuario: string };
@@ -62,8 +64,10 @@ export function Apuestas({
     <section>
       <h2 className={styles.subtitulo}>Apuestas de la peña</h2>
       <p className={styles.meta}>
-        Victoria Equipo 1, empate o victoria Equipo 2. Participar cuesta 0.20 €, aciertes o
-        falles, y va al bote. Se puede apostar o retirar hasta 30 minutos antes del partido.
+        Victoria Equipo 1, empate o victoria Equipo 2, apostando lo que quieras. Hay que añadir
+        siempre 0.20 € aparte (no cuenta como premio) que van al bote. Si aciertas, ganas la
+        mitad de lo apostado; si fallas, lo pierdes entero. Se puede apostar o retirar hasta 30
+        minutos antes del partido.
       </p>
 
       {!permiteApuestas ? (
@@ -115,6 +119,23 @@ function ApuestaItem({
   const [resolviendo, setResolviendo] = useState(false);
   const tuPronostico = apuesta.pronosticos.find((p) => p.usuarioId === usuarioId);
   const resuelta = apuesta.resultado !== null;
+  const [cantidad, setCantidad] = useState(tuPronostico ? String(tuPronostico.cantidad) : "");
+  const [pendiente, startTransition] = useTransition();
+
+  function apostar(respuesta: string) {
+    const valor = Number(cantidad);
+    if (!Number.isFinite(valor) || valor <= 0) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append("apuestaId", apuesta.id);
+    formData.append("partidoId", partidoId);
+    formData.append("respuesta", respuesta);
+    formData.append("cantidad", cantidad);
+    startTransition(() => {
+      pronosticar(formData);
+    });
+  }
 
   return (
     <div className={styles.apuestaCard}>
@@ -130,21 +151,36 @@ function ApuestaItem({
       ) : null}
 
       {!resuelta && abierto && (
-        <div className={styles.apuestaOpciones}>
-          {OPCIONES.map((o) => (
-            <AccionBoton
-              key={o.valor}
-              accion={pronosticar}
-              campos={{ apuestaId: apuesta.id, partidoId, respuesta: o.valor }}
-              className={
-                tuPronostico?.respuesta === o.valor
-                  ? styles.apuestaOpcionActiva
-                  : styles.apuestaOpcion
-              }
-            >
-              {o.etiqueta}
-            </AccionBoton>
-          ))}
+        <div className={styles.apuestaForm}>
+          <label className={styles.apuestaCantidadLabel}>
+            Cuánto apuestas
+            <input
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={cantidad}
+              onChange={(e) => setCantidad(e.target.value)}
+              placeholder="€"
+              className={styles.apuestaCantidadInput}
+            />
+          </label>
+          <div className={styles.apuestaOpciones}>
+            {OPCIONES.map((o) => (
+              <button
+                key={o.valor}
+                type="button"
+                disabled={pendiente}
+                onClick={() => apostar(o.valor)}
+                className={
+                  tuPronostico?.respuesta === o.valor
+                    ? styles.apuestaOpcionActiva
+                    : styles.apuestaOpcion
+                }
+              >
+                {o.etiqueta}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -166,8 +202,11 @@ function ApuestaItem({
                 <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
                 <span className={styles.meta}>
                   {" "}
-                  · {ETIQUETAS[p.respuesta] ?? p.respuesta}
+                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} · {p.cantidad.toFixed(2)} €
                   {resuelta && (p.acierto ? " ✓ acertó" : " ✗ falló")}
+                  {resuelta && p.acierto && p.importeGanado
+                    ? ` · gana ${p.importeGanado.toFixed(2)} €`
+                    : ""}
                   {resuelta && p.importeDebido ? ` · debe ${p.importeDebido.toFixed(2)} €` : ""}
                 </span>
               </div>
