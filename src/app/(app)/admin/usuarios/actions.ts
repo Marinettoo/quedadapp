@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
+import { identidadDeBaja } from "@/lib/usuarios";
 import type { ResultadoFormulario } from "@/app/actions";
 
 export async function cambiarRol(formData: FormData) {
@@ -129,9 +130,13 @@ export async function quitarUsuario(formData: FormData) {
   }
 
   // No se borra de verdad: muchos registros (partidos, pagos, resultados...)
-  // guardan quién los hizo. Se revoca el acceso y se cierran sus sesiones.
+  // guardan quién los hizo. Se revoca el acceso, se libera su nombre de
+  // usuario y email (ver src/lib/usuarios.ts), y se cierran sus sesiones.
   await prisma.$transaction([
-    prisma.usuario.update({ where: { id: usuarioId }, data: { estado: "RECHAZADA" } }),
+    prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { estado: "RECHAZADA", ...identidadDeBaja(usuarioId) },
+    }),
     prisma.sesion.deleteMany({ where: { usuarioId } }),
   ]);
 
