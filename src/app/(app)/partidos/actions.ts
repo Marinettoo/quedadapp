@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
-import { asistenciaAbierta } from "@/lib/partidos";
+import { asistenciaAbierta, fechaHoraMadrid } from "@/lib/partidos";
 import type { ResultadoFormulario } from "@/app/actions";
 
 async function exigirUsuarioAprobado() {
@@ -43,7 +43,7 @@ export async function crearPartido(
     return { error: "Las horas de antelación para cerrar asistencia no son válidas." };
   }
 
-  const fechaHora = new Date(`${fecha}T${hora}`);
+  const fechaHora = fechaHoraMadrid(fecha, hora);
   if (Number.isNaN(fechaHora.getTime())) {
     return { error: "La fecha u hora no son válidas." };
   }
@@ -100,7 +100,7 @@ export async function editarPartido(
     return { error: "Las horas de antelación para cerrar asistencia no son válidas." };
   }
 
-  const fechaHora = new Date(`${fecha}T${hora}`);
+  const fechaHora = fechaHoraMadrid(fecha, hora);
   if (Number.isNaN(fechaHora.getTime())) {
     return { error: "La fecha u hora no son válidas." };
   }
