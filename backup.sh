@@ -12,5 +12,6 @@ mkdir -p "$CARPETA_DESTINO"
 cp ./data/dev.db "$CARPETA_DESTINO/dev-$FECHA.db"
 echo "Copia guardada en $CARPETA_DESTINO/dev-$FECHA.db"
 
-# Conserva solo las últimas 14 copias para no llenar el disco.
-ls -1t "$CARPETA_DESTINO"/dev-*.db 2>/dev/null | tail -n +15 | xargs -r rm --
+# Conserva solo las últimas 3 copias; en cuanto hay una cuarta, borra
+# la más antigua.
+ls -1t "$CARPETA_DESTINO"/dev-*.db 2>/dev/null | tail -n +4 | xargs -r rm --
