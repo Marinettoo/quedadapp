@@ -87,6 +87,8 @@ export default async function DetallePartido({
   const cierre = cierreAsistencia(partido.fechaHora, partido.horasCierre);
   const yaApuntado = asistenciasActivas.some((a) => a.usuarioId === usuario.id);
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
+  // Confirmar pagos es solo cosa de quien reserva, aunque sea admin.
+  const puedeConfirmarPagos = partido.encargadoId === usuario.id;
 
   const generacion = partido.generacion;
   const numEquipos = generacion?.formato === "TRIANGULAR" ? 3 : 2;
@@ -122,28 +124,38 @@ export default async function DetallePartido({
       return null;
     }
     return (
-      <details className={styles.golesJugadores}>
-        <summary>Goles por jugador (opcional)</summary>
-        <div className={styles.golesLista}>
-          {jugadoresQueJuegan.map((a) => {
-            const clave = claveAsignacion(a);
-            const nombreCampo = a.usuario ? `golU_${a.usuario.id}` : `golI_${a.invitado!.id}`;
-            const valorPrevio = golesPrevios?.get(clave) ?? 0;
-            return (
-              <label key={clave} className={styles.golJugadorFila}>
-                <span>{nombreAsignacion(a)}</span>
-                <input
-                  type="number"
-                  name={nombreCampo}
-                  min={0}
-                  defaultValue={valorPrevio}
-                  className={styles.golesInput}
-                />
-              </label>
-            );
-          })}
-        </div>
-      </details>
+      <div className={styles.golesJugadores}>
+        <p className={styles.meta}>
+          El resultado se calcula con los goles de cada jugador. Deja a 0 quien no haya marcado.
+        </p>
+        {equipos.map((equipo, i) => {
+          if (equipo.length === 0) return null;
+          return (
+            <div key={i} className={styles.golesEquipo}>
+              <h4 className={styles.golesEquipoTitulo}>Equipo {i + 1}</h4>
+              <div className={styles.golesLista}>
+                {equipo.map((a) => {
+                  const clave = claveAsignacion(a);
+                  const nombreCampo = a.usuario ? `golU_${a.usuario.id}` : `golI_${a.invitado!.id}`;
+                  const valorPrevio = golesPrevios?.get(clave) ?? 0;
+                  return (
+                    <label key={clave} className={styles.golJugadorFila}>
+                      <span>{nombreAsignacion(a)}</span>
+                      <input
+                        type="number"
+                        name={nombreCampo}
+                        min={0}
+                        defaultValue={valorPrevio}
+                        className={styles.golesInput}
+                      />
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     );
   }
 
@@ -296,7 +308,7 @@ export default async function DetallePartido({
                         )
                       ) : null)}
 
-                    {puedeGenerar &&
+                    {puedeConfirmarPagos &&
                       (!pago?.confirmadoEn ? (
                         <AccionBoton
                           accion={confirmarPago}
@@ -389,9 +401,7 @@ export default async function DetallePartido({
                       </option>
                     ))}
                   </select>
-                  <input type="number" name="golesLocal" min={0} defaultValue={0} required className={styles.golesInput} />
-                  <span>-</span>
-                  <input type="number" name="golesVisitante" min={0} defaultValue={0} required className={styles.golesInput} />
+                  <span>contra</span>
                   <select name="equipoVisitante" defaultValue="2" required>
                     {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>
@@ -412,11 +422,6 @@ export default async function DetallePartido({
                 <input type="hidden" name="partidoId" value={partido.id} />
                 <input type="hidden" name="equipoLocal" value={1} />
                 <input type="hidden" name="equipoVisitante" value={2} />
-                <span>Equipo 1</span>
-                <input type="number" name="golesLocal" min={0} defaultValue={0} required className={styles.golesInput} />
-                <span>-</span>
-                <input type="number" name="golesVisitante" min={0} defaultValue={0} required className={styles.golesInput} />
-                <span>Equipo 2</span>
                 {renderCamposGoles()}
                 <button type="submit" className={styles.generar}>
                   Guardar resultado
@@ -434,23 +439,6 @@ export default async function DetallePartido({
                 <form action={editarEnfrentamiento} className={styles.resultadoForm}>
                   <input type="hidden" name="partidoId" value={partido.id} />
                   <input type="hidden" name="id" value={resultadoDosEquipos.id} />
-                  <input
-                    type="number"
-                    name="golesLocal"
-                    min={0}
-                    defaultValue={resultadoDosEquipos.golesLocal}
-                    required
-                    className={styles.golesInput}
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    name="golesVisitante"
-                    min={0}
-                    defaultValue={resultadoDosEquipos.golesVisitante}
-                    required
-                    className={styles.golesInput}
-                  />
                   {renderCamposGoles(golesExistentes(resultadoDosEquipos))}
                   <button type="submit" className={styles.pagoBotonSecundario}>
                     Corregir

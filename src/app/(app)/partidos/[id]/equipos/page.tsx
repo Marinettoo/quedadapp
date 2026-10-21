@@ -104,66 +104,6 @@ export default async function EquiposPartido({
 
       <SubnavPartido id={partido.id} activa="equipos" />
 
-      {usuario.rol === "ADMIN" && (
-        <section>
-          <h2 className={styles.subtitulo}>Invitados</h2>
-          <p className={styles.meta}>
-            Jugadores sin cuenta en la app, solo para este partido. Su valoración la
-            pones tú y solo se usa aquí.
-          </p>
-          {partido.invitados.length > 0 && (
-            <ul className={styles.lista}>
-              {partido.invitados.map((i) => (
-                <li key={i.id} className={styles.pagoFila}>
-                  <span>
-                    {i.nombre} · {i.estrellas} ★
-                  </span>
-                  <AccionBoton
-                    accion={quitarInvitado}
-                    campos={{ partidoId: partido.id, id: i.id }}
-                    className={styles.pagoBotonSecundario}
-                  >
-                    Quitar
-                  </AccionBoton>
-                </li>
-              ))}
-            </ul>
-          )}
-          <form action={agregarInvitado} className={styles.resultadoForm}>
-            <input type="hidden" name="partidoId" value={partido.id} />
-            <input type="text" name="nombre" placeholder="Nombre del invitado" required />
-            <select name="estrellas" defaultValue="3" required>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n} ★
-                </option>
-              ))}
-            </select>
-            <button type="submit" className={styles.generar}>
-              Añadir invitado
-            </button>
-          </form>
-        </section>
-      )}
-
-      {puedeGenerar && (
-        <section>
-          <h2 className={styles.subtitulo}>Generar equipos</h2>
-          {hayCambiosTrasGenerar && (
-            <p className={styles.aviso}>
-              Los apuntados han cambiado desde que se generaron los equipos. Puedes regenerarlos.
-            </p>
-          )}
-          <AccionBoton
-            accion={generarEquiposPartido}
-            campos={{ partidoId: partido.id }}
-            className={styles.generar}
-          >
-            {generacion ? "Regenerar equipos" : "Generar equipos"}
-          </AccionBoton>
-        </section>
-      )}
-
       {generacion ? (
         <section>
           <h2 className={styles.subtitulo}>Equipos</h2>
@@ -212,6 +152,72 @@ export default async function EquiposPartido({
         </section>
       ) : (
         !puedeGenerar && <p className={styles.meta}>Todavía no se han generado los equipos.</p>
+      )}
+
+      {puedeGenerar && (
+        <section>
+          <h2 className={styles.subtitulo}>Generar equipos</h2>
+          {hayCambiosTrasGenerar && (
+            <p className={styles.aviso}>
+              Los apuntados han cambiado desde que se generaron los equipos. Puedes regenerarlos.
+            </p>
+          )}
+          <AccionBoton
+            accion={generarEquiposPartido}
+            campos={{ partidoId: partido.id }}
+            className={styles.generar}
+          >
+            {generacion ? "Regenerar equipos" : "Generar equipos"}
+          </AccionBoton>
+        </section>
+      )}
+
+      {usuario.rol === "ADMIN" && (
+        <section>
+          <h2 className={styles.subtitulo}>Invitados</h2>
+          <p className={styles.meta}>
+            Jugadores sin cuenta en la app, solo para este partido. Su valoración la
+            pones tú y solo se usa aquí.
+          </p>
+          {partido.invitados.length > 0 && (
+            <ul className={styles.lista}>
+              {partido.invitados.map((i) => (
+                <li key={i.id} className={styles.pagoFila}>
+                  <span>
+                    {i.nombre} · {i.estrellas} ★
+                  </span>
+                  <AccionBoton
+                    accion={quitarInvitado}
+                    campos={{ partidoId: partido.id, id: i.id }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    Quitar
+                  </AccionBoton>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form action={agregarInvitado} className={styles.resultadoForm}>
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Nombre del invitado"
+              required
+              className={styles.invitadoInput}
+            />
+            <input type="hidden" name="partidoId" value={partido.id} />
+            <select name="estrellas" defaultValue="3" required>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n} ★
+                </option>
+              ))}
+            </select>
+            <button type="submit" className={styles.generar}>
+              Añadir invitado
+            </button>
+          </form>
+        </section>
       )}
     </main>
   );

@@ -23,6 +23,20 @@ async function exigirEncargadoOAdmin(partidoId: string, usuario: { id: string; r
   return partido;
 }
 
+// Confirmar un pago es cosa exclusiva de quien reserva, aunque sea un
+// administrador: un admin que no sea el encargado solo puede marcar su
+// propio "He pagado", igual que cualquier otro jugador.
+async function exigirEncargado(partidoId: string, usuario: { id: string }) {
+  const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
+  if (!partido) {
+    throw new Error("El partido no existe.");
+  }
+  if (partido.encargadoId !== usuario.id) {
+    throw new Error("Solo la persona encargada de la reserva puede confirmar pagos.");
+  }
+  return partido;
+}
+
 async function jugadorEnEquipo(partidoId: string, tipo: "USUARIO" | "INVITADO", id: string) {
   const asignacion = await prisma.asignacionEquipo.findFirst({
     where: {
@@ -82,7 +96,7 @@ export async function confirmarPago(formData: FormData) {
   const partidoId = String(formData.get("partidoId"));
   const objetivoId = String(formData.get("jugadorId"));
   const tipo = String(formData.get("tipo")) === "INVITADO" ? "INVITADO" : "USUARIO";
-  await exigirEncargadoOAdmin(partidoId, usuario);
+  await exigirEncargado(partidoId, usuario);
 
   if (!(await jugadorEnEquipo(partidoId, tipo, objetivoId))) {
     throw new Error("Ese jugador no está asignado a un equipo en este partido.");
@@ -120,7 +134,7 @@ export async function corregirConfirmacion(formData: FormData) {
   const partidoId = String(formData.get("partidoId"));
   const objetivoId = String(formData.get("jugadorId"));
   const tipo = String(formData.get("tipo")) === "INVITADO" ? "INVITADO" : "USUARIO";
-  await exigirEncargadoOAdmin(partidoId, usuario);
+  await exigirEncargado(partidoId, usuario);
 
   const datosBase = tipo === "USUARIO" ? { usuarioId: objetivoId } : { invitadoId: objetivoId };
 

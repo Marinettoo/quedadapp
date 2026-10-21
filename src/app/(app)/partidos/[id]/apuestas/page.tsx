@@ -39,6 +39,7 @@ export default async function ApuestasPartido({
     where: { id },
     include: {
       encargado: { select: { nombreUsuario: true } },
+      generacion: { select: { formato: true } },
       apuestas: {
         orderBy: { creadaEn: "asc" },
         include: {
@@ -57,6 +58,7 @@ export default async function ApuestasPartido({
 
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
   const abierto = asistenciaAbierta(partido.fechaHora, partido.horasCierre);
+  const permiteApuestas = partido.generacion?.formato === "DOS_EQUIPOS";
 
   return (
     <main className={styles.screen}>
@@ -73,6 +75,7 @@ export default async function ApuestasPartido({
         usuarioId={usuario.id}
         puedeGenerar={puedeGenerar}
         abierto={abierto}
+        permiteApuestas={permiteApuestas}
       />
     </main>
   );

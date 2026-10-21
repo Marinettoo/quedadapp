@@ -79,16 +79,13 @@ model Partido {
   apuestas      Apuesta[]
 }
 
+// Apuesta fija sobre el resultado de un partido a 2 equipos: victoria de
+// Equipo 1, empate o victoria de Equipo 2. Sin texto libre ni importe
+// configurable: participar cuesta siempre 0.20 €, acierte o falle cada uno.
 model Apuesta {
   id            String       @id @default(cuid())
   partidoId     String
   partido       Partido      @relation(fields: [partidoId], references: [id], onDelete: Cascade)
-  pregunta      String
-  // cantidad que se juega cada uno; es solo un registro informativo,
-  // la app nunca procesa ni mueve dinero real.
-  importe       Float
-  // cuota que aporta todo el que participa, acierte o falle, para que
-  // el bote crezca siempre que haya gente jugando.
   cuota         Float        @default(0.2)
   creadaPorId   String
   creadaPor     Usuario      @relation(fields: [creadaPorId], references: [id])

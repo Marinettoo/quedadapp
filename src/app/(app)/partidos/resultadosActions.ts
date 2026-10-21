@@ -11,7 +11,7 @@ async function exigirEncargadoOAdmin(partidoId: string) {
   }
   const partido = await prisma.partido.findUnique({
     where: { id: partidoId },
-    include: { generacion: true },
+    include: { generacion: { include: { asignaciones: true } } },
   });
   if (!partido) {
     throw new Error("El partido no existe.");
@@ -29,18 +29,25 @@ function numEquiposDe(formato: "TRIANGULAR" | "DOS_EQUIPOS") {
   return formato === "TRIANGULAR" ? 3 : 2;
 }
 
-function leerGoles(formData: FormData, campo: string) {
-  const valor = Number(formData.get(campo));
-  if (!Number.isInteger(valor) || valor < 0) {
-    throw new Error("Los goles deben ser un número entero igual o mayor que 0.");
+// El resultado se calcula siempre a partir de los goles de cada jugador:
+// no se puede escribir el marcador a mano. Los campos del formulario
+// llevan el prefijo golU_<usuarioId> o golI_<invitadoId>.
+async function guardarGolesYCalcularResultado(
+  enfrentamientoId: string,
+  equipoLocal: number,
+  equipoVisitante: number,
+  asignaciones: { equipo: number; usuarioId: string | null; invitadoId: string | null }[],
+  formData: FormData,
+) {
+  const equipoDe = new Map<string, number>();
+  for (const a of asignaciones) {
+    if (a.usuarioId) equipoDe.set(`u:${a.usuarioId}`, a.equipo);
+    if (a.invitadoId) equipoDe.set(`i:${a.invitadoId}`, a.equipo);
   }
-  return valor;
-}
 
-// Goles por jugador: opcionales. Los campos del formulario llevan el
-// prefijo golU_<usuarioId> o golI_<invitadoId>; si vienen a 0 o vacíos no
-// se atribuyen a nadie, pero el resultado del equipo cuenta igual.
-async function guardarGolesJugadores(enfrentamientoId: string, formData: FormData) {
+  let golesLocal = 0;
+  let golesVisitante = 0;
+
   for (const [campo, valor] of formData.entries()) {
     let usuarioId: string | undefined;
     let invitadoId: string | undefined;
@@ -54,7 +61,7 @@ async function guardarGolesJugadores(enfrentamientoId: string, formData: FormDat
 
     const goles = Number(valor);
     if (!Number.isInteger(goles) || goles < 0) {
-      continue;
+      throw new Error("Los goles deben ser un número entero igual o mayor que 0.");
     }
 
     if (goles === 0) {
@@ -79,7 +86,17 @@ async function guardarGolesJugadores(enfrentamientoId: string, formData: FormDat
         update: { goles },
       });
     }
+
+    const clave = usuarioId ? `u:${usuarioId}` : `i:${invitadoId}`;
+    const equipo = equipoDe.get(clave);
+    if (equipo === equipoLocal) golesLocal += goles;
+    else if (equipo === equipoVisitante) golesVisitante += goles;
   }
+
+  await prisma.enfrentamiento.update({
+    where: { id: enfrentamientoId },
+    data: { golesLocal, golesVisitante },
+  });
 }
 
 export async function agregarEnfrentamiento(formData: FormData) {
@@ -88,8 +105,6 @@ export async function agregarEnfrentamiento(formData: FormData) {
 
   const equipoLocal = Number(formData.get("equipoLocal"));
   const equipoVisitante = Number(formData.get("equipoVisitante"));
-  const golesLocal = leerGoles(formData, "golesLocal");
-  const golesVisitante = leerGoles(formData, "golesVisitante");
 
   const numEquipos = numEquiposDe(partido.generacion!.formato);
   if (
@@ -116,13 +131,19 @@ export async function agregarEnfrentamiento(formData: FormData) {
       partidoId,
       equipoLocal,
       equipoVisitante,
-      golesLocal,
-      golesVisitante,
+      golesLocal: 0,
+      golesVisitante: 0,
       registradoPorId: usuario.id,
     },
   });
 
-  await guardarGolesJugadores(enfrentamiento.id, formData);
+  await guardarGolesYCalcularResultado(
+    enfrentamiento.id,
+    equipoLocal,
+    equipoVisitante,
+    partido.generacion!.asignaciones,
+    formData,
+  );
 
   revalidatePath(`/partidos/${partidoId}`);
   revalidatePath("/estadisticas");
@@ -130,18 +151,21 @@ export async function agregarEnfrentamiento(formData: FormData) {
 
 export async function editarEnfrentamiento(formData: FormData) {
   const partidoId = String(formData.get("partidoId"));
-  await exigirEncargadoOAdmin(partidoId);
+  const { partido } = await exigirEncargadoOAdmin(partidoId);
 
   const id = String(formData.get("id"));
-  const golesLocal = leerGoles(formData, "golesLocal");
-  const golesVisitante = leerGoles(formData, "golesVisitante");
+  const enfrentamiento = await prisma.enfrentamiento.findUnique({ where: { id } });
+  if (!enfrentamiento || enfrentamiento.partidoId !== partidoId) {
+    throw new Error("El resultado no existe.");
+  }
 
-  await prisma.enfrentamiento.update({
-    where: { id },
-    data: { golesLocal, golesVisitante },
-  });
-
-  await guardarGolesJugadores(id, formData);
+  await guardarGolesYCalcularResultado(
+    id,
+    enfrentamiento.equipoLocal,
+    enfrentamiento.equipoVisitante,
+    partido.generacion!.asignaciones,
+    formData,
+  );
 
   revalidatePath(`/partidos/${partidoId}`);
   revalidatePath("/estadisticas");

@@ -11,6 +11,12 @@ import {
 } from "../apuestasActions";
 import styles from "./page.module.css";
 
+const ETIQUETAS: Record<string, string> = {
+  EQUIPO1: "Victoria Equipo 1",
+  EMPATE: "Empate",
+  EQUIPO2: "Victoria Equipo 2",
+};
+
 type Pronostico = {
   id: string;
   usuarioId: string;
@@ -24,8 +30,6 @@ type Pronostico = {
 
 type Apuesta = {
   id: string;
-  pregunta: string;
-  importe: number;
   cuota: number;
   resultado: string | null;
   resueltaEn: Date | null;
@@ -38,22 +42,40 @@ export function Apuestas({
   usuarioId,
   puedeGenerar,
   abierto,
+  permiteApuestas,
 }: {
   partidoId: string;
   apuestas: Apuesta[];
   usuarioId: string;
   puedeGenerar: boolean;
   abierto: boolean;
+  permiteApuestas: boolean;
 }) {
-  const [mostrarNueva, setMostrarNueva] = useState(false);
-
   return (
     <section>
       <h2 className={styles.subtitulo}>Apuestas de la peña</h2>
-      <p className={styles.meta}>Si se pierde una apuesta, el dinero va al bote.</p>
+      <p className={styles.meta}>
+        Victoria Equipo 1, empate o victoria Equipo 2. Participar cuesta 0.20 €, aciertes o
+        falles, y va al bote.
+      </p>
 
-      {apuestas.length === 0 ? (
-        <p className={styles.meta}>Todavía no hay apuestas para este partido.</p>
+      {!permiteApuestas ? (
+        <p className={styles.meta}>
+          Las apuestas de resultado solo están disponibles en partidos a 2 equipos.
+        </p>
+      ) : apuestas.length === 0 ? (
+        <>
+          <p className={styles.meta}>Todavía no hay apuesta para este partido.</p>
+          {puedeGenerar && (
+            <AccionBoton
+              accion={crearApuesta}
+              campos={{ partidoId }}
+              className={styles.generar}
+            >
+              Crear apuesta
+            </AccionBoton>
+          )}
+        </>
       ) : (
         <ul className={styles.lista}>
           {apuestas.map((a) => (
@@ -67,51 +89,6 @@ export function Apuestas({
             />
           ))}
         </ul>
-      )}
-
-      {puedeGenerar && (
-        <>
-          <button
-            type="button"
-            className={styles.pagoBotonSecundario}
-            onClick={() => setMostrarNueva((v) => !v)}
-          >
-            {mostrarNueva ? "Cancelar" : "Crear apuesta"}
-          </button>
-          {mostrarNueva && (
-            <form action={crearApuesta} className={styles.resultadoForm}>
-              <input type="hidden" name="partidoId" value={partidoId} />
-              <input type="text" name="pregunta" placeholder="¿Quién gana? ¿Cuántos goles mete X?" required />
-              <label className={styles.meta}>
-                Se juega
-                <input
-                  type="number"
-                  name="importe"
-                  min={0.5}
-                  step="0.5"
-                  defaultValue={1}
-                  required
-                  className={styles.golesInput}
-                />
-              </label>
-              <label className={styles.meta}>
-                Cuota por participar
-                <input
-                  type="number"
-                  name="cuota"
-                  min={0}
-                  step="0.1"
-                  defaultValue={0.2}
-                  required
-                  className={styles.golesInput}
-                />
-              </label>
-              <button type="submit" className={styles.generar}>
-                Crear
-              </button>
-            </form>
-          )}
-        </>
       )}
     </section>
   );
@@ -137,15 +114,12 @@ function ApuestaItem({
   return (
     <li className={styles.equipo}>
       <p className={styles.nombre}>
-        {apuesta.pregunta}{" "}
-        <span className={styles.meta}>
-          · se juega {apuesta.importe.toFixed(2)} € · cuota de {apuesta.cuota.toFixed(2)} € por participar
-        </span>
+        ¿Quién gana? <span className={styles.meta}>· cuota de {apuesta.cuota.toFixed(2)} €</span>
       </p>
 
       {resuelta && (
         <p className={styles.meta}>
-          Resultado: <strong>{apuesta.resultado}</strong>
+          Resultado: <strong>{ETIQUETAS[apuesta.resultado!]}</strong>
         </p>
       )}
 
@@ -156,7 +130,7 @@ function ApuestaItem({
               <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
               <span className={styles.meta}>
                 {" "}
-                · {p.respuesta}
+                · {ETIQUETAS[p.respuesta] ?? p.respuesta}
                 {resuelta && (p.acierto ? " ✓ acertó" : " ✗ falló")}
                 {resuelta && p.importeDebido ? ` · debe ${p.importeDebido.toFixed(2)} €` : ""}
               </span>
@@ -192,13 +166,14 @@ function ApuestaItem({
         <form action={pronosticar} className={styles.resultadoForm}>
           <input type="hidden" name="apuestaId" value={apuesta.id} />
           <input type="hidden" name="partidoId" value={partidoId} />
-          <input
-            type="text"
-            name="respuesta"
-            placeholder="Tu pronóstico"
-            defaultValue={tuPronostico?.respuesta ?? ""}
-            required
-          />
+          <select name="respuesta" defaultValue={tuPronostico?.respuesta ?? ""} required>
+            <option value="" disabled>
+              Elige tu pronóstico
+            </option>
+            <option value="EQUIPO1">Victoria Equipo 1</option>
+            <option value="EMPATE">Empate</option>
+            <option value="EQUIPO2">Victoria Equipo 2</option>
+          </select>
           <button type="submit" className={styles.pagoBotonSecundario}>
             {tuPronostico ? "Cambiar" : "Pronosticar"}
           </button>
@@ -218,7 +193,14 @@ function ApuestaItem({
             <form action={resolverApuesta} className={styles.resultadoForm}>
               <input type="hidden" name="apuestaId" value={apuesta.id} />
               <input type="hidden" name="partidoId" value={partidoId} />
-              <input type="text" name="resultado" placeholder="Resultado real" required />
+              <select name="resultado" defaultValue="" required>
+                <option value="" disabled>
+                  Resultado real
+                </option>
+                <option value="EQUIPO1">Victoria Equipo 1</option>
+                <option value="EMPATE">Empate</option>
+                <option value="EQUIPO2">Victoria Equipo 2</option>
+              </select>
               <button type="submit" className={styles.generar}>
                 Confirmar resultado
               </button>

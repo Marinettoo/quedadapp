@@ -7,6 +7,12 @@ import styles from "./page.module.css";
 
 export const instant = false;
 
+const ETIQUETAS: Record<string, string> = {
+  EQUIPO1: "Victoria Equipo 1",
+  EMPATE: "Empate",
+  EQUIPO2: "Victoria Equipo 2",
+};
+
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
     day: "numeric",
@@ -25,7 +31,7 @@ export default async function Bote() {
     where: { confirmadoAporteEn: { not: null } },
     include: {
       usuario: { select: { nombreUsuario: true } },
-      apuesta: { select: { pregunta: true, partidoId: true } },
+      apuesta: { select: { partidoId: true } },
     },
     orderBy: { confirmadoAporteEn: "desc" },
   });
@@ -34,7 +40,7 @@ export default async function Bote() {
     where: { importeDebido: { not: null }, confirmadoAporteEn: null },
     include: {
       usuario: { select: { nombreUsuario: true } },
-      apuesta: { select: { pregunta: true, partidoId: true } },
+      apuesta: { select: { partidoId: true } },
     },
     orderBy: { creadoEn: "desc" },
   });
@@ -59,7 +65,7 @@ export default async function Bote() {
                 <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
                 <span className={styles.meta}>
                   {" "}
-                  · {p.apuesta.pregunta} · {(p.importeDebido ?? 0).toFixed(2)} €
+                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} · {(p.importeDebido ?? 0).toFixed(2)} €
                   {p.indicadoAporteEn ? " · indicado" : ""}
                 </span>
                 <Link href={`/partidos/${p.apuesta.partidoId}`} className={styles.ver}>
@@ -82,8 +88,8 @@ export default async function Bote() {
                 <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
                 <span className={styles.meta}>
                   {" "}
-                  · {p.apuesta.pregunta} · {(p.importeDebido ?? 0).toFixed(2)} € ·{" "}
-                  {formatearFecha(p.confirmadoAporteEn!)}
+                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} ·{" "}
+                  {(p.importeDebido ?? 0).toFixed(2)} € · {formatearFecha(p.confirmadoAporteEn!)}
                 </span>
               </li>
             ))}
