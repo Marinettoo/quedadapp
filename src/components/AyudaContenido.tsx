@@ -58,6 +58,44 @@ function IconoHistorial() {
   );
 }
 
+function IconoVotacion() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={styles.icono} aria-hidden="true">
+      <path d="M12 3v11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M7 20h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M4 9.5 7.5 3l3.5 6.5a3.5 3.5 0 0 1-7 0ZM13 9.5 16.5 3 20 9.5a3.5 3.5 0 0 1-7 0Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconoApuesta() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={styles.icono} aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M8.5 15.5 15.5 8.5M9 9h.01M15 15h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoCampana() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={styles.icono} aria-hidden="true">
+      <path
+        d="M18 16v-5a6 6 0 1 0-12 0v5l-1.8 2.4c-.3.4 0 1 .5 1h14.6c.5 0 .8-.6.5-1L18 16Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M9.5 20.5a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const PASOS = [
   {
     Icono: IconoCalendario,
@@ -65,14 +103,19 @@ const PASOS = [
     texto: "Mira la fecha y el sitio en el panel, y pulsa \"Apuntarme\" si vas a jugar.",
   },
   {
+    Icono: IconoVotacion,
+    titulo: "Vota la fecha del próximo partido",
+    texto: "Un administrador puede abrir una votación con varias fechas; elige la que mejor te venga.",
+  },
+  {
     Icono: IconoEquipo,
     titulo: "Los equipos se reparten solos",
-    texto: "Cuando se cierra el plazo, la app forma los equipos intentando igualar el nivel.",
+    texto: "En la pestaña \"Equipos\" se generan intentando igualar el nivel, según tus estrellas.",
   },
   {
     Icono: IconoPago,
     titulo: "Indica cuándo has pagado",
-    texto: "Marca \"He pagado\" tu parte del campo. El encargado lo confirma después.",
+    texto: "Marca \"He pagado\" tu parte del campo. El encargado de la reserva lo confirma después.",
   },
   {
     Icono: IconoEstrella,
@@ -80,9 +123,19 @@ const PASOS = [
     texto: "Pon de 1 a 5 estrellas a los demás jugadores. Es anónimo y ayuda a igualar los equipos.",
   },
   {
+    Icono: IconoApuesta,
+    titulo: "Apuesta por diversión",
+    texto: "En la pestaña \"Apuestas\", pronostica victoria, empate o derrota. El resultado se calcula con los goles del partido, y 0.20 € de todos va al bote.",
+  },
+  {
+    Icono: IconoCampana,
+    titulo: "Activa las notificaciones",
+    texto: "Desde la campanita, recibe un aviso cuando haya partido, votación o novedades de la peña.",
+  },
+  {
     Icono: IconoHistorial,
-    titulo: "Consulta el historial",
-    texto: "Revisa los resultados de partidos pasados cuando quieras.",
+    titulo: "Consulta historial y estadísticas",
+    texto: "Revisa resultados pasados y quién lleva más goles o asistencias.",
   },
 ];
 

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BallMark } from "./BallMark";
 import { ToggleTema } from "./ToggleTema";
 import { CampanaNotificaciones } from "./CampanaNotificaciones";
+import { AyudaModal } from "./AyudaModal";
 import styles from "./Navbar.module.css";
 
 type NavbarProps = {
@@ -28,12 +29,11 @@ const ENLACES_ADMIN = [
   { href: "/admin/usuarios", etiqueta: "Usuarios" },
 ];
 
-const ENLACE_AYUDA = { href: "/ayuda", etiqueta: "¿Cómo funciona?" };
-
 export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas }: NavbarProps) {
   const pathname = usePathname();
   const [abierto, setAbierto] = useState(false);
-  const enlaces = [...ENLACES_BASE, ...(esAdmin ? ENLACES_ADMIN : []), ENLACE_AYUDA];
+  const [ayudaAbierta, setAyudaAbierta] = useState(false);
+  const enlaces = [...ENLACES_BASE, ...(esAdmin ? ENLACES_ADMIN : [])];
 
   return (
     <nav className={styles.nav}>
@@ -49,6 +49,11 @@ export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas 
               <EnlaceNav enlace={enlace} pathname={pathname} solicitudesPendientes={solicitudesPendientes} />
             </li>
           ))}
+          <li>
+            <button type="button" className={styles.enlace} onClick={() => setAyudaAbierta(true)}>
+              ¿Cómo funciona?
+            </button>
+          </li>
         </ul>
 
         <div className={styles.acciones}>
@@ -79,7 +84,21 @@ export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas 
             />
           </li>
         ))}
+        <li>
+          <button
+            type="button"
+            className={styles.enlace}
+            onClick={() => {
+              setAbierto(false);
+              setAyudaAbierta(true);
+            }}
+          >
+            ¿Cómo funciona?
+          </button>
+        </li>
       </ul>
+
+      <AyudaModal abierto={ayudaAbierta} onCerrar={() => setAyudaAbierta(false)} />
     </nav>
   );
 }
