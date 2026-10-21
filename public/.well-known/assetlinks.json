@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "es.marinettoo.furbo.twa",
+    "sha256_cert_fingerprints": [
+      "E6:36:B1:76:B4:03:E5:B6:C3:AF:D5:92:BF:73:E8:FB:5F:7B:9E:FB:C9:7E:B6:24:C2:38:D6:58:B4:45:C9:C9"
+    ]
+  }
+}]
