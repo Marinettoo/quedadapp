@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
+import { crearNotificacion } from "@/lib/notificaciones";
 
 async function exigirUsuarioAprobado() {
   const usuario = await obtenerUsuarioSesion();
@@ -128,6 +129,15 @@ export async function confirmarPago(formData: FormData) {
     where: { partidoId, ...datosBase, indicadoEn: null },
     data: { indicadoEn: new Date() },
   });
+
+  if (tipo === "USUARIO") {
+    await crearNotificacion({
+      usuarioId: objetivoId,
+      tipo: "PAGO_CONFIRMADO",
+      mensaje: "Tu pago del partido ha sido confirmado.",
+      enlace: `/partidos/${partidoId}`,
+    });
+  }
 
   revalidatePath(`/partidos/${partidoId}`);
 }

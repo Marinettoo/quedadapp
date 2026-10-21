@@ -49,6 +49,8 @@ model Usuario {
   goles                GolJugador[]
   votacionesCreadas    VotacionFecha[]
   votosFecha           VotoFecha[]
+  notificaciones       Notificacion[]
+  suscripcionesPush    SuscripcionPush[]
 }
 
 model Sesion {
@@ -281,4 +283,31 @@ model VotoFecha {
   votadoEn   DateTime             @default(now())
 
   @@unique([votacionId, usuarioId])
+}
+
+// Avisos dentro de la app (campanita) para un jugador concreto: nuevos
+// miembros que valorar, partidos, votaciones, resultados de apuestas...
+model Notificacion {
+  id        String    @id @default(cuid())
+  usuarioId String
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tipo      String
+  mensaje   String
+  enlace    String?
+  leidaEn   DateTime?
+  creadaEn  DateTime  @default(now())
+
+  @@index([usuarioId, leidaEn])
+}
+
+// Suscripción del navegador/dispositivo de un usuario a notificaciones
+// push (Web Push). Un usuario puede tener varias (varios dispositivos).
+model SuscripcionPush {
+  id        String   @id @default(cuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  creadaEn  DateTime @default(now())
 }

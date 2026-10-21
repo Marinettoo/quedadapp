@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { fechaHoraMadrid } from "@/lib/partidos";
+import { crearNotificacionParaVarios } from "@/lib/notificaciones";
 import type { ResultadoFormulario } from "@/app/actions";
 
 async function exigirUsuarioAprobado() {
@@ -62,6 +63,19 @@ export async function crearVotacion(
       },
     },
   });
+
+  const resto = await prisma.usuario.findMany({
+    where: { estado: "APROBADA", id: { not: usuario.id } },
+    select: { id: true },
+  });
+  await crearNotificacionParaVarios(
+    resto.map((u) => u.id),
+    {
+      tipo: "NUEVA_VOTACION",
+      mensaje: `Nueva votación: ${titulo}. Elige tu fecha preferida.`,
+      enlace: `/votaciones/${votacion.id}`,
+    },
+  );
 
   redirect(`/votaciones/${votacion.id}`);
 }

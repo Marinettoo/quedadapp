@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { apuestasAbiertas } from "@/lib/partidos";
+import { crearNotificacion } from "@/lib/notificaciones";
 
 const CUOTA_FIJA = 0.2;
 const RESPUESTAS_VALIDAS = ["EQUIPO1", "EMPATE", "EQUIPO2"] as const;
@@ -130,6 +131,20 @@ export async function resolverApuesta(formData: FormData) {
       });
     }),
   ]);
+
+  await Promise.all(
+    apuesta.pronosticos.map((p) =>
+      crearNotificacion({
+        usuarioId: p.usuarioId,
+        tipo: "RESULTADO_APUESTA",
+        mensaje:
+          p.respuesta === resultado
+            ? "Acertaste tu apuesta. Debes 0.20 € al bote, como todos."
+            : "Fallaste tu apuesta. Debes 0.20 € al bote.",
+        enlace: `/partidos/${partidoId}/apuestas`,
+      }),
+    ),
+  );
 
   revalidatePath(`/partidos/${partidoId}`);
 }

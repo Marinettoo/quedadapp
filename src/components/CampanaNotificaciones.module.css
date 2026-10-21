@@ -1,0 +1,41 @@
+.boton {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.boton:hover {
+  background: var(--border);
+}
+
+.icono {
+  width: 17px;
+  height: 17px;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #000000;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid var(--paper);
+}

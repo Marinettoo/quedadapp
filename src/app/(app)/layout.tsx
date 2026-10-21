@@ -12,10 +12,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const solicitudesPendientes = esAdmin
     ? await prisma.usuario.count({ where: { estado: "PENDIENTE" } })
     : 0;
+  const notificacionesNoLeidas = usuario
+    ? await prisma.notificacion.count({ where: { usuarioId: usuario.id, leidaEn: null } })
+    : 0;
 
   return (
     <>
-      {usuario && <Navbar esAdmin={esAdmin} solicitudesPendientes={solicitudesPendientes} />}
+      {usuario && (
+        <Navbar
+          esAdmin={esAdmin}
+          solicitudesPendientes={solicitudesPendientes}
+          notificacionesNoLeidas={notificacionesNoLeidas}
+        />
+      )}
       {children}
     </>
   );

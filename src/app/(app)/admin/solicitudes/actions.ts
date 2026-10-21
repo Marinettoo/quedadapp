@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { identidadDeBaja } from "@/lib/usuarios";
+import { crearNotificacionParaVarios } from "@/lib/notificaciones";
 
 async function exigirAdmin() {
   const usuario = await obtenerUsuarioSesion();
@@ -16,8 +17,21 @@ async function exigirAdmin() {
 export async function aprobarUsuario(formData: FormData) {
   await exigirAdmin();
   const id = String(formData.get("id"));
-  await prisma.usuario.update({ where: { id }, data: { estado: "APROBADA" } });
+  const nuevo = await prisma.usuario.update({ where: { id }, data: { estado: "APROBADA" } });
   revalidatePath("/admin/solicitudes");
+
+  const resto = await prisma.usuario.findMany({
+    where: { estado: "APROBADA", id: { not: id } },
+    select: { id: true },
+  });
+  await crearNotificacionParaVarios(
+    resto.map((u) => u.id),
+    {
+      tipo: "NUEVO_MIEMBRO",
+      mensaje: `${nuevo.nombreUsuario} se ha unido a la peña. Valórale con estrellas.`,
+      enlace: "/jugadores",
+    },
+  );
 }
 
 export async function rechazarUsuario(formData: FormData) {

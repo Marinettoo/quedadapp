@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { promediosEstrellas } from "@/lib/valoraciones";
 import { generarEquipos, type JugadorGen } from "@/lib/generador";
+import { crearNotificacion } from "@/lib/notificaciones";
 
 export async function generarEquiposPartido(formData: FormData) {
   const usuario = await obtenerUsuarioSesion();
@@ -92,6 +93,31 @@ export async function generarEquiposPartido(formData: FormData) {
       await tx.asignacionEquipo.createMany({ data: asignaciones });
     }
   });
+
+  await Promise.all([
+    ...resultado.equipos.flatMap((equipo, indice) =>
+      equipo
+        .filter((j) => j.tipo === "USUARIO")
+        .map((j) =>
+          crearNotificacion({
+            usuarioId: j.id,
+            tipo: "EQUIPOS_GENERADOS",
+            mensaje: `Ya están los equipos: vas en el Equipo ${indice + 1}.`,
+            enlace: `/partidos/${partidoId}/equipos`,
+          }),
+        ),
+    ),
+    ...resultado.listaEspera
+      .filter((j) => j.tipo === "USUARIO")
+      .map((j) =>
+        crearNotificacion({
+          usuarioId: j.id,
+          tipo: "EQUIPOS_GENERADOS",
+          mensaje: "Ya están los equipos: te has quedado en la lista de espera.",
+          enlace: `/partidos/${partidoId}/equipos`,
+        }),
+      ),
+  ]);
 
   revalidatePath(`/partidos/${partidoId}`);
 }

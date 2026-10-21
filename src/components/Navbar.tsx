@@ -5,11 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BallMark } from "./BallMark";
 import { ToggleTema } from "./ToggleTema";
+import { CampanaNotificaciones } from "./CampanaNotificaciones";
 import styles from "./Navbar.module.css";
 
 type NavbarProps = {
   esAdmin: boolean;
   solicitudesPendientes: number;
+  notificacionesNoLeidas: number;
 };
 
 const ENLACES_BASE = [
@@ -28,7 +30,7 @@ const ENLACES_ADMIN = [
 
 const ENLACE_AYUDA = { href: "/ayuda", etiqueta: "¿Cómo funciona?" };
 
-export function Navbar({ esAdmin, solicitudesPendientes }: NavbarProps) {
+export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas }: NavbarProps) {
   const pathname = usePathname();
   const [abierto, setAbierto] = useState(false);
   const enlaces = [...ENLACES_BASE, ...(esAdmin ? ENLACES_ADMIN : []), ENLACE_AYUDA];
@@ -50,6 +52,7 @@ export function Navbar({ esAdmin, solicitudesPendientes }: NavbarProps) {
         </ul>
 
         <div className={styles.acciones}>
+          <CampanaNotificaciones noLeidas={notificacionesNoLeidas} />
           <ToggleTema className={styles.toggle} />
           <button
             type="button"

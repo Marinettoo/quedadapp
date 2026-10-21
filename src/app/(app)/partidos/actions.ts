@@ -5,7 +5,19 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { asistenciaAbierta, fechaHoraMadrid } from "@/lib/partidos";
+import { crearNotificacionParaVarios } from "@/lib/notificaciones";
 import type { ResultadoFormulario } from "@/app/actions";
+
+function formatearFechaCorta(fecha: Date) {
+  return new Intl.DateTimeFormat("es-ES", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Madrid",
+  }).format(fecha);
+}
 
 async function exigirUsuarioAprobado() {
   const usuario = await obtenerUsuarioSesion();
@@ -62,6 +74,19 @@ export async function crearPartido(
       creadoPorId: usuario.id,
     },
   });
+
+  const resto = await prisma.usuario.findMany({
+    where: { estado: "APROBADA", id: { not: usuario.id } },
+    select: { id: true },
+  });
+  await crearNotificacionParaVarios(
+    resto.map((u) => u.id),
+    {
+      tipo: "NUEVO_PARTIDO",
+      mensaje: `Nuevo partido: ${formatearFechaCorta(fechaHora)} en ${ubicacion}.`,
+      enlace: `/partidos/${partido.id}`,
+    },
+  );
 
   redirect(`/partidos/${partido.id}`);
 }
