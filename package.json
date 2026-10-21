@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "crear-admin": "tsx prisma/seed-admin.ts"
+    "crear-admin": "tsx prisma/seed-admin.ts",
+    "liberar-rechazados": "tsx prisma/liberar-rechazados.ts"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.10.1",
