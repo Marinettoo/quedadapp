@@ -38,3 +38,11 @@ export function cierreAsistencia(fechaHora: Date, horasCierre: number): Date {
 export function asistenciaAbierta(fechaHora: Date, horasCierre: number): boolean {
   return new Date() < cierreAsistencia(fechaHora, horasCierre);
 }
+
+const MINUTOS_CIERRE_APUESTAS = 30;
+
+// Las apuestas (crear, pronosticar, retirar un pronóstico) se cierran
+// siempre 30 minutos antes del partido, sin depender de horasCierre.
+export function apuestasAbiertas(fechaHora: Date): boolean {
+  return new Date() < new Date(fechaHora.getTime() - MINUTOS_CIERRE_APUESTAS * 60 * 1000);
+}

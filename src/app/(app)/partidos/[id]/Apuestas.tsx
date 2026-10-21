@@ -5,11 +5,18 @@ import { AccionBoton } from "@/components/AccionBoton";
 import {
   crearApuesta,
   pronosticar,
+  retirarPronostico,
   resolverApuesta,
   indicarAporte,
   confirmarAporte,
 } from "../apuestasActions";
 import styles from "./page.module.css";
+
+const OPCIONES = [
+  { valor: "EQUIPO1", etiqueta: "Victoria Equipo 1" },
+  { valor: "EMPATE", etiqueta: "Empate" },
+  { valor: "EQUIPO2", etiqueta: "Victoria Equipo 2" },
+] as const;
 
 const ETIQUETAS: Record<string, string> = {
   EQUIPO1: "Victoria Equipo 1",
@@ -56,7 +63,7 @@ export function Apuestas({
       <h2 className={styles.subtitulo}>Apuestas de la peña</h2>
       <p className={styles.meta}>
         Victoria Equipo 1, empate o victoria Equipo 2. Participar cuesta 0.20 €, aciertes o
-        falles, y va al bote.
+        falles, y va al bote. Se puede apostar o retirar hasta 30 minutos antes del partido.
       </p>
 
       {!permiteApuestas ? (
@@ -65,19 +72,17 @@ export function Apuestas({
         </p>
       ) : apuestas.length === 0 ? (
         <>
-          <p className={styles.meta}>Todavía no hay apuesta para este partido.</p>
-          {puedeGenerar && (
-            <AccionBoton
-              accion={crearApuesta}
-              campos={{ partidoId }}
-              className={styles.generar}
-            >
+          <p className={styles.meta}>
+            {abierto ? "Todavía no hay apuesta para este partido." : "Ya no se puede crear una apuesta: el plazo cerró 30 minutos antes del partido."}
+          </p>
+          {puedeGenerar && abierto && (
+            <AccionBoton accion={crearApuesta} campos={{ partidoId }} className={styles.generar}>
               Crear apuesta
             </AccionBoton>
           )}
         </>
       ) : (
-        <ul className={styles.lista}>
+        <div className={styles.apuestasLista}>
           {apuestas.map((a) => (
             <ApuestaItem
               key={a.id}
@@ -88,7 +93,7 @@ export function Apuestas({
               abierto={abierto}
             />
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );
@@ -112,72 +117,86 @@ function ApuestaItem({
   const resuelta = apuesta.resultado !== null;
 
   return (
-    <li className={styles.equipo}>
-      <p className={styles.nombre}>
-        ¿Quién gana? <span className={styles.meta}>· cuota de {apuesta.cuota.toFixed(2)} €</span>
-      </p>
+    <div className={styles.apuestaCard}>
+      <div className={styles.apuestaCabecera}>
+        <span className={styles.apuestaPregunta}>¿Quién gana?</span>
+        <span className={styles.apuestaCuota}>cuota {apuesta.cuota.toFixed(2)} €</span>
+      </div>
 
-      {resuelta && (
-        <p className={styles.meta}>
-          Resultado: <strong>{ETIQUETAS[apuesta.resultado!]}</strong>
-        </p>
-      )}
-
-      <ul className={styles.lista}>
-        {apuesta.pronosticos.map((p) => (
-          <li key={p.id} className={styles.pagoFila}>
-            <div>
-              <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
-              <span className={styles.meta}>
-                {" "}
-                · {ETIQUETAS[p.respuesta] ?? p.respuesta}
-                {resuelta && (p.acierto ? " ✓ acertó" : " ✗ falló")}
-                {resuelta && p.importeDebido ? ` · debe ${p.importeDebido.toFixed(2)} €` : ""}
-              </span>
-            </div>
-            {resuelta && !!p.importeDebido && (
-              <div className={styles.pagoAcciones}>
-                {p.usuarioId === usuarioId && !p.confirmadoAporteEn && !p.indicadoAporteEn && (
-                  <AccionBoton
-                    accion={indicarAporte}
-                    campos={{ pronosticoId: p.id, partidoId }}
-                    className={styles.pagoBoton}
-                  >
-                    He aportado
-                  </AccionBoton>
-                )}
-                {puedeGenerar && !p.confirmadoAporteEn && (
-                  <AccionBoton
-                    accion={confirmarAporte}
-                    campos={{ pronosticoId: p.id, partidoId }}
-                    className={styles.pagoBoton}
-                  >
-                    Confirmar aporte
-                  </AccionBoton>
-                )}
-                {p.confirmadoAporteEn && <span className={styles.meta}>Aportado ✓</span>}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+      {resuelta ? (
+        <p className={styles.apuestaResultado}>Resultado: {ETIQUETAS[apuesta.resultado!]}</p>
+      ) : !abierto ? (
+        <p className={styles.meta}>El plazo para apostar ya ha cerrado.</p>
+      ) : null}
 
       {!resuelta && abierto && (
-        <form action={pronosticar} className={styles.resultadoForm}>
-          <input type="hidden" name="apuestaId" value={apuesta.id} />
-          <input type="hidden" name="partidoId" value={partidoId} />
-          <select name="respuesta" defaultValue={tuPronostico?.respuesta ?? ""} required>
-            <option value="" disabled>
-              Elige tu pronóstico
-            </option>
-            <option value="EQUIPO1">Victoria Equipo 1</option>
-            <option value="EMPATE">Empate</option>
-            <option value="EQUIPO2">Victoria Equipo 2</option>
-          </select>
-          <button type="submit" className={styles.pagoBotonSecundario}>
-            {tuPronostico ? "Cambiar" : "Pronosticar"}
-          </button>
-        </form>
+        <div className={styles.apuestaOpciones}>
+          {OPCIONES.map((o) => (
+            <AccionBoton
+              key={o.valor}
+              accion={pronosticar}
+              campos={{ apuestaId: apuesta.id, partidoId, respuesta: o.valor }}
+              className={
+                tuPronostico?.respuesta === o.valor
+                  ? styles.apuestaOpcionActiva
+                  : styles.apuestaOpcion
+              }
+            >
+              {o.etiqueta}
+            </AccionBoton>
+          ))}
+        </div>
+      )}
+
+      {!resuelta && abierto && tuPronostico && (
+        <AccionBoton
+          accion={retirarPronostico}
+          campos={{ apuestaId: apuesta.id, partidoId }}
+          className={styles.apuestaRetirar}
+        >
+          Retirar mi apuesta
+        </AccionBoton>
+      )}
+
+      {apuesta.pronosticos.length > 0 && (
+        <ul className={styles.apuestaPronosticos}>
+          {apuesta.pronosticos.map((p) => (
+            <li key={p.id} className={styles.apuestaPronosticoFila}>
+              <div>
+                <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
+                <span className={styles.meta}>
+                  {" "}
+                  · {ETIQUETAS[p.respuesta] ?? p.respuesta}
+                  {resuelta && (p.acierto ? " ✓ acertó" : " ✗ falló")}
+                  {resuelta && p.importeDebido ? ` · debe ${p.importeDebido.toFixed(2)} €` : ""}
+                </span>
+              </div>
+              {resuelta && !!p.importeDebido && (
+                <div className={styles.pagoAcciones}>
+                  {p.usuarioId === usuarioId && !p.confirmadoAporteEn && !p.indicadoAporteEn && (
+                    <AccionBoton
+                      accion={indicarAporte}
+                      campos={{ pronosticoId: p.id, partidoId }}
+                      className={styles.pagoBoton}
+                    >
+                      He aportado
+                    </AccionBoton>
+                  )}
+                  {puedeGenerar && !p.confirmadoAporteEn && (
+                    <AccionBoton
+                      accion={confirmarAporte}
+                      campos={{ pronosticoId: p.id, partidoId }}
+                      className={styles.pagoBoton}
+                    >
+                      Confirmar aporte
+                    </AccionBoton>
+                  )}
+                  {p.confirmadoAporteEn && <span className={styles.meta}>Aportado ✓</span>}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
 
       {!resuelta && puedeGenerar && (
@@ -208,6 +227,6 @@ function ApuestaItem({
           )}
         </>
       )}
-    </li>
+    </div>
   );
 }

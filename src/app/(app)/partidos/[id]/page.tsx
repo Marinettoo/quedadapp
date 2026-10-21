@@ -100,12 +100,23 @@ export default async function DetallePartido({
 
   const jugadoresQueJuegan = equipos.flat();
 
-  function nombreAsignacion(a: (typeof jugadoresQueJuegan)[number]) {
+  type Jugador = {
+    usuario: { id: string; nombreUsuario: string } | null;
+    invitado: { id: string; nombre: string } | null;
+  };
+  function nombreAsignacion(a: Jugador) {
     return a.usuario ? a.usuario.nombreUsuario : `${a.invitado!.nombre} (invitado)`;
   }
-  function claveAsignacion(a: (typeof jugadoresQueJuegan)[number]) {
+  function claveAsignacion(a: Jugador) {
     return a.usuario ? `u:${a.usuario.id}` : `i:${a.invitado!.id}`;
   }
+
+  // Los pagos van ligados a quién está apuntado, no a los equipos: se
+  // puede pagar la reserva antes de que se generen los equipos.
+  const asistentesParaPago: Jugador[] = [
+    ...asistenciasActivas.map((a) => ({ usuario: a.usuario, invitado: null })),
+    ...partido.invitados.map((i) => ({ usuario: null, invitado: i })),
+  ];
 
   type GolesDeEnfrentamiento = {
     goles: { usuarioId: string | null; invitadoId: string | null; goles: number }[];
@@ -163,12 +174,15 @@ export default async function DetallePartido({
     usuario.rol === "ADMIN" ||
     partido.encargadoId === usuario.id ||
     asistenciasActivas.some((a) => a.usuarioId === usuario.id);
+  // Un usuario normal (ni admin ni encargado) solo ve su propia fila de
+  // pago, no la del resto.
+  const puedeVerListaPagos = puedeGenerar;
   const pagosPorClave = new Map(
     partido.pagos.map((p) => [p.usuarioId ? `u:${p.usuarioId}` : `i:${p.invitadoId}`, p]),
   );
   const parteImporte =
-    partido.importeTotal !== null && jugadoresQueJuegan.length > 0
-      ? partido.importeTotal / jugadoresQueJuegan.length
+    partido.importeTotal !== null && asistentesParaPago.length > 0
+      ? partido.importeTotal / asistentesParaPago.length
       : null;
 
   const esTriangular = generacion?.formato === "TRIANGULAR";
@@ -231,7 +245,7 @@ export default async function DetallePartido({
         </p>
       )}
 
-      {generacion && puedeVerPagos && jugadoresQueJuegan.length > 0 && (
+      {puedeVerPagos && asistentesParaPago.length > 0 && (
         <section>
           <h2 className={styles.subtitulo}>Pagos</h2>
 
@@ -263,13 +277,20 @@ export default async function DetallePartido({
           )}
 
           {parteImporte !== null && (
-            <p className={styles.meta}>
-              Parte por jugador: {parteImporte.toFixed(2)} € ({jugadoresQueJuegan.length} jugadores)
-            </p>
+            <div className={styles.importeDestacado}>
+              <span className={styles.importeDestacadoCifra}>{parteImporte.toFixed(2)} €</span>
+              <span className={styles.importeDestacadoEtiqueta}>
+                por jugador ({asistentesParaPago.length}{" "}
+                {asistentesParaPago.length === 1 ? "jugador" : "jugadores"})
+              </span>
+            </div>
           )}
 
           <ul className={styles.lista}>
-            {jugadoresQueJuegan.map((a) => {
+            {(puedeVerListaPagos
+              ? asistentesParaPago
+              : asistentesParaPago.filter((a) => a.usuario?.id === usuario.id)
+            ).map((a) => {
               const clave = claveAsignacion(a);
               const tipo = a.usuario ? "USUARIO" : "INVITADO";
               const jugadorId = a.usuario ? a.usuario.id : a.invitado!.id;

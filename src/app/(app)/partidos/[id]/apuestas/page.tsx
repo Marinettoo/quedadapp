@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { asistenciaAbierta } from "@/lib/partidos";
+import { apuestasAbiertas } from "@/lib/partidos";
 import { AppHeader } from "@/components/AppHeader";
 import { Apuestas } from "../Apuestas";
 import { SubnavPartido } from "../SubnavPartido";
@@ -57,7 +57,7 @@ export default async function ApuestasPartido({
   }
 
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
-  const abierto = asistenciaAbierta(partido.fechaHora, partido.horasCierre);
+  const abierto = apuestasAbiertas(partido.fechaHora);
   const permiteApuestas = partido.generacion?.formato === "DOS_EQUIPOS";
 
   return (

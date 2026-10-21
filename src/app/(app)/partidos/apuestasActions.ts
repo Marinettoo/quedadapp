@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
-import { asistenciaAbierta } from "@/lib/partidos";
+import { apuestasAbiertas } from "@/lib/partidos";
 
 const CUOTA_FIJA = 0.2;
 const RESPUESTAS_VALIDAS = ["EQUIPO1", "EMPATE", "EQUIPO2"] as const;
@@ -43,6 +43,9 @@ export async function crearApuesta(formData: FormData) {
   if (!partido.generacion || partido.generacion.formato !== "DOS_EQUIPOS") {
     throw new Error("Las apuestas de resultado solo están disponibles en partidos a 2 equipos.");
   }
+  if (!apuestasAbiertas(partido.fechaHora)) {
+    throw new Error("Ya no se puede crear una apuesta a menos de 30 minutos del partido.");
+  }
 
   const yaExiste = await prisma.apuesta.findFirst({ where: { partidoId } });
   if (yaExiste) {
@@ -67,8 +70,8 @@ export async function pronosticar(formData: FormData) {
   }
 
   const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
-  if (!partido || !asistenciaAbierta(partido.fechaHora, partido.horasCierre)) {
-    throw new Error("El plazo para pronosticar ya ha cerrado.");
+  if (!partido || !apuestasAbiertas(partido.fechaHora)) {
+    throw new Error("Ya no se puede pronosticar a menos de 30 minutos del partido.");
   }
 
   await prisma.pronostico.upsert({
@@ -76,6 +79,21 @@ export async function pronosticar(formData: FormData) {
     update: { respuesta },
     create: { apuestaId, usuarioId: usuario.id, respuesta },
   });
+
+  revalidatePath(`/partidos/${partidoId}`);
+}
+
+export async function retirarPronostico(formData: FormData) {
+  const usuario = await exigirUsuarioAprobado();
+  const apuestaId = String(formData.get("apuestaId"));
+  const partidoId = String(formData.get("partidoId"));
+
+  const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
+  if (!partido || !apuestasAbiertas(partido.fechaHora)) {
+    throw new Error("Ya no se puede retirar la apuesta a menos de 30 minutos del partido.");
+  }
+
+  await prisma.pronostico.deleteMany({ where: { apuestaId, usuarioId: usuario.id } });
 
   revalidatePath(`/partidos/${partidoId}`);
 }

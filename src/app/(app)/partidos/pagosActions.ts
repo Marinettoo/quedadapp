@@ -37,15 +37,18 @@ async function exigirEncargado(partidoId: string, usuario: { id: string }) {
   return partido;
 }
 
-async function jugadorEnEquipo(partidoId: string, tipo: "USUARIO" | "INVITADO", id: string) {
-  const asignacion = await prisma.asignacionEquipo.findFirst({
-    where: {
-      equipo: { gt: 0 },
-      generacion: { partidoId },
-      ...(tipo === "USUARIO" ? { usuarioId: id } : { invitadoId: id }),
-    },
-  });
-  return asignacion !== null;
+// El pago va ligado a estar apuntado al partido, no a tener ya equipo
+// asignado: se puede pagar la reserva antes de que se generen los
+// equipos.
+async function jugadorApuntado(partidoId: string, tipo: "USUARIO" | "INVITADO", id: string) {
+  if (tipo === "USUARIO") {
+    const asistencia = await prisma.asistencia.findFirst({
+      where: { partidoId, usuarioId: id, cancelado: false },
+    });
+    return asistencia !== null;
+  }
+  const invitado = await prisma.invitado.findFirst({ where: { partidoId, id } });
+  return invitado !== null;
 }
 
 export async function establecerImporte(formData: FormData) {
@@ -66,8 +69,8 @@ export async function indicarPago(formData: FormData) {
   const usuario = await exigirUsuarioAprobado();
   const partidoId = String(formData.get("partidoId"));
 
-  if (!(await jugadorEnEquipo(partidoId, "USUARIO", usuario.id))) {
-    throw new Error("Solo pueden indicar el pago quienes están asignados a un equipo.");
+  if (!(await jugadorApuntado(partidoId, "USUARIO", usuario.id))) {
+    throw new Error("Solo pueden indicar el pago quienes están apuntados al partido.");
   }
 
   await prisma.pago.upsert({
@@ -98,8 +101,8 @@ export async function confirmarPago(formData: FormData) {
   const tipo = String(formData.get("tipo")) === "INVITADO" ? "INVITADO" : "USUARIO";
   await exigirEncargado(partidoId, usuario);
 
-  if (!(await jugadorEnEquipo(partidoId, tipo, objetivoId))) {
-    throw new Error("Ese jugador no está asignado a un equipo en este partido.");
+  if (!(await jugadorApuntado(partidoId, tipo, objetivoId))) {
+    throw new Error("Ese jugador no está apuntado a este partido.");
   }
 
   const clave =
