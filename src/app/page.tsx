@@ -18,7 +18,7 @@ export default async function Home() {
       <section className={styles.poster}>
         <span className={styles.wordmarkOnPoster}>Quedadapp</span>
         <h1 className={styles.headline}>
-          El equipo se decide solo si te apuntas.
+          La app de los sábado fúrbo
         </h1>
         <p className={styles.subhead}>
           Partidos, equipos y pagos de la peña, todo en un sitio.

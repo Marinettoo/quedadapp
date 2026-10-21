@@ -75,6 +75,20 @@
   color: var(--ink);
 }
 
+.ball :global(.balon-interior) {
+  animation: girarBalon 10s linear infinite;
+  will-change: transform;
+}
+
+@keyframes girarBalon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---- Panel de acceso (blanco) ---- */
 
 .panel {

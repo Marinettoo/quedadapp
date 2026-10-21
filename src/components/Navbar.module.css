@@ -89,9 +89,13 @@
   gap: 10px;
 }
 
-.toggle {
-  border-color: rgba(0, 0, 0, 0.2);
-  background: var(--paper);
+.acciones .toggle {
+  border: none;
+  background: none;
+}
+
+.acciones .toggle:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .hamburguesa {
