@@ -47,6 +47,8 @@ model Usuario {
   pronosticos          Pronostico[]        @relation("PronosticosDelJugador")
   aportesConfirmados   Pronostico[]        @relation("AportacionesConfirmadas")
   goles                GolJugador[]
+  votacionesCreadas    VotacionFecha[]
+  votosFecha           VotoFecha[]
 }
 
 model Sesion {
@@ -246,4 +248,40 @@ model Pago {
 
   @@unique([partidoId, usuarioId])
   @@unique([partidoId, invitadoId])
+}
+
+// Votación para decidir cuándo será el próximo partido (fecha y hora).
+// No está ligada a un Partido: cuando se cierra y hay un ganador claro,
+// el admin crea el partido a mano con esa fecha.
+model VotacionFecha {
+  id          String                @id @default(cuid())
+  titulo      String
+  creadaPorId String
+  creadaPor   Usuario               @relation(fields: [creadaPorId], references: [id])
+  creadaEn    DateTime              @default(now())
+  cerrada     Boolean               @default(false)
+  cerradaEn   DateTime?
+  opciones    OpcionVotacionFecha[]
+  votos       VotoFecha[]
+}
+
+model OpcionVotacionFecha {
+  id         String        @id @default(cuid())
+  votacionId String
+  votacion   VotacionFecha @relation(fields: [votacionId], references: [id], onDelete: Cascade)
+  fechaHora  DateTime
+  votos      VotoFecha[]
+}
+
+model VotoFecha {
+  id         String               @id @default(cuid())
+  votacionId String
+  votacion   VotacionFecha        @relation(fields: [votacionId], references: [id], onDelete: Cascade)
+  opcionId   String
+  opcion     OpcionVotacionFecha  @relation(fields: [opcionId], references: [id], onDelete: Cascade)
+  usuarioId  String
+  usuario    Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  votadoEn   DateTime             @default(now())
+
+  @@unique([votacionId, usuarioId])
 }

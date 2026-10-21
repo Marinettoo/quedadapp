@@ -1,0 +1,248 @@
+.screen {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crear {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crear:hover {
+  opacity: 0.85;
+}
+
+.vacio {
+  font-size: 15px;
+  color: var(--meta);
+}
+
+.lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.votacion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 14px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.votacion:hover {
+  background: var(--surface);
+}
+
+.votacionTitulo {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.meta {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.estado {
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.subtitulo {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.field input {
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.opcion {
+  display: flex;
+  gap: 8px;
+}
+
+.opcion .field {
+  flex: 1;
+}
+
+.submit {
+  margin-top: 4px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit:hover {
+  opacity: 0.85;
+}
+
+.aviso {
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opcionResultado {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcionGanadora {
+  border-color: var(--ink);
+}
+
+.opcionCabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.opcionFecha {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.opcionVotos {
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.barra {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.barraRelleno {
+  height: 100%;
+  background: var(--ink);
+}
+
+.votantes {
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.votarBoton {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.votarBoton:hover {
+  background: var(--border);
+}
+
+.votadaBoton {
+  align-self: flex-start;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cerrarBoton {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.cerrarBoton:hover {
+  background: var(--border);
+}
+
+.empate {
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
