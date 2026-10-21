@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
+import { RegistroServiceWorker } from "@/components/RegistroServiceWorker";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -17,6 +18,16 @@ export const instant = false;
 export const metadata: Metadata = {
   title: "Quedadapp",
   description: "Organiza los partidos de la peña: asistencia, equipos, pagos y resultados.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Quedadapp",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#b8ff65",
 };
 
 const SCRIPT_TEMA = `
@@ -33,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="es" className={dmSans.variable} suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+        <RegistroServiceWorker />
         {children}
       </body>
     </html>
