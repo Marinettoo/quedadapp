@@ -121,6 +121,11 @@
   margin-bottom: 20px;
 }
 
+.creador {
+  margin-top: 28px;
+  text-align: center;
+}
+
 .form {
   display: flex;
   flex-direction: column;

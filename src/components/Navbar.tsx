@@ -8,6 +8,7 @@ import { ToggleTema } from "./ToggleTema";
 import { CampanaNotificaciones } from "./CampanaNotificaciones";
 import { AyudaModal } from "./AyudaModal";
 import { NotificacionesModal } from "./NotificacionesModal";
+import { CreadorModal } from "./CreadorModal";
 import styles from "./Navbar.module.css";
 
 type Notificacion = {
@@ -71,6 +72,9 @@ export function Navbar({
               ¿Cómo funciona?
             </button>
           </li>
+          <li>
+            <CreadorModal className={styles.enlacePie} />
+          </li>
         </ul>
 
         <div className={styles.acciones}>
@@ -115,6 +119,9 @@ export function Navbar({
           >
             ¿Cómo funciona?
           </button>
+        </li>
+        <li>
+          <CreadorModal className={styles.enlacePie} />
         </li>
       </ul>
 

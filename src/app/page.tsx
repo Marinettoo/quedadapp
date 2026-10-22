@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { BallMark } from "@/components/BallMark";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
+import { CreadorModal } from "@/components/CreadorModal";
 import styles from "./page.module.css";
 
 // Lee la sesión en cada petición para decidir si redirige a /panel.
@@ -31,6 +32,9 @@ export default async function Home() {
         <div className={styles.panelInner}>
           <h2 className={styles.formTitle}>Entrar</h2>
           <LoginForm />
+          <div className={styles.creador}>
+            <CreadorModal />
+          </div>
         </div>
       </section>
     </main>
