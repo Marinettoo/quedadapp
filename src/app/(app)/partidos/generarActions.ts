@@ -47,6 +47,7 @@ export async function generarEquiposPartido(formData: FormData) {
         id: a.usuarioId,
         nombre: a.usuario.nombreUsuario,
         estrellas: promedios[a.usuarioId],
+        esPortero: a.esPortero,
       },
     })),
     ...invitados.map((i) => ({
@@ -56,6 +57,7 @@ export async function generarEquiposPartido(formData: FormData) {
         id: i.id,
         nombre: `${i.nombre} (invitado)`,
         estrellas: i.estrellas,
+        esPortero: i.esPortero,
       },
     })),
   ];
@@ -70,6 +72,7 @@ export async function generarEquiposPartido(formData: FormData) {
       equipo,
       usuarioId: j.tipo === "USUARIO" ? j.id : null,
       invitadoId: j.tipo === "INVITADO" ? j.id : null,
+      esPortero: j.esPortero,
     };
   }
 

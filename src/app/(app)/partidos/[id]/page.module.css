@@ -315,6 +315,14 @@
   margin-top: 10px;
 }
 
+.checkboxPortero {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--meta);
+}
+
 .resultadoForm select {
   font-family: inherit;
   font-size: 14px;

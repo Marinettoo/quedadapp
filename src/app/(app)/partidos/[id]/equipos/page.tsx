@@ -3,7 +3,7 @@ import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
 import { generarEquiposPartido } from "../../generarActions";
-import { agregarInvitado, quitarInvitado } from "../../invitadosActions";
+import { agregarInvitado, quitarInvitado, cambiarEsPorteroInvitado } from "../../invitadosActions";
 import { establecerColorEquipo } from "../../coloresActions";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
@@ -95,6 +95,14 @@ export default async function EquiposPartido({
     return a.usuario ? a.usuario.nombreUsuario : `${a.invitado!.nombre} (invitado)`;
   }
 
+  function esPorteroDe(a: (typeof equipos)[number][number]) {
+    return a.esPortero;
+  }
+
+  const equiposSinPortero = equipos
+    .map((equipo, i) => (equipo.length > 0 && !equipo.some(esPorteroDe) ? i + 1 : null))
+    .filter((n): n is number => n !== null);
+
   return (
     <main className={styles.screen}>
       <AppHeader
@@ -131,9 +139,15 @@ export default async function EquiposPartido({
                     />
                   )}
                 </div>
+                {equiposSinPortero.includes(i + 1) && (
+                  <p className={styles.aviso}>Este equipo se ha quedado sin portero.</p>
+                )}
                 <ul className={styles.lista}>
                   {equipo.map((a) => (
-                    <li key={a.id}>{nombreAsignacion(a)}</li>
+                    <li key={a.id}>
+                      {nombreAsignacion(a)}
+                      {esPorteroDe(a) && " · 🧤 Portero"}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -144,7 +158,10 @@ export default async function EquiposPartido({
               <h3 className={styles.equipoTitulo}>Lista de espera</h3>
               <ul className={styles.lista}>
                 {listaEspera.map((a) => (
-                  <li key={a.id}>{nombreAsignacion(a)}</li>
+                  <li key={a.id}>
+                    {nombreAsignacion(a)}
+                    {esPorteroDe(a) && " · 🧤 Portero"}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -184,8 +201,15 @@ export default async function EquiposPartido({
               {partido.invitados.map((i) => (
                 <li key={i.id} className={styles.pagoFila}>
                   <span>
-                    {i.nombre} · {i.estrellas} ★
+                    {i.nombre} · {i.estrellas} ★{i.esPortero && " · 🧤 Portero"}
                   </span>
+                  <AccionBoton
+                    accion={cambiarEsPorteroInvitado}
+                    campos={{ partidoId: partido.id, id: i.id }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    {i.esPortero ? "Quitar portero" : "Marcar portero"}
+                  </AccionBoton>
                   <AccionBoton
                     accion={quitarInvitado}
                     campos={{ partidoId: partido.id, id: i.id }}
@@ -213,6 +237,10 @@ export default async function EquiposPartido({
                 </option>
               ))}
             </select>
+            <label className={styles.checkboxPortero}>
+              <input type="checkbox" name="esPortero" />
+              Portero
+            </label>
             <button type="submit" className={styles.generar}>
               Añadir invitado
             </button>

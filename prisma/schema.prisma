@@ -141,6 +141,7 @@ model Invitado {
   nombre       String
   // valoración puesta directamente por quien lo añade, solo para este partido
   estrellas    Int
+  esPortero    Boolean            @default(false)
   anadidoPorId String
   anadidoPor   Usuario            @relation(fields: [anadidoPorId], references: [id])
   creadoEn     DateTime           @default(now())
@@ -158,6 +159,9 @@ model Asistencia {
   apuntadoEn  DateTime  @default(now())
   cancelado   Boolean   @default(false)
   canceladoEn DateTime?
+  // si esta persona va a jugar de portero en ESTE partido; no es un
+  // atributo fijo del jugador, se marca partido a partido
+  esPortero   Boolean   @default(false)
 
   @@unique([partidoId, usuarioId])
 }
@@ -202,6 +206,9 @@ model AsignacionEquipo {
   invitado     Invitado?         @relation(fields: [invitadoId], references: [id], onDelete: Cascade)
   // 0 = lista de espera; 1, 2 (y 3 en triangular) = número de equipo
   equipo       Int
+  // copia de si jugaba de portero en el momento de generar, para no
+  // depender de si luego cambia la marca en Asistencia/Invitado
+  esPortero    Boolean           @default(false)
 }
 
 model Enfrentamiento {

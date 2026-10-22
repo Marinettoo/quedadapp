@@ -4,7 +4,7 @@ import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
 import { AppHeader } from "@/components/AppHeader";
-import { apuntarse, cancelarAsistencia } from "../actions";
+import { apuntarse, cancelarAsistencia, cambiarMiPortero, cambiarPorteroDeUsuario } from "../actions";
 import {
   establecerImporte,
   indicarPago,
@@ -86,6 +86,7 @@ export default async function DetallePartido({
   const abierto = asistenciaAbierta(partido.fechaHora, partido.horasCierre);
   const cierre = cierreAsistencia(partido.fechaHora, partido.horasCierre);
   const yaApuntado = asistenciasActivas.some((a) => a.usuarioId === usuario.id);
+  const miAsistencia = asistenciasActivas.find((a) => a.usuarioId === usuario.id);
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
   // Confirmar pagos es solo cosa de quien reserva, aunque sea admin.
   const puedeConfirmarPagos = partido.encargadoId === usuario.id;
@@ -211,6 +212,15 @@ export default async function DetallePartido({
             className={yaApuntado ? styles.cancelar : styles.apuntarse}
           >
             {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
+          </AccionBoton>
+        )}
+        {yaApuntado && (
+          <AccionBoton
+            accion={cambiarMiPortero}
+            campos={{ partidoId: partido.id }}
+            className={styles.pagoBotonSecundario}
+          >
+            {miAsistencia?.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
           </AccionBoton>
         )}
       </div>
@@ -362,10 +372,27 @@ export default async function DetallePartido({
         ) : (
           <ul className={styles.lista}>
             {asistenciasActivas.map((a) => (
-              <li key={a.id}>{a.usuario.nombreUsuario}</li>
+              <li key={a.id} className={puedeGenerar ? styles.pagoFila : undefined}>
+                <span>
+                  {a.usuario.nombreUsuario}
+                  {a.esPortero && " · 🧤 Portero"}
+                </span>
+                {puedeGenerar && (
+                  <AccionBoton
+                    accion={cambiarPorteroDeUsuario}
+                    campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    {a.esPortero ? "Quitar portero" : "Marcar portero"}
+                  </AccionBoton>
+                )}
+              </li>
             ))}
             {partido.invitados.map((i) => (
-              <li key={i.id}>{i.nombre} (invitado)</li>
+              <li key={i.id}>
+                {i.nombre} (invitado)
+                {i.esPortero && " · 🧤 Portero"}
+              </li>
             ))}
           </ul>
         )}

@@ -190,3 +190,45 @@ export async function cancelarAsistencia(formData: FormData) {
 
   revalidatePath(`/partidos/${partidoId}`);
 }
+
+// Si juego de portero es cosa de cada partido, no del jugador en general:
+// cada uno marca lo suyo, y el admin o el encargado pueden marcarlo por
+// cualquier apuntado (por si alguien se olvida).
+export async function cambiarMiPortero(formData: FormData) {
+  const usuario = await exigirUsuarioAprobado();
+  const partidoId = String(formData.get("partidoId"));
+
+  const asistencia = await prisma.asistencia.findUnique({
+    where: { partidoId_usuarioId: { partidoId, usuarioId: usuario.id } },
+  });
+  if (!asistencia || asistencia.cancelado) {
+    throw new Error("Primero tienes que apuntarte al partido.");
+  }
+
+  await prisma.asistencia.update({
+    where: { id: asistencia.id },
+    data: { esPortero: !asistencia.esPortero },
+  });
+
+  revalidatePath(`/partidos/${partidoId}`);
+}
+
+export async function cambiarPorteroDeUsuario(formData: FormData) {
+  const partidoId = String(formData.get("partidoId"));
+  await exigirEncargadoOAdmin(partidoId);
+  const usuarioId = String(formData.get("usuarioId"));
+
+  const asistencia = await prisma.asistencia.findUnique({
+    where: { partidoId_usuarioId: { partidoId, usuarioId } },
+  });
+  if (!asistencia || asistencia.cancelado) {
+    throw new Error("Ese jugador no está apuntado.");
+  }
+
+  await prisma.asistencia.update({
+    where: { id: asistencia.id },
+    data: { esPortero: !asistencia.esPortero },
+  });
+
+  revalidatePath(`/partidos/${partidoId}`);
+}
