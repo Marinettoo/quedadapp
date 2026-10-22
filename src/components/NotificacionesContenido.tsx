@@ -5,6 +5,7 @@ import { AccionBoton } from "@/components/AccionBoton";
 import {
   marcarLeida,
   marcarTodasLeidas,
+  borrarNotificacion,
 } from "@/app/(app)/notificaciones/actions";
 import { ActivarPush } from "@/app/(app)/notificaciones/ActivarPush";
 import styles from "@/app/(app)/notificaciones/page.module.css";
@@ -38,6 +39,15 @@ export function NotificacionesContenido({
 }) {
   const hayNoLeidas = notificaciones.some((n) => !n.leidaEn);
 
+  function alAbrir(id: string) {
+    // Se abre (tiene enlace): se da por leída y se borra, no hace
+    // falta conservarla.
+    const formData = new FormData();
+    formData.append("id", id);
+    borrarNotificacion(formData);
+    onNavegar?.();
+  }
+
   return (
     <>
       <ActivarPush vapidPublicKey={vapidPublicKey} />
@@ -67,22 +77,32 @@ export function NotificacionesContenido({
                 className={n.leidaEn ? styles.item : `${styles.item} ${styles.itemNoLeido}`}
               >
                 {n.enlace ? (
-                  <Link href={n.enlace} className={styles.itemEnlace} onClick={onNavegar}>
+                  <Link href={n.enlace} className={styles.itemEnlace} onClick={() => alAbrir(n.id)}>
                     {contenido}
                   </Link>
                 ) : (
                   <div className={styles.itemEnlace}>{contenido}</div>
                 )}
-                {!n.leidaEn && (
+                <div className={styles.itemAcciones}>
+                  {!n.leidaEn && (
+                    <AccionBoton
+                      accion={marcarLeida}
+                      campos={{ id: n.id }}
+                      className={styles.marcarUna}
+                      ariaLabel="Marcar como leída"
+                    >
+                      ✓
+                    </AccionBoton>
+                  )}
                   <AccionBoton
-                    accion={marcarLeida}
+                    accion={borrarNotificacion}
                     campos={{ id: n.id }}
-                    className={styles.marcarUna}
-                    ariaLabel="Marcar como leída"
+                    className={styles.borrarUna}
+                    ariaLabel="Borrar notificación"
                   >
-                    ✓
+                    ✕
                   </AccionBoton>
-                )}
+                </div>
               </li>
             );
           })}

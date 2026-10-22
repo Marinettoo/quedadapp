@@ -58,3 +58,12 @@ export async function marcarTodasLeidas() {
 
   revalidatePath("/notificaciones");
 }
+
+export async function borrarNotificacion(formData: FormData) {
+  const usuario = await exigirUsuarioAprobado();
+  const id = String(formData.get("id"));
+
+  await prisma.notificacion.deleteMany({ where: { id, usuarioId: usuario.id } });
+
+  revalidatePath("/notificaciones");
+}

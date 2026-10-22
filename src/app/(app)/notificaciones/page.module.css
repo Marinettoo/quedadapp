@@ -110,7 +110,15 @@
   color: var(--meta);
 }
 
-.marcarUna {
+.itemAcciones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.marcarUna,
+.borrarUna {
   border: 1px solid var(--border);
   border-radius: 50%;
   width: 28px;
@@ -125,6 +133,7 @@
   flex-shrink: 0;
 }
 
-.marcarUna:hover {
+.marcarUna:hover,
+.borrarUna:hover {
   background: var(--border);
 }
