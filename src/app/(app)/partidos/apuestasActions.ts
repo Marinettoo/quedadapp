@@ -7,11 +7,18 @@ import { apuestasAbiertas } from "@/lib/partidos";
 import { crearNotificacion } from "@/lib/notificaciones";
 
 const CUOTA_FIJA = 0.2;
-const RESPUESTAS_VALIDAS = ["EQUIPO1", "EMPATE", "EQUIPO2"] as const;
-type Respuesta = (typeof RESPUESTAS_VALIDAS)[number];
 
-function esRespuestaValida(valor: string): valor is Respuesta {
-  return (RESPUESTAS_VALIDAS as readonly string[]).includes(valor);
+// En 2 equipos se puede empatar; en triangular siempre hay un 1º en la
+// miniliga (los enfrentamientos se deciden con gol de oro si hace falta),
+// así que no hay opción de empate.
+function respuestasValidas(formato: "TRIANGULAR" | "DOS_EQUIPOS"): readonly string[] {
+  return formato === "TRIANGULAR"
+    ? (["EQUIPO1", "EQUIPO2", "EQUIPO3"] as const)
+    : (["EQUIPO1", "EMPATE", "EQUIPO2"] as const);
+}
+
+function esRespuestaValida(valor: string, formato: "TRIANGULAR" | "DOS_EQUIPOS"): boolean {
+  return respuestasValidas(formato).includes(valor);
 }
 
 async function exigirUsuarioAprobado() {
@@ -41,8 +48,8 @@ export async function crearApuesta(formData: FormData) {
   const partidoId = String(formData.get("partidoId"));
   const { usuario, partido } = await exigirEncargadoOAdmin(partidoId);
 
-  if (!partido.generacion || partido.generacion.formato !== "DOS_EQUIPOS") {
-    throw new Error("Las apuestas de resultado solo están disponibles en partidos a 2 equipos.");
+  if (!partido.generacion) {
+    throw new Error("Primero hay que generar los equipos del partido.");
   }
   if (!apuestasAbiertas(partido.fechaHora)) {
     throw new Error("Ya no se puede crear una apuesta a menos de 30 minutos del partido.");
@@ -67,16 +74,19 @@ export async function pronosticar(formData: FormData) {
   const respuesta = String(formData.get("respuesta") ?? "");
   const cantidad = Number(formData.get("cantidad"));
 
-  if (!esRespuestaValida(respuesta)) {
-    throw new Error("Elige victoria, empate o derrota.");
-  }
   if (!Number.isFinite(cantidad) || cantidad <= 0) {
     throw new Error("Indica cuánto quieres apostar.");
   }
 
-  const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
-  if (!partido || !apuestasAbiertas(partido.fechaHora)) {
+  const partido = await prisma.partido.findUnique({
+    where: { id: partidoId },
+    include: { generacion: { select: { formato: true } } },
+  });
+  if (!partido || !partido.generacion || !apuestasAbiertas(partido.fechaHora)) {
     throw new Error("Ya no se puede pronosticar a menos de 30 minutos del partido.");
+  }
+  if (!esRespuestaValida(respuesta, partido.generacion.formato)) {
+    throw new Error("Elige una opción válida.");
   }
 
   await prisma.pronostico.upsert({
@@ -106,11 +116,11 @@ export async function retirarPronostico(formData: FormData) {
 export async function resolverApuesta(formData: FormData) {
   const apuestaId = String(formData.get("apuestaId"));
   const partidoId = String(formData.get("partidoId"));
-  await exigirEncargadoOAdmin(partidoId);
+  const { partido } = await exigirEncargadoOAdmin(partidoId);
 
   const resultado = String(formData.get("resultado") ?? "");
-  if (!esRespuestaValida(resultado)) {
-    throw new Error("Elige victoria, empate o derrota.");
+  if (!partido.generacion || !esRespuestaValida(resultado, partido.generacion.formato)) {
+    throw new Error("Elige una opción válida.");
   }
 
   const apuesta = await prisma.apuesta.findUnique({

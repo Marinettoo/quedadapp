@@ -58,7 +58,7 @@ export default async function ApuestasPartido({
 
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
   const abierto = apuestasAbiertas(partido.fechaHora);
-  const permiteApuestas = partido.generacion?.formato === "DOS_EQUIPOS";
+  const permiteApuestas = partido.generacion != null;
 
   return (
     <main className={styles.screen}>
@@ -76,6 +76,7 @@ export default async function ApuestasPartido({
         puedeGenerar={puedeGenerar}
         abierto={abierto}
         permiteApuestas={permiteApuestas}
+        formato={partido.generacion?.formato ?? "DOS_EQUIPOS"}
       />
     </main>
   );

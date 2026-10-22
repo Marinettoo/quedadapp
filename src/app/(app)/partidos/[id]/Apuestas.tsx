@@ -12,17 +12,27 @@ import {
 } from "../apuestasActions";
 import styles from "./page.module.css";
 
-const OPCIONES = [
+type Formato = "TRIANGULAR" | "DOS_EQUIPOS";
+
+const OPCIONES_DOS_EQUIPOS = [
   { valor: "EQUIPO1", etiqueta: "Victoria Equipo 1" },
   { valor: "EMPATE", etiqueta: "Empate" },
   { valor: "EQUIPO2", etiqueta: "Victoria Equipo 2" },
 ] as const;
 
-const ETIQUETAS: Record<string, string> = {
-  EQUIPO1: "Victoria Equipo 1",
-  EMPATE: "Empate",
-  EQUIPO2: "Victoria Equipo 2",
-};
+const OPCIONES_TRIANGULAR = [
+  { valor: "EQUIPO1", etiqueta: "1º Equipo 1" },
+  { valor: "EQUIPO2", etiqueta: "1º Equipo 2" },
+  { valor: "EQUIPO3", etiqueta: "1º Equipo 3" },
+] as const;
+
+function opcionesDe(formato: Formato) {
+  return formato === "TRIANGULAR" ? OPCIONES_TRIANGULAR : OPCIONES_DOS_EQUIPOS;
+}
+
+function etiquetasDe(formato: Formato): Record<string, string> {
+  return Object.fromEntries(opcionesDe(formato).map((o) => [o.valor, o.etiqueta]));
+}
 
 type Pronostico = {
   id: string;
@@ -52,6 +62,7 @@ export function Apuestas({
   puedeGenerar,
   abierto,
   permiteApuestas,
+  formato,
 }: {
   partidoId: string;
   apuestas: Apuesta[];
@@ -59,19 +70,23 @@ export function Apuestas({
   puedeGenerar: boolean;
   abierto: boolean;
   permiteApuestas: boolean;
+  formato: Formato;
 }) {
   return (
     <section>
       <h2 className={styles.subtitulo}>Apuestas de la peña</h2>
       <p className={styles.meta}>
-        Pronostica victoria, empate o derrota y apuesta lo que quieras. Si aciertas, recuperas lo
-        apostado más la mitad como beneficio. Cada apuesta cobra 0.20 € de comisión para el
-        bote, aciertes o falles. Se puede apostar o retirar hasta 30 minutos antes del partido.
+        {formato === "TRIANGULAR"
+          ? "Pronostica quién queda primero en la miniliga y apuesta lo que quieras."
+          : "Pronostica victoria, empate o derrota y apuesta lo que quieras."}{" "}
+        Si aciertas, recuperas lo apostado más la mitad como beneficio. Cada apuesta cobra 0.20 €
+        de comisión para el bote, aciertes o falles. Se puede apostar o retirar hasta 30 minutos
+        antes del partido.
       </p>
 
       {!permiteApuestas ? (
         <p className={styles.meta}>
-          Las apuestas de resultado solo están disponibles en partidos a 2 equipos.
+          Primero hay que generar los equipos del partido para poder crear una apuesta.
         </p>
       ) : apuestas.length === 0 ? (
         <>
@@ -94,6 +109,7 @@ export function Apuestas({
               usuarioId={usuarioId}
               puedeGenerar={puedeGenerar}
               abierto={abierto}
+              formato={formato}
             />
           ))}
         </div>
@@ -108,18 +124,22 @@ function ApuestaItem({
   usuarioId,
   puedeGenerar,
   abierto,
+  formato,
 }: {
   apuesta: Apuesta;
   partidoId: string;
   usuarioId: string;
   puedeGenerar: boolean;
   abierto: boolean;
+  formato: Formato;
 }) {
   const [resolviendo, setResolviendo] = useState(false);
   const tuPronostico = apuesta.pronosticos.find((p) => p.usuarioId === usuarioId);
   const resuelta = apuesta.resultado !== null;
   const [cantidad, setCantidad] = useState(tuPronostico ? String(tuPronostico.cantidad) : "");
   const [pendiente, startTransition] = useTransition();
+  const opciones = opcionesDe(formato);
+  const etiquetas = etiquetasDe(formato);
 
   function apostar(respuesta: string) {
     const valor = Number(cantidad);
@@ -139,12 +159,14 @@ function ApuestaItem({
   return (
     <div className={styles.apuestaCard}>
       <div className={styles.apuestaCabecera}>
-        <span className={styles.apuestaPregunta}>¿Quién gana?</span>
+        <span className={styles.apuestaPregunta}>
+          {formato === "TRIANGULAR" ? "¿Quién queda primero?" : "¿Quién gana?"}
+        </span>
         <span className={styles.apuestaCuota}>comisión {apuesta.cuota.toFixed(2)} €</span>
       </div>
 
       {resuelta ? (
-        <p className={styles.apuestaResultado}>Resultado: {ETIQUETAS[apuesta.resultado!]}</p>
+        <p className={styles.apuestaResultado}>Resultado: {etiquetas[apuesta.resultado!]}</p>
       ) : !abierto ? (
         <p className={styles.meta}>El plazo para apostar ya ha cerrado.</p>
       ) : null}
@@ -164,7 +186,7 @@ function ApuestaItem({
             />
           </label>
           <div className={styles.apuestaOpciones}>
-            {OPCIONES.map((o) => (
+            {opciones.map((o) => (
               <button
                 key={o.valor}
                 type="button"
@@ -201,7 +223,7 @@ function ApuestaItem({
                 <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
                 <span className={styles.meta}>
                   {" "}
-                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} · apostó {p.cantidad.toFixed(2)} €
+                  · {etiquetas[p.respuesta] ?? p.respuesta} · apostó {p.cantidad.toFixed(2)} €
                   {resuelta && p.acierto && p.importeGanado
                     ? ` · ✓ acertó, recibe ${(p.cantidad + p.importeGanado).toFixed(2)} € (apuesta + ${p.importeGanado.toFixed(2)} € de beneficio) · debe 0.20 € de comisión`
                     : ""}
@@ -255,9 +277,11 @@ function ApuestaItem({
                 <option value="" disabled>
                   Resultado real
                 </option>
-                <option value="EQUIPO1">Victoria Equipo 1</option>
-                <option value="EMPATE">Empate</option>
-                <option value="EQUIPO2">Victoria Equipo 2</option>
+                {opciones.map((o) => (
+                  <option key={o.valor} value={o.valor}>
+                    {o.etiqueta}
+                  </option>
+                ))}
               </select>
               <button type="submit" className={styles.generar}>
                 Confirmar resultado
