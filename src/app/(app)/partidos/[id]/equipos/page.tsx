@@ -9,6 +9,7 @@ import { crearGrupo, eliminarGrupo } from "../../gruposActions";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
 import { SubnavPartido } from "../SubnavPartido";
+import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
 import styles from "../page.module.css";
 
 export const instant = false;
@@ -156,28 +157,28 @@ export default async function EquiposPartido({
                 {equiposSinPortero.includes(i + 1) && (
                   <p className={styles.aviso}>Este equipo se ha quedado sin portero.</p>
                 )}
-                <ul className={styles.lista}>
-                  {equipo.map((a) => (
-                    <li key={a.id}>
+                <ListaAnimada className={styles.lista}>
+                  {equipo.map((a, indice) => (
+                    <ItemAnimado key={a.id} indice={indice}>
                       {nombreAsignacion(a)}
                       {esPorteroDe(a) && " · 🧤 Portero"}
-                    </li>
+                    </ItemAnimado>
                   ))}
-                </ul>
+                </ListaAnimada>
               </div>
             ))}
           </div>
           {listaEspera.length > 0 && (
             <div className={styles.equipo}>
               <h3 className={styles.equipoTitulo}>Lista de espera</h3>
-              <ul className={styles.lista}>
-                {listaEspera.map((a) => (
-                  <li key={a.id}>
+              <ListaAnimada className={styles.lista}>
+                {listaEspera.map((a, indice) => (
+                  <ItemAnimado key={a.id} indice={indice}>
                     {nombreAsignacion(a)}
                     {esPorteroDe(a) && " · 🧤 Portero"}
-                  </li>
+                  </ItemAnimado>
                 ))}
-              </ul>
+              </ListaAnimada>
             </div>
           )}
         </section>

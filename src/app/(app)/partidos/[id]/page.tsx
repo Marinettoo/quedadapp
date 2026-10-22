@@ -19,6 +19,7 @@ import {
 } from "../resultadosActions";
 import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
+import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
 import { EditarPartido } from "./EditarPartido";
 import { SubnavPartido } from "./SubnavPartido";
 import styles from "./page.module.css";
@@ -370,9 +371,13 @@ export default async function DetallePartido({
         {asistenciasActivas.length === 0 && partido.invitados.length === 0 ? (
           <p className={styles.meta}>Todavía no se ha apuntado nadie.</p>
         ) : (
-          <ul className={styles.lista}>
-            {asistenciasActivas.map((a) => (
-              <li key={a.id} className={puedeGenerar ? styles.pagoFila : undefined}>
+          <ListaAnimada className={styles.lista}>
+            {asistenciasActivas.map((a, indice) => (
+              <ItemAnimado
+                key={a.id}
+                indice={indice}
+                className={puedeGenerar ? styles.pagoFila : undefined}
+              >
                 <span>
                   {a.usuario.nombreUsuario}
                   {a.esPortero && " · 🧤 Portero"}
@@ -386,15 +391,15 @@ export default async function DetallePartido({
                     {a.esPortero ? "Quitar portero" : "Marcar portero"}
                   </AccionBoton>
                 )}
-              </li>
+              </ItemAnimado>
             ))}
-            {partido.invitados.map((i) => (
-              <li key={i.id}>
+            {partido.invitados.map((i, indice) => (
+              <ItemAnimado key={i.id} indice={asistenciasActivas.length + indice}>
                 {i.nombre} (invitado)
                 {i.esPortero && " · 🧤 Portero"}
-              </li>
+              </ItemAnimado>
             ))}
-          </ul>
+          </ListaAnimada>
         )}
       </section>
 

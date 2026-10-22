@@ -1,6 +1,7 @@
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Navbar } from "@/components/Navbar";
+import { Transicion } from "@/components/Transicion";
 
 // Las páginas de este grupo dependen de la sesión (cookies) en cada
 // petición, así que no se pueden prerenderizar de forma estática.
@@ -30,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           vapidPublicKey={process.env.VAPID_PUBLIC_KEY ?? null}
         />
       )}
-      {children}
+      <Transicion>{children}</Transicion>
     </>
   );
 }
