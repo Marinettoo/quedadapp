@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
 import { BallMark } from "@/components/BallMark";
 import { salir } from "@/app/actions";
+import { CreadorModal } from "@/components/CreadorModal";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -100,6 +101,10 @@ export default async function Panel() {
           Cerrar sesión
         </button>
       </form>
+
+      <div className={styles.creador}>
+        <CreadorModal />
+      </div>
     </main>
   );
 }

@@ -152,3 +152,7 @@
 .salir:hover {
   color: var(--ink);
 }
+
+.creador {
+  margin-top: 32px;
+}
