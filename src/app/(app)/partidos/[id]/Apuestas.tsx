@@ -64,10 +64,9 @@ export function Apuestas({
     <section>
       <h2 className={styles.subtitulo}>Apuestas de la peña</h2>
       <p className={styles.meta}>
-        Victoria Equipo 1, empate o victoria Equipo 2, apostando lo que quieras. Hay que añadir
-        siempre 0.20 € aparte (no cuenta como premio) que van al bote. Si aciertas, ganas la
-        mitad de lo apostado; si fallas, lo pierdes entero. Se puede apostar o retirar hasta 30
-        minutos antes del partido.
+        Pronostica victoria, empate o derrota y apuesta lo que quieras. Si aciertas, recuperas lo
+        apostado más la mitad como beneficio. Cada apuesta cobra 0.20 € de comisión para el
+        bote, aciertes o falles. Se puede apostar o retirar hasta 30 minutos antes del partido.
       </p>
 
       {!permiteApuestas ? (
@@ -141,7 +140,7 @@ function ApuestaItem({
     <div className={styles.apuestaCard}>
       <div className={styles.apuestaCabecera}>
         <span className={styles.apuestaPregunta}>¿Quién gana?</span>
-        <span className={styles.apuestaCuota}>cuota {apuesta.cuota.toFixed(2)} €</span>
+        <span className={styles.apuestaCuota}>comisión {apuesta.cuota.toFixed(2)} €</span>
       </div>
 
       {resuelta ? (
@@ -202,12 +201,13 @@ function ApuestaItem({
                 <span className={styles.nombre}>{p.usuario.nombreUsuario}</span>
                 <span className={styles.meta}>
                   {" "}
-                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} · {p.cantidad.toFixed(2)} €
-                  {resuelta && (p.acierto ? " ✓ acertó" : " ✗ falló")}
+                  · {ETIQUETAS[p.respuesta] ?? p.respuesta} · apostó {p.cantidad.toFixed(2)} €
                   {resuelta && p.acierto && p.importeGanado
-                    ? ` · gana ${p.importeGanado.toFixed(2)} €`
+                    ? ` · ✓ acertó, recibe ${(p.cantidad + p.importeGanado).toFixed(2)} € (apuesta + ${p.importeGanado.toFixed(2)} € de beneficio) · debe 0.20 € de comisión`
                     : ""}
-                  {resuelta && p.importeDebido ? ` · debe ${p.importeDebido.toFixed(2)} €` : ""}
+                  {resuelta && !p.acierto && p.importeDebido
+                    ? ` · ✗ falló, debe ${p.importeDebido.toFixed(2)} € (apuesta + comisión)`
+                    : ""}
                 </span>
               </div>
               {resuelta && !!p.importeDebido && (
