@@ -323,6 +323,16 @@
   color: var(--meta);
 }
 
+.gruposFieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
 .resultadoForm select {
   font-family: inherit;
   font-size: 14px;

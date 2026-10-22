@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { generarEquiposPartido } from "../../generarActions";
 import { agregarInvitado, quitarInvitado, cambiarEsPorteroInvitado } from "../../invitadosActions";
 import { establecerColorEquipo } from "../../coloresActions";
+import { crearGrupo, eliminarGrupo } from "../../gruposActions";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
 import { SubnavPartido } from "../SubnavPartido";
@@ -47,8 +48,21 @@ export default async function EquiposPartido({
     where: { id },
     include: {
       encargado: { select: { nombreUsuario: true } },
-      asistencias: true,
+      asistencias: {
+        include: { usuario: { select: { id: true, nombreUsuario: true } } },
+      },
       invitados: { orderBy: { creadoEn: "asc" } },
+      grupos: {
+        orderBy: { creadoEn: "asc" },
+        include: {
+          miembros: {
+            include: {
+              usuario: { select: { id: true, nombreUsuario: true } },
+              invitado: { select: { id: true, nombre: true } },
+            },
+          },
+        },
+      },
       generacion: {
         include: {
           asignaciones: {
@@ -169,6 +183,59 @@ export default async function EquiposPartido({
         </section>
       ) : (
         !puedeGenerar && <p className={styles.meta}>Todavía no se han generado los equipos.</p>
+      )}
+
+      {puedeGenerar && (
+        <section>
+          <h2 className={styles.subtitulo}>Grupos</h2>
+          <p className={styles.meta}>
+            Jugadores que quieren coincidir en el mismo equipo (p. ej. un grupo de
+            amigos). Al generar se intentan mantener juntos; si un grupo no cabe
+            entero en ningún equipo, se deshace y se avisa.
+          </p>
+          {partido.grupos.length > 0 && (
+            <ul className={styles.lista}>
+              {partido.grupos.map((g) => (
+                <li key={g.id} className={styles.pagoFila}>
+                  <span>
+                    {g.miembros
+                      .map((m) => m.usuario?.nombreUsuario ?? `${m.invitado?.nombre} (invitado)`)
+                      .join(", ")}
+                  </span>
+                  <AccionBoton
+                    accion={eliminarGrupo}
+                    campos={{ partidoId: partido.id, grupoId: g.id }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    Quitar grupo
+                  </AccionBoton>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form action={crearGrupo} className={styles.resultadoForm}>
+            <input type="hidden" name="partidoId" value={partido.id} />
+            <fieldset className={styles.gruposFieldset}>
+              {partido.asistencias
+                .filter((a) => !a.cancelado)
+                .map((a) => (
+                  <label key={a.usuarioId} className={styles.checkboxPortero}>
+                    <input type="checkbox" name="miembros" value={`usuario:${a.usuarioId}`} />
+                    {a.usuario.nombreUsuario}
+                  </label>
+                ))}
+              {partido.invitados.map((i) => (
+                <label key={i.id} className={styles.checkboxPortero}>
+                  <input type="checkbox" name="miembros" value={`invitado:${i.id}`} />
+                  {i.nombre} (invitado)
+                </label>
+              ))}
+            </fieldset>
+            <button type="submit" className={styles.generar}>
+              Crear grupo
+            </button>
+          </form>
+        </section>
       )}
 
       {puedeGenerar && (

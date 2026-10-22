@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { promediosEstrellas } from "@/lib/valoraciones";
-import { generarEquipos, type JugadorGen } from "@/lib/generador";
+import { generarEquipos, type JugadorGen, type GrupoGen } from "@/lib/generador";
 import { crearNotificacion } from "@/lib/notificaciones";
 
 export async function generarEquiposPartido(formData: FormData) {
@@ -30,6 +30,10 @@ export async function generarEquiposPartido(formData: FormData) {
   const invitados = await prisma.invitado.findMany({
     where: { partidoId },
     orderBy: { creadoEn: "asc" },
+  });
+  const grupos = await prisma.grupo.findMany({
+    where: { partidoId },
+    include: { miembros: true },
   });
 
   if (asistencias.length + invitados.length < 2) {
@@ -64,7 +68,11 @@ export async function generarEquiposPartido(formData: FormData) {
   combinados.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
   const jugadores: JugadorGen[] = combinados.map((c) => c.jugador);
 
-  const resultado = generarEquipos(jugadores);
+  const grupales: GrupoGen[] = grupos.map((g) => ({
+    ids: g.miembros.map((m) => m.usuarioId ?? m.invitadoId!),
+  }));
+
+  const resultado = generarEquipos(jugadores, grupales);
 
   function datosAsignacion(j: JugadorGen, equipo: number) {
     return {
@@ -120,6 +128,14 @@ export async function generarEquiposPartido(formData: FormData) {
           enlace: `/partidos/${partidoId}/equipos`,
         }),
       ),
+    ...resultado.gruposRotos.map((grupo) =>
+      crearNotificacion({
+        usuarioId: usuario.id,
+        tipo: "EQUIPOS_GENERADOS",
+        mensaje: `No se pudo mantener junto al grupo de ${grupo.map((j) => j.nombre).join(", ")}: no cabían enteros en un equipo.`,
+        enlace: `/partidos/${partidoId}/equipos`,
+      }),
+    ),
   ]);
 
   revalidatePath(`/partidos/${partidoId}`);

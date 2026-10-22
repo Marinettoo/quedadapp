@@ -51,6 +51,7 @@ model Usuario {
   votosFecha           VotoFecha[]
   notificaciones       Notificacion[]
   suscripcionesPush    SuscripcionPush[]
+  miembroGrupos        MiembroGrupo[]
 }
 
 model Sesion {
@@ -79,6 +80,32 @@ model Partido {
   invitados     Invitado[]
   coloresEquipo ColorEquipo[]
   apuestas      Apuesta[]
+  grupos        Grupo[]
+}
+
+// Grupo de jugadores que quieren coincidir en el mismo equipo al generar
+// (p. ej. un grupo de amigos). Es cosa de cada partido, no permanente:
+// lo crea el admin o el encargado antes de generar los equipos.
+model Grupo {
+  id        String         @id @default(cuid())
+  partidoId String
+  partido   Partido        @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  creadoEn  DateTime       @default(now())
+  miembros  MiembroGrupo[]
+}
+
+model MiembroGrupo {
+  id         String    @id @default(cuid())
+  grupoId    String
+  grupo      Grupo     @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  // exactamente uno de los dos: jugador registrado o invitado
+  usuarioId  String?
+  usuario    Usuario?  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  invitadoId String?
+  invitado   Invitado? @relation(fields: [invitadoId], references: [id], onDelete: Cascade)
+
+  @@unique([grupoId, usuarioId])
+  @@unique([grupoId, invitadoId])
 }
 
 // Apuesta fija sobre el resultado de un partido a 2 equipos: victoria de
@@ -148,6 +175,7 @@ model Invitado {
   asignaciones AsignacionEquipo[]
   pagos        Pago[]
   goles        GolJugador[]
+  miembroGrupos MiembroGrupo[]
 }
 
 model Asistencia {
