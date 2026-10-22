@@ -1,6 +1,7 @@
 import { randomBytes, createHash } from "crypto";
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { prisma } from "@/lib/db";
 import type { Usuario } from "@/generated/prisma/client";
 
@@ -30,6 +31,11 @@ export async function crearSesion(usuarioId: string) {
 }
 
 export const obtenerUsuarioSesion = cache(async (): Promise<Usuario | null> => {
+  // Next.js (Cache Components) necesita esta señal explícita de que la
+  // petición es dinámica antes de usar un valor que cambia entre
+  // renders (aquí, `new Date()` al comprobar si la sesión ha caducado).
+  await connection();
+
   const store = await cookies();
   const token = store.get(NOMBRE_COOKIE)?.value;
   if (!token) return null;
