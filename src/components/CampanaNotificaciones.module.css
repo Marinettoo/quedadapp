@@ -3,8 +3,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: none;
+  background: none;
   color: var(--ink);
   cursor: pointer;
   display: inline-flex;
@@ -14,7 +14,7 @@
 }
 
 .boton:hover {
-  background: var(--border);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .icono {

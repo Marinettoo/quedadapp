@@ -12,9 +12,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const solicitudesPendientes = esAdmin
     ? await prisma.usuario.count({ where: { estado: "PENDIENTE" } })
     : 0;
-  const notificacionesNoLeidas = usuario
-    ? await prisma.notificacion.count({ where: { usuarioId: usuario.id, leidaEn: null } })
-    : 0;
+  const notificaciones = usuario
+    ? await prisma.notificacion.findMany({
+        where: { usuarioId: usuario.id },
+        orderBy: { creadaEn: "desc" },
+        take: 50,
+      })
+    : [];
 
   return (
     <>
@@ -22,7 +26,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Navbar
           esAdmin={esAdmin}
           solicitudesPendientes={solicitudesPendientes}
-          notificacionesNoLeidas={notificacionesNoLeidas}
+          notificaciones={notificaciones}
+          vapidPublicKey={process.env.VAPID_PUBLIC_KEY ?? null}
         />
       )}
       {children}

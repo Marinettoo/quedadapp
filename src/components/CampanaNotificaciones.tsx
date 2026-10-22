@@ -1,10 +1,16 @@
-import Link from "next/link";
 import styles from "./CampanaNotificaciones.module.css";
 
-export function CampanaNotificaciones({ noLeidas }: { noLeidas: number }) {
+export function CampanaNotificaciones({
+  noLeidas,
+  onClick,
+}: {
+  noLeidas: number;
+  onClick: () => void;
+}) {
   return (
-    <Link
-      href="/notificaciones"
+    <button
+      type="button"
+      onClick={onClick}
       className={styles.boton}
       aria-label={noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : "Notificaciones"}
     >
@@ -20,6 +26,6 @@ export function CampanaNotificaciones({ noLeidas }: { noLeidas: number }) {
       {noLeidas > 0 && (
         <span className={styles.badge}>{noLeidas > 9 ? "9+" : noLeidas}</span>
       )}
-    </Link>
+    </button>
   );
 }

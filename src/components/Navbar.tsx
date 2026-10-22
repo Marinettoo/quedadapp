@@ -7,12 +7,22 @@ import { BallMark } from "./BallMark";
 import { ToggleTema } from "./ToggleTema";
 import { CampanaNotificaciones } from "./CampanaNotificaciones";
 import { AyudaModal } from "./AyudaModal";
+import { NotificacionesModal } from "./NotificacionesModal";
 import styles from "./Navbar.module.css";
+
+type Notificacion = {
+  id: string;
+  mensaje: string;
+  enlace: string | null;
+  leidaEn: Date | null;
+  creadaEn: Date;
+};
 
 type NavbarProps = {
   esAdmin: boolean;
   solicitudesPendientes: number;
-  notificacionesNoLeidas: number;
+  notificaciones: Notificacion[];
+  vapidPublicKey: string | null;
 };
 
 const ENLACES_BASE = [
@@ -29,10 +39,17 @@ const ENLACES_ADMIN = [
   { href: "/admin/usuarios", etiqueta: "Usuarios" },
 ];
 
-export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas }: NavbarProps) {
+export function Navbar({
+  esAdmin,
+  solicitudesPendientes,
+  notificaciones,
+  vapidPublicKey,
+}: NavbarProps) {
   const pathname = usePathname();
   const [abierto, setAbierto] = useState(false);
   const [ayudaAbierta, setAyudaAbierta] = useState(false);
+  const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
+  const notificacionesNoLeidas = notificaciones.filter((n) => !n.leidaEn).length;
   const enlaces = [...ENLACES_BASE, ...(esAdmin ? ENLACES_ADMIN : [])];
 
   return (
@@ -57,7 +74,10 @@ export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas 
         </ul>
 
         <div className={styles.acciones}>
-          <CampanaNotificaciones noLeidas={notificacionesNoLeidas} />
+          <CampanaNotificaciones
+            noLeidas={notificacionesNoLeidas}
+            onClick={() => setNotificacionesAbiertas(true)}
+          />
           <ToggleTema className={styles.toggle} />
           <button
             type="button"
@@ -99,6 +119,12 @@ export function Navbar({ esAdmin, solicitudesPendientes, notificacionesNoLeidas 
       </ul>
 
       <AyudaModal abierto={ayudaAbierta} onCerrar={() => setAyudaAbierta(false)} />
+      <NotificacionesModal
+        abierto={notificacionesAbiertas}
+        onCerrar={() => setNotificacionesAbiertas(false)}
+        notificaciones={notificaciones}
+        vapidPublicKey={vapidPublicKey}
+      />
     </nav>
   );
 }
