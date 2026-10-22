@@ -217,6 +217,142 @@ export default async function DetallePartido({
 
       {puedeGenerar && <EditarPartido partido={partido} />}
 
+      {generacion && (
+        <section>
+          <h2 className={styles.subtitulo}>Resultado</h2>
+
+          {esTriangular ? (
+            <>
+              <table className={styles.tabla}>
+                <thead>
+                  <tr>
+                    <th>Equipo</th>
+                    <th>PJ</th>
+                    <th>G</th>
+                    <th>E</th>
+                    <th>P</th>
+                    <th>GF</th>
+                    <th>GC</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tabla.map((fila) => (
+                    <tr key={fila.equipo}>
+                      <td>Equipo {fila.equipo}</td>
+                      <td>{fila.jugados}</td>
+                      <td>{fila.ganados}</td>
+                      <td>{fila.empatados}</td>
+                      <td>{fila.perdidos}</td>
+                      <td>{fila.golesFavor}</td>
+                      <td>{fila.golesContra}</td>
+                      <td>{fila.puntos}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {partido.enfrentamientos.length > 0 && (
+                <ul className={styles.lista}>
+                  {partido.enfrentamientos.map((e) => (
+                    <li key={e.id} className={styles.pagoFila}>
+                      <span>
+                        Equipo {e.equipoLocal} {e.golesLocal} - {e.golesVisitante} Equipo{" "}
+                        {e.equipoVisitante}
+                      </span>
+                      {puedeGenerar && (
+                        <AccionBoton
+                          accion={eliminarEnfrentamiento}
+                          campos={{ partidoId: partido.id, id: e.id }}
+                          className={styles.pagoBotonSecundario}
+                        >
+                          Eliminar
+                        </AccionBoton>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {puedeGenerar && (
+                <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
+                  <input type="hidden" name="partidoId" value={partido.id} />
+                  <select name="equipoLocal" defaultValue="1" required>
+                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        Equipo {n}
+                      </option>
+                    ))}
+                  </select>
+                  <span>contra</span>
+                  <select name="equipoVisitante" defaultValue="2" required>
+                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        Equipo {n}
+                      </option>
+                    ))}
+                  </select>
+                  {renderCamposGoles()}
+                  <button type="submit" className={styles.generar}>
+                    Añadir
+                  </button>
+                </form>
+              )}
+            </>
+          ) : !resultadoDosEquipos ? (
+            puedeGenerar ? (
+              <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
+                <input type="hidden" name="partidoId" value={partido.id} />
+                <input type="hidden" name="equipoLocal" value={1} />
+                <input type="hidden" name="equipoVisitante" value={2} />
+                {renderCamposGoles()}
+                <button type="submit" className={styles.generar}>
+                  Guardar resultado
+                </button>
+              </form>
+            ) : (
+              <p className={styles.meta}>Todavía no hay resultado.</p>
+            )
+          ) : (
+            <div className={styles.resultadoFinal}>
+              <div className={styles.marcador}>
+                <div
+                  className={
+                    resultadoDosEquipos.golesLocal >= resultadoDosEquipos.golesVisitante
+                      ? `${styles.marcadorEquipo} ${styles.marcadorGanador}`
+                      : styles.marcadorEquipo
+                  }
+                >
+                  <span className={styles.marcadorNombre}>Equipo 1</span>
+                  <span className={styles.marcadorCifra}>{resultadoDosEquipos.golesLocal}</span>
+                </div>
+                <span className={styles.marcadorSeparador}>–</span>
+                <div
+                  className={
+                    resultadoDosEquipos.golesVisitante >= resultadoDosEquipos.golesLocal
+                      ? `${styles.marcadorEquipo} ${styles.marcadorGanador}`
+                      : styles.marcadorEquipo
+                  }
+                >
+                  <span className={styles.marcadorNombre}>Equipo 2</span>
+                  <span className={styles.marcadorCifra}>{resultadoDosEquipos.golesVisitante}</span>
+                </div>
+              </div>
+              {puedeGenerar && (
+                <form action={editarEnfrentamiento} className={styles.resultadoForm}>
+                  <input type="hidden" name="partidoId" value={partido.id} />
+                  <input type="hidden" name="id" value={resultadoDosEquipos.id} />
+                  {renderCamposGoles(golesExistentes(resultadoDosEquipos))}
+                  <button type="submit" className={styles.pagoBotonSecundario}>
+                    Corregir
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
       <section>
         <h2 className={styles.subtitulo}>
           Apuntados ({asistenciasActivas.length + partido.invitados.length})
@@ -355,121 +491,6 @@ export default async function DetallePartido({
         </section>
       )}
 
-      {generacion && (
-        <section>
-          <h2 className={styles.subtitulo}>Resultado</h2>
-
-          {esTriangular ? (
-            <>
-              <table className={styles.tabla}>
-                <thead>
-                  <tr>
-                    <th>Equipo</th>
-                    <th>PJ</th>
-                    <th>G</th>
-                    <th>E</th>
-                    <th>P</th>
-                    <th>GF</th>
-                    <th>GC</th>
-                    <th>Pts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tabla.map((fila) => (
-                    <tr key={fila.equipo}>
-                      <td>Equipo {fila.equipo}</td>
-                      <td>{fila.jugados}</td>
-                      <td>{fila.ganados}</td>
-                      <td>{fila.empatados}</td>
-                      <td>{fila.perdidos}</td>
-                      <td>{fila.golesFavor}</td>
-                      <td>{fila.golesContra}</td>
-                      <td>{fila.puntos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {partido.enfrentamientos.length > 0 && (
-                <ul className={styles.lista}>
-                  {partido.enfrentamientos.map((e) => (
-                    <li key={e.id} className={styles.pagoFila}>
-                      <span>
-                        Equipo {e.equipoLocal} {e.golesLocal} - {e.golesVisitante} Equipo{" "}
-                        {e.equipoVisitante}
-                      </span>
-                      {puedeGenerar && (
-                        <AccionBoton
-                          accion={eliminarEnfrentamiento}
-                          campos={{ partidoId: partido.id, id: e.id }}
-                          className={styles.pagoBotonSecundario}
-                        >
-                          Eliminar
-                        </AccionBoton>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {puedeGenerar && (
-                <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
-                  <input type="hidden" name="partidoId" value={partido.id} />
-                  <select name="equipoLocal" defaultValue="1" required>
-                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        Equipo {n}
-                      </option>
-                    ))}
-                  </select>
-                  <span>contra</span>
-                  <select name="equipoVisitante" defaultValue="2" required>
-                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        Equipo {n}
-                      </option>
-                    ))}
-                  </select>
-                  {renderCamposGoles()}
-                  <button type="submit" className={styles.generar}>
-                    Añadir
-                  </button>
-                </form>
-              )}
-            </>
-          ) : !resultadoDosEquipos ? (
-            puedeGenerar ? (
-              <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
-                <input type="hidden" name="partidoId" value={partido.id} />
-                <input type="hidden" name="equipoLocal" value={1} />
-                <input type="hidden" name="equipoVisitante" value={2} />
-                {renderCamposGoles()}
-                <button type="submit" className={styles.generar}>
-                  Guardar resultado
-                </button>
-              </form>
-            ) : (
-              <p className={styles.meta}>Todavía no hay resultado.</p>
-            )
-          ) : (
-            <div className={styles.resultadoFinal}>
-              <span>
-                Equipo 1 {resultadoDosEquipos.golesLocal} - {resultadoDosEquipos.golesVisitante} Equipo 2
-              </span>
-              {puedeGenerar && (
-                <form action={editarEnfrentamiento} className={styles.resultadoForm}>
-                  <input type="hidden" name="partidoId" value={partido.id} />
-                  <input type="hidden" name="id" value={resultadoDosEquipos.id} />
-                  {renderCamposGoles(golesExistentes(resultadoDosEquipos))}
-                  <button type="submit" className={styles.pagoBotonSecundario}>
-                    Corregir
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
-        </section>
-      )}
     </main>
   );
 }

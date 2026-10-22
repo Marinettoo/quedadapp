@@ -385,9 +385,57 @@
 .resultadoFinal {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 500;
+  gap: 16px;
+}
+
+.marcador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--lime);
+  border-radius: var(--radius-block);
+  padding: 24px 20px;
+}
+
+.marcadorEquipo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.marcadorNombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+  text-align: center;
+}
+
+.marcadorCifra {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #000000;
+}
+
+.marcadorGanador .marcadorCifra {
+  font-size: 56px;
+}
+
+.marcadorSeparador {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  opacity: 0.4;
+}
+
+.marcadorPendiente {
+  font-size: 15px;
+  color: var(--meta);
 }
 
 .editarSeccion {
