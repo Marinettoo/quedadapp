@@ -1,0 +1,30 @@
+.carrusel {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.puntos {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.puntoActivo {
+  background: var(--ink);
+}
+
+.pie {
+  text-align: center;
+  font-size: 13px;
+  color: var(--meta);
+  margin-top: 4px;
+}

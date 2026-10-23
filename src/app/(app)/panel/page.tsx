@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { calcularEdad } from "@/lib/usuarios";
 import { AppHeader } from "@/components/AppHeader";
 import { BallMark } from "@/components/BallMark";
 import { salir } from "@/app/actions";
 import { CreadorModal } from "@/components/CreadorModal";
+import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJugadores";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -35,6 +37,47 @@ export default async function Panel() {
   });
 
   const [proximo, ...resto] = partidos;
+
+  const jugadoresParaCarrusel = await prisma.usuario.findMany({
+    where: { estado: "APROBADA" },
+    orderBy: { nombreUsuario: "asc" },
+    include: { valoracionesRecibidas: { select: { estrellas: true } } },
+  });
+
+  const [partidosPorJugador, golesPorJugador] = await Promise.all([
+    prisma.asistencia.groupBy({
+      by: ["usuarioId"],
+      where: { cancelado: false },
+      _count: { _all: true },
+    }),
+    prisma.golJugador.groupBy({
+      by: ["usuarioId"],
+      where: { usuarioId: { not: null } },
+      _sum: { goles: true },
+    }),
+  ]);
+  const partidosMapa = new Map(partidosPorJugador.map((p) => [p.usuarioId, p._count._all]));
+  const golesMapa = new Map(golesPorJugador.map((g) => [g.usuarioId, g._sum.goles ?? 0]));
+
+  const jugadoresCarrusel: JugadorCarrusel[] = jugadoresParaCarrusel.map((j) => {
+    const cuenta = j.valoracionesRecibidas.length;
+    const media =
+      cuenta === 0 ? null : j.valoracionesRecibidas.reduce((s, v) => s + v.estrellas, 0) / cuenta;
+    return {
+      jugadorId: j.id,
+      nombreUsuario: j.nombreUsuario,
+      fotoActualizadaEn: j.fotoActualizadaEn,
+      media,
+      cuenta,
+      partidosJugados: partidosMapa.get(j.id) ?? 0,
+      golesMarcados: golesMapa.get(j.id) ?? 0,
+      edad: j.fechaNacimiento ? calcularEdad(j.fechaNacimiento) : null,
+      piernaBuena: j.piernaBuena,
+      fotoOffsetX: j.fotoOffsetX,
+      fotoOffsetY: j.fotoOffsetY,
+      fotoEscala: j.fotoEscala,
+    };
+  });
 
   return (
     <main className={styles.screen}>
@@ -95,6 +138,13 @@ export default async function Panel() {
           </>
         )}
       </section>
+
+      {jugadoresCarrusel.length > 0 && (
+        <section className={styles.seccion}>
+          <h2 className={styles.subtitulo}>Jugadores de la peña</h2>
+          <CarruselJugadores jugadores={jugadoresCarrusel} />
+        </section>
+      )}
 
       <form action={salir}>
         <button type="submit" className={styles.salir}>
