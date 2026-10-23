@@ -27,7 +27,7 @@ export function SubnavPartido({ id }: { id: string }) {
               <motion.span
                 layoutId="subnav-pill"
                 className={styles.subnavPill}
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
               />
             )}
             <span className={styles.subnavTexto}>{e.etiqueta}</span>

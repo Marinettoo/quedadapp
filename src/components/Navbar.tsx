@@ -165,7 +165,7 @@ function EnlaceNav({
         <motion.span
           layoutId={grupoPill}
           className={styles.pill}
-          transition={{ type: "spring", stiffness: 500, damping: 35 }}
+          transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
         />
       )}
       <span className={styles.enlaceTexto}>
