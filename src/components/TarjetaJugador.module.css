@@ -55,17 +55,22 @@
 .brillo::before {
   content: "";
   position: absolute;
-  inset: -20%;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
   background: linear-gradient(
     115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.55) 48%,
+    transparent 42%,
+    rgba(255, 255, 255, 0.5) 48%,
     rgba(255, 255, 255, 0.85) 50%,
-    rgba(255, 255, 255, 0.55) 52%,
-    transparent 70%
+    rgba(255, 255, 255, 0.5) 52%,
+    transparent 58%
   );
-  background-size: 220% 220%;
-  background-position: 120% -20%;
+  /* Sin background-position + repeat (que dejaba una costura visible al
+     mosaicarse arriba y abajo): un bloque grande que se desliza con
+     transform, bien fuera de la tarjeta en los dos extremos. */
+  transform: translate(-65%, 65%);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -77,11 +82,11 @@
 @keyframes barridoBrillo {
   0%,
   15% {
-    background-position: 120% -20%;
+    transform: translate(-65%, 65%);
   }
   55%,
   100% {
-    background-position: -20% 120%;
+    transform: translate(65%, -65%);
   }
 }
 
