@@ -8,7 +8,14 @@
   background: var(--lime);
   border-radius: var(--radius-block);
   padding: 22px 24px 24px;
-  min-height: clamp(220px, 54vw, 300px);
+  /* Tamaño fijo (no estira en pantallas anchas): así la tarjeta se ve
+     igual en móvil, tablet y escritorio, y el encuadre de la foto
+     (arrastre + zoom) queda idéntico en cualquiera de ellos. min()
+     solo la encoge en pantallas más estrechas que 340px de contenido
+     (muy pocas), para que nunca desborde la página. */
+  width: min(340px, 100%);
+  min-height: 300px;
+  margin: 0 auto;
   overflow: visible;
   color: #000000;
 }
@@ -201,11 +208,11 @@
   position: absolute;
   right: -18px;
   bottom: 0;
-  /* Responsive (no un px fijo): así la foto guarda las mismas
-     proporciones respecto al bloque en móvil que en escritorio, y el
-     encuadre (que se guarda en % de este tamaño, ver más abajo) se ve
-     igual en los dos en vez de descuadrarse en uno de ellos. */
-  height: clamp(170px, 50vw, 280px);
+  /* Tamaño fijo, a juego con el de .ficha: como la tarjeta ya no
+     estira en pantallas anchas, la foto tampoco necesita escalar con
+     el viewport (y el encuadre en % de su propio tamaño, ver más
+     abajo, queda idéntico en cualquier pantalla). */
+  height: 220px;
   width: auto;
   max-width: 78%;
   object-fit: contain;
