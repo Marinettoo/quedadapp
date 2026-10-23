@@ -1,6 +1,6 @@
 "use client";
 
-import { ETIQUETAS_PIERNA } from "@/lib/usuarios";
+import { ETIQUETAS_PIERNA, nivelDe } from "@/lib/usuarios";
 import { ContadorAnimado } from "./ContadorAnimado";
 import { TextoEscrito } from "./TextoEscrito";
 import styles from "./TarjetaJugador.module.css";
@@ -41,13 +41,16 @@ export function TarjetaJugador({
   fotoEscala?: number;
 }) {
   let indiceChip = 0;
+  const nivel = nivelDe(media);
+  const claseNivel = nivel ? styles[`ficha_${nivel}`] : "";
 
   return (
-    <div className={styles.ficha}>
+    <div className={`${styles.ficha} ${claseNivel}`}>
       <div className={styles.fichaDecoracion} aria-hidden="true">
         <span className={styles.fichaPunto} />
         <span className={styles.fichaEsquina} />
       </div>
+      {nivel && <div className={styles.brillo} aria-hidden="true" />}
       <div className={styles.fichaMarco} aria-hidden="true" />
       <h1 className={styles.nombre}>{nombreUsuario}</h1>
 

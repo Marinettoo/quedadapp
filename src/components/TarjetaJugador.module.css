@@ -20,6 +20,68 @@
   color: #000000;
 }
 
+/* Nivel de la tarjeta según la valoración media (ver nivelDe en
+   lib/usuarios.ts): bronce hasta 2.8, plata de 2.9 a 4.4, oro de 4.5
+   en adelante. Sin valoraciones, se queda en el lima de siempre. */
+.ficha_bronce {
+  background: #cd8b55;
+}
+
+.ficha_plata {
+  background: #c7ccd1;
+}
+
+.ficha_oro {
+  background: #f5c64b;
+}
+
+/* Brillo que recorre la tarjeta en diagonal, solo cuando tiene nivel
+   (bronce/plata/oro): un barrido de luz, como el reflejo de un metal,
+   por detrás de las estadísticas y la foto (que quedan nítidas
+   encima). La misma idea que el brillo de la línea de medio campo,
+   pero sobre toda la tarjeta. */
+.brillo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.brillo::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.55) 52%,
+    transparent 70%
+  );
+  background-size: 220% 220%;
+  background-position: 120% -20%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brillo::before {
+    animation: barridoBrillo 3.8s ease-in-out infinite;
+  }
+}
+
+@keyframes barridoBrillo {
+  0%,
+  15% {
+    background-position: 120% -20%;
+  }
+  55%,
+  100% {
+    background-position: -20% 120%;
+  }
+}
+
 /* Marco interior tipo carta de cromos deportiva: un bisel fino,
    separado del borde del bloque, en vez de sombras (que no van con
    el diseño plano de la app). Sin relleno, no interfiere con nada. */

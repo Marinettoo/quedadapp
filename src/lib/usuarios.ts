@@ -25,3 +25,14 @@ export const ETIQUETAS_PIERNA: Record<string, string> = {
   ZURDO: "Zurdo",
   AMBIDIESTRO: "Ambidiestro",
 };
+
+export type NivelJugador = "bronce" | "plata" | "oro";
+
+// Nivel de la tarjeta según la valoración media: null = sin
+// valoraciones todavía (no se puede saber un nivel).
+export function nivelDe(media: number | null): NivelJugador | null {
+  if (media === null) return null;
+  if (media >= 4.5) return "oro";
+  if (media >= 2.9) return "plata";
+  return "bronce";
+}
