@@ -23,15 +23,18 @@
 /* Nivel de la tarjeta según la valoración media (ver nivelDe en
    lib/usuarios.ts): bronce hasta 2.8, plata de 2.9 a 4.4, oro de 4.5
    en adelante. Sin valoraciones, se queda en el lima de siempre. */
-.ficha_bronce {
+/* Selector compuesto (.ficha.ficha_bronce), no solo .ficha_bronce: con la
+   misma especificidad que .ficha, el orden en que el bundler de producción
+   coloque las reglas podía decidir cuál gana, y a veces perdía el color. */
+.ficha.ficha_bronce {
   background: #cd8b55;
 }
 
-.ficha_plata {
+.ficha.ficha_plata {
   background: #c7ccd1;
 }
 
-.ficha_oro {
+.ficha.ficha_oro {
   background: #f5c64b;
 }
 
