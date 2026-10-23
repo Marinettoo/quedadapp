@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import { BallMark } from "./BallMark";
 import { ToggleTema } from "./ToggleTema";
 import { CampanaNotificaciones } from "./CampanaNotificaciones";
@@ -63,7 +64,12 @@ export function Navbar({
         <ul className={styles.enlaces}>
           {enlaces.map((enlace) => (
             <li key={enlace.href}>
-              <EnlaceNav enlace={enlace} pathname={pathname} solicitudesPendientes={solicitudesPendientes} />
+              <EnlaceNav
+                enlace={enlace}
+                pathname={pathname}
+                solicitudesPendientes={solicitudesPendientes}
+                grupoPill="navbar-pill-escritorio"
+              />
             </li>
           ))}
           <li>
@@ -101,6 +107,7 @@ export function Navbar({
               pathname={pathname}
               solicitudesPendientes={solicitudesPendientes}
               onNavigate={() => setAbierto(false)}
+              grupoPill="navbar-pill-movil"
             />
           </li>
         ))}
@@ -134,11 +141,16 @@ function EnlaceNav({
   pathname,
   solicitudesPendientes,
   onNavigate,
+  grupoPill,
 }: {
   enlace: { href: string; etiqueta: string };
   pathname: string;
   solicitudesPendientes: number;
   onNavigate?: () => void;
+  // Id del grupo de animación compartida del indicador (uno para el menú
+  // de escritorio y otro para el de móvil, para que no se mezclen entre
+  // sí al compartir layoutId).
+  grupoPill: string;
 }) {
   const activo =
     pathname === enlace.href || (enlace.href !== "/panel" && pathname.startsWith(enlace.href));
@@ -149,10 +161,19 @@ function EnlaceNav({
       className={activo ? styles.enlaceActivo : styles.enlace}
       onClick={onNavigate}
     >
-      {enlace.etiqueta}
-      {enlace.href === "/admin/solicitudes" && solicitudesPendientes > 0 && (
-        <span className={styles.badge}>{solicitudesPendientes}</span>
+      {activo && (
+        <motion.span
+          layoutId={grupoPill}
+          className={styles.pill}
+          transition={{ type: "spring", stiffness: 500, damping: 35 }}
+        />
       )}
+      <span className={styles.enlaceTexto}>
+        {enlace.etiqueta}
+        {enlace.href === "/admin/solicitudes" && solicitudesPendientes > 0 && (
+          <span className={styles.badge}>{solicitudesPendientes}</span>
+        )}
+      </span>
     </Link>
   );
 }

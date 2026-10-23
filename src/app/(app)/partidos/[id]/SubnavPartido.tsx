@@ -1,26 +1,39 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import styles from "./page.module.css";
 
-type Pestana = "resumen" | "equipos" | "apuestas";
-
-export function SubnavPartido({ id, activa }: { id: string; activa: Pestana }) {
-  const enlaces: { clave: Pestana; etiqueta: string; href: string }[] = [
-    { clave: "resumen", etiqueta: "Resumen", href: `/partidos/${id}` },
-    { clave: "equipos", etiqueta: "Equipos", href: `/partidos/${id}/equipos` },
-    { clave: "apuestas", etiqueta: "Apuestas", href: `/partidos/${id}/apuestas` },
+export function SubnavPartido({ id }: { id: string }) {
+  const pathname = usePathname();
+  const enlaces = [
+    { etiqueta: "Resumen", href: `/partidos/${id}` },
+    { etiqueta: "Equipos", href: `/partidos/${id}/equipos` },
+    { etiqueta: "Apuestas", href: `/partidos/${id}/apuestas` },
   ];
 
   return (
     <nav className={styles.subnav}>
-      {enlaces.map((e) => (
-        <Link
-          key={e.clave}
-          href={e.href}
-          className={e.clave === activa ? styles.subnavActiva : styles.subnavItem}
-        >
-          {e.etiqueta}
-        </Link>
-      ))}
+      {enlaces.map((e) => {
+        const activo = pathname === e.href;
+        return (
+          <Link
+            key={e.href}
+            href={e.href}
+            className={activo ? styles.subnavActiva : styles.subnavItem}
+          >
+            {activo && (
+              <motion.span
+                layoutId="subnav-pill"
+                className={styles.subnavPill}
+                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+              />
+            )}
+            <span className={styles.subnavTexto}>{e.etiqueta}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

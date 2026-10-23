@@ -44,6 +44,7 @@
 
 .enlace,
 .enlaceActivo {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -64,8 +65,26 @@
 }
 
 .enlaceActivo {
-  background: var(--ink);
   color: var(--paper);
+}
+
+/* Fondo negro animado del elemento activo: un solo elemento compartido
+   (layoutId) que se desplaza y redimensiona de forma fluida entre
+   pestañas en vez de aparecer/desaparecer de golpe en cada una. */
+.pill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ink);
+  z-index: 0;
+}
+
+.enlaceTexto {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .badge {

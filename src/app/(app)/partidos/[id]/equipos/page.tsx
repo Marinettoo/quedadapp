@@ -1,14 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { AppHeader } from "@/components/AppHeader";
 import { generarEquiposPartido } from "../../generarActions";
 import { agregarInvitado, quitarInvitado, cambiarEsPorteroInvitado } from "../../invitadosActions";
 import { establecerColorEquipo } from "../../coloresActions";
 import { crearGrupo, eliminarGrupo } from "../../gruposActions";
 import { AccionBoton } from "@/components/AccionBoton";
 import { SelectorColor } from "@/components/SelectorColor";
-import { SubnavPartido } from "../SubnavPartido";
 import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
 import styles from "../page.module.css";
 
@@ -18,10 +16,6 @@ const FORMATOS: Record<string, string> = {
   TRIANGULAR: "Triangular (3 equipos)",
   DOS_EQUIPOS: "2 equipos",
 };
-
-function capitalizar(texto: string) {
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
 
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -48,7 +42,6 @@ export default async function EquiposPartido({
   const partido = await prisma.partido.findUnique({
     where: { id },
     include: {
-      encargado: { select: { nombreUsuario: true } },
       asistencias: {
         include: { usuario: { select: { id: true, nombreUsuario: true } } },
       },
@@ -119,14 +112,7 @@ export default async function EquiposPartido({
     .filter((n): n is number => n !== null);
 
   return (
-    <main className={styles.screen}>
-      <AppHeader
-        titulo={capitalizar(formatearFecha(partido.fechaHora))}
-        subtitulo={`${partido.ubicacion} · encargado: ${partido.encargado.nombreUsuario}`}
-      />
-
-      <SubnavPartido id={partido.id} activa="equipos" />
-
+    <>
       {generacion ? (
         <section>
           <h2 className={styles.subtitulo}>Equipos</h2>
@@ -315,6 +301,6 @@ export default async function EquiposPartido({
           </form>
         </section>
       )}
-    </main>
+    </>
   );
 }

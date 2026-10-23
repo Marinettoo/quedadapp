@@ -86,6 +86,7 @@
 
 .subnavItem,
 .subnavActiva {
+  position: relative;
   border-radius: var(--radius-pill);
   padding: 8px 16px;
   font-size: 14px;
@@ -103,8 +104,23 @@
 }
 
 .subnavActiva {
-  background: var(--ink);
   color: var(--paper);
+}
+
+/* Fondo animado de la pestaña activa: un único elemento compartido
+   (layoutId) que se desplaza y redimensiona entre Resumen/Equipos/
+   Apuestas en vez de aparecer de golpe en cada pestaña. */
+.subnavPill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ink);
+  z-index: 0;
+}
+
+.subnavTexto {
+  position: relative;
+  z-index: 1;
 }
 
 .lista {

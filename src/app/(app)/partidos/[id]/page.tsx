@@ -3,7 +3,6 @@ import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
-import { AppHeader } from "@/components/AppHeader";
 import { apuntarse, cancelarAsistencia, cambiarMiPortero, cambiarPorteroDeUsuario } from "../actions";
 import {
   establecerImporte,
@@ -21,14 +20,9 @@ import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
 import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
 import { EditarPartido } from "./EditarPartido";
-import { SubnavPartido } from "./SubnavPartido";
 import styles from "./page.module.css";
 
 export const instant = false;
-
-function capitalizar(texto: string) {
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
 
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -55,7 +49,6 @@ export default async function DetallePartido({
   const partido = await prisma.partido.findUnique({
     where: { id },
     include: {
-      encargado: { select: { nombreUsuario: true } },
       asistencias: {
         orderBy: { apuntadoEn: "asc" },
         include: { usuario: { select: { id: true, nombreUsuario: true } } },
@@ -192,14 +185,7 @@ export default async function DetallePartido({
   const tabla = esTriangular ? calcularTabla(partido.enfrentamientos, numEquipos) : [];
 
   return (
-    <main className={styles.screen}>
-      <AppHeader
-        titulo={capitalizar(formatearFecha(partido.fechaHora))}
-        subtitulo={`${partido.ubicacion} · encargado: ${partido.encargado.nombreUsuario}`}
-      />
-
-      <SubnavPartido id={partido.id} activa="resumen" />
-
+    <>
       <div className={styles.infoCard}>
         <p className={styles.meta}>
           {abierto
@@ -522,7 +508,6 @@ export default async function DetallePartido({
           </ul>
         </section>
       )}
-
-    </main>
+    </>
   );
 }
