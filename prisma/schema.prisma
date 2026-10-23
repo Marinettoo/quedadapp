@@ -52,6 +52,7 @@ model Usuario {
   notificaciones       Notificacion[]
   suscripcionesPush    SuscripcionPush[]
   miembroGrupos        MiembroGrupo[]
+  ajustesBoteCreados   AjusteBote[]
 }
 
 model Sesion {
@@ -339,6 +340,19 @@ model Notificacion {
   creadaEn  DateTime  @default(now())
 
   @@index([usuarioId, leidaEn])
+}
+
+// Ajuste manual del bote hecho por un administrador: sumar o restar
+// dinero a mano (fuera del flujo automático de apuestas falladas), por
+// ejemplo para corregir un error o anotar un gasto o ingreso en efectivo.
+model AjusteBote {
+  id          String   @id @default(cuid())
+  // positivo suma al bote, negativo resta
+  importe     Float
+  motivo      String
+  creadoPorId String
+  creadoPor   Usuario  @relation(fields: [creadoPorId], references: [id])
+  creadoEn    DateTime @default(now())
 }
 
 // Suscripción del navegador/dispositivo de un usuario a notificaciones

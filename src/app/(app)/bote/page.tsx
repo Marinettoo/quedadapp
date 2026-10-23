@@ -3,6 +3,8 @@ import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
+import { AccionBoton } from "@/components/AccionBoton";
+import { crearAjusteBote, eliminarAjusteBote } from "./actions";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -45,7 +47,15 @@ export default async function Bote() {
     orderBy: { creadoEn: "desc" },
   });
 
-  const total = confirmados.reduce((s, p) => s + (p.importeDebido ?? 0), 0);
+  const ajustes = await prisma.ajusteBote.findMany({
+    include: { creadoPor: { select: { nombreUsuario: true } } },
+    orderBy: { creadoEn: "desc" },
+  });
+
+  const totalApuestas = confirmados.reduce((s, p) => s + (p.importeDebido ?? 0), 0);
+  const totalAjustes = ajustes.reduce((s, a) => s + a.importe, 0);
+  const total = totalApuestas + totalAjustes;
+  const esAdmin = usuario.rol === "ADMIN";
 
   return (
     <main className={styles.screen}>
@@ -94,6 +104,66 @@ export default async function Bote() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className={styles.seccion}>
+        <h2 className={styles.subtitulo}>Ajustes manuales</h2>
+        <p className={styles.meta}>
+          Dinero que un administrador suma o resta a mano (por ejemplo, un gasto o un ingreso en
+          efectivo fuera de las apuestas).
+        </p>
+        {ajustes.length > 0 && (
+          <ul className={styles.lista}>
+            {ajustes.map((a) => (
+              <li key={a.id} className={styles.item}>
+                <span className={styles.nombre}>
+                  {a.importe >= 0 ? "+" : ""}
+                  {a.importe.toFixed(2)} €
+                </span>
+                <span className={styles.meta}>
+                  {" "}
+                  · {a.motivo} · {a.creadoPor.nombreUsuario} · {formatearFecha(a.creadoEn)}
+                </span>
+                {esAdmin && (
+                  <AccionBoton
+                    accion={eliminarAjusteBote}
+                    campos={{ id: a.id }}
+                    className={styles.ver}
+                  >
+                    Quitar
+                  </AccionBoton>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {esAdmin && (
+          <form action={crearAjusteBote} className={styles.ajusteForm}>
+            <input
+              type="number"
+              name="importe"
+              min={0.01}
+              step={0.01}
+              placeholder="Importe €"
+              required
+              className={styles.ajusteInput}
+            />
+            <select name="tipo" defaultValue="sumar" required>
+              <option value="sumar">Sumar</option>
+              <option value="restar">Restar</option>
+            </select>
+            <input
+              type="text"
+              name="motivo"
+              placeholder="Motivo (p. ej. compra de petos)"
+              required
+              className={styles.ajusteMotivo}
+            />
+            <button type="submit" className={styles.ajusteBoton}>
+              Guardar ajuste
+            </button>
+          </form>
         )}
       </section>
     </main>
