@@ -107,6 +107,11 @@ export default async function EquiposPartido({
     return a.esPortero;
   }
 
+  const miId = usuario.id;
+  function esYo(a: (typeof equipos)[number][number]) {
+    return a.usuario?.id === miId;
+  }
+
   const equiposSinPortero = equipos
     .map((equipo, i) => (equipo.length > 0 && !equipo.some(esPorteroDe) ? i + 1 : null))
     .filter((n): n is number => n !== null);
@@ -145,8 +150,13 @@ export default async function EquiposPartido({
                 )}
                 <ListaAnimada className={styles.lista}>
                   {equipo.map((a, indice) => (
-                    <ItemAnimado key={a.id} indice={indice}>
+                    <ItemAnimado
+                      key={a.id}
+                      indice={indice}
+                      className={esYo(a) ? styles.filaYo : undefined}
+                    >
                       {nombreAsignacion(a)}
+                      {esYo(a) && " (tú)"}
                       {esPorteroDe(a) && " · 🧤 Portero"}
                     </ItemAnimado>
                   ))}
@@ -159,8 +169,13 @@ export default async function EquiposPartido({
               <h3 className={styles.equipoTitulo}>Lista de espera</h3>
               <ListaAnimada className={styles.lista}>
                 {listaEspera.map((a, indice) => (
-                  <ItemAnimado key={a.id} indice={indice}>
+                  <ItemAnimado
+                    key={a.id}
+                    indice={indice}
+                    className={esYo(a) ? styles.filaYo : undefined}
+                  >
                     {nombreAsignacion(a)}
+                    {esYo(a) && " (tú)"}
                     {esPorteroDe(a) && " · 🧤 Portero"}
                   </ItemAnimado>
                 ))}

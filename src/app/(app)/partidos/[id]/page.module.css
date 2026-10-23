@@ -131,6 +131,17 @@
   font-size: 15px;
 }
 
+/* Resalta la fila del jugador que está viendo la pantalla, para que se
+   encuentre a sí mismo rápido entre los equipos. */
+.filaYo {
+  background: var(--lime);
+  color: #000000;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 2px 10px;
+  margin: 0 -10px;
+}
+
 .aviso {
   font-size: 14px;
   color: var(--ink);
