@@ -21,7 +21,10 @@
 
 .flecha {
   position: absolute;
-  top: 90px;
+  /* Centrado según la altura real de la tarjeta en cada momento (que
+     varía con el número de estadísticas rellenas), no un valor fijo. */
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 4;
   width: 32px;
   height: 32px;
