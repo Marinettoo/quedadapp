@@ -75,11 +75,14 @@ export async function subirFoto(formData: FormData) {
 
   await prisma.usuario.update({
     where: { id: objetivoId },
-    data: { fotoActualizadaEn: new Date() },
+    // foto nueva: se reinicia el encuadre anterior, pensado para la
+    // imagen vieja.
+    data: { fotoActualizadaEn: new Date(), fotoOffsetX: 0, fotoOffsetY: 0, fotoEscala: 1 },
   });
 
   revalidatePath("/jugadores");
   revalidatePath(`/jugadores/${objetivoId}`);
+  revalidatePath("/perfil");
 }
 
 export async function quitarFoto(formData: FormData) {
@@ -89,9 +92,42 @@ export async function quitarFoto(formData: FormData) {
   await rm(rutaFoto(objetivoId), { force: true });
   await prisma.usuario.update({
     where: { id: objetivoId },
-    data: { fotoActualizadaEn: null },
+    data: { fotoActualizadaEn: null, fotoOffsetX: 0, fotoOffsetY: 0, fotoEscala: 1 },
   });
 
   revalidatePath("/jugadores");
   revalidatePath(`/jugadores/${objetivoId}`);
+  revalidatePath("/perfil");
+}
+
+const LIMITE_DESPLAZAMIENTO = 150;
+
+export async function actualizarEncuadreFoto(formData: FormData) {
+  const usuario = await obtenerUsuarioSesion();
+  if (!usuario || usuario.estado !== "APROBADA") {
+    throw new Error("No autorizado.");
+  }
+
+  const offsetX = Number(formData.get("offsetX"));
+  const offsetY = Number(formData.get("offsetY"));
+  const escala = Number(formData.get("escala"));
+
+  if (![offsetX, offsetY, escala].every(Number.isFinite)) {
+    throw new Error("Encuadre no válido.");
+  }
+
+  const clamp = (v: number, limite: number) => Math.min(limite, Math.max(-limite, v));
+
+  await prisma.usuario.update({
+    where: { id: usuario.id },
+    data: {
+      fotoOffsetX: clamp(offsetX, LIMITE_DESPLAZAMIENTO),
+      fotoOffsetY: clamp(offsetY, LIMITE_DESPLAZAMIENTO),
+      fotoEscala: Math.min(1.8, Math.max(0.6, escala)),
+    },
+  });
+
+  revalidatePath("/perfil");
+  revalidatePath("/jugadores");
+  revalidatePath(`/jugadores/${usuario.id}`);
 }

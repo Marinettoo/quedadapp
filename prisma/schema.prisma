@@ -41,6 +41,12 @@ model Usuario {
   // disco (fuera de la base de datos) y este campo sirve también para
   // forzar que el navegador recargue la imagen cuando cambia.
   fotoActualizadaEn    DateTime?
+  // cómo se encuadra la foto en la tarjeta (arrastre + zoom desde "Mi
+  // perfil"); desplazamiento en píxeles desde la posición por defecto
+  // (abajo a la derecha) y escala (1 = tamaño normal).
+  fotoOffsetX          Float               @default(0)
+  fotoOffsetY          Float               @default(0)
+  fotoEscala           Float               @default(1)
   // datos de jugador para la ficha; opcionales, los pone cada uno desde
   // "Mi perfil".
   fechaNacimiento      DateTime?

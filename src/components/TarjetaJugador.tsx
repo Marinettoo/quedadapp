@@ -1,9 +1,17 @@
+"use client";
+
 import { ETIQUETAS_PIERNA } from "@/lib/usuarios";
+import { ContadorAnimado } from "./ContadorAnimado";
+import { TextoEscrito } from "./TextoEscrito";
 import styles from "./TarjetaJugador.module.css";
+
+const RETRASO_ENTRE_CHIPS = 110;
 
 // Tarjeta visual del jugador (bloque lima con nombre, foto recortada y
 // estadísticas): la usan tanto la ficha pública (/jugadores/[id]) como
-// la vista previa de "Mi perfil", para no duplicar el diseño.
+// la vista previa de "Mi perfil", para no duplicar el diseño. Las
+// estadísticas numéricas cuentan rápido hasta su valor al aparecer, y
+// las de texto (pierna buena) se "escriben" de izquierda a derecha.
 export function TarjetaJugador({
   jugadorId,
   nombreUsuario,
@@ -12,9 +20,11 @@ export function TarjetaJugador({
   cuenta,
   partidosJugados,
   golesMarcados,
-  partidosOrganizados,
   edad,
   piernaBuena,
+  fotoOffsetX = 0,
+  fotoOffsetY = 0,
+  fotoEscala = 1,
 }: {
   jugadorId: string;
   nombreUsuario: string;
@@ -23,10 +33,15 @@ export function TarjetaJugador({
   cuenta: number;
   partidosJugados: number;
   golesMarcados: number;
-  partidosOrganizados: number;
   edad: number | null;
   piernaBuena: string | null;
+  // cómo encuadró cada uno su foto desde "Mi perfil" (arrastre + zoom).
+  fotoOffsetX?: number;
+  fotoOffsetY?: number;
+  fotoEscala?: number;
 }) {
+  let indiceChip = 0;
+
   return (
     <div className={styles.ficha}>
       <div className={styles.fichaDecoracion} aria-hidden="true">
@@ -38,36 +53,45 @@ export function TarjetaJugador({
 
       <div className={styles.estadisticas}>
         <div className={styles.estadistica}>
-          <span className={styles.estadisticaValor}>{media === null ? "—" : media.toFixed(1)}</span>
+          <span className={styles.estadisticaValor}>
+            {media === null ? (
+              "—"
+            ) : (
+              <ContadorAnimado valor={media} decimales={1} retraso={indiceChip++ * RETRASO_ENTRE_CHIPS} />
+            )}
+          </span>
           <span className={styles.estadisticaEtiqueta}>
             {cuenta === 0 ? "Sin valoraciones" : `★ (${cuenta} ${cuenta === 1 ? "voto" : "votos"})`}
           </span>
         </div>
         <div className={styles.estadistica}>
-          <span className={styles.estadisticaValor}>{partidosJugados}</span>
+          <span className={styles.estadisticaValor}>
+            <ContadorAnimado valor={partidosJugados} retraso={indiceChip++ * RETRASO_ENTRE_CHIPS} />
+          </span>
           <span className={styles.estadisticaEtiqueta}>Partidos jugados</span>
         </div>
         <div className={styles.estadistica}>
-          <span className={styles.estadisticaValor}>{golesMarcados}</span>
+          <span className={styles.estadisticaValor}>
+            <ContadorAnimado valor={golesMarcados} retraso={indiceChip++ * RETRASO_ENTRE_CHIPS} />
+          </span>
           <span className={styles.estadisticaEtiqueta}>Goles marcados</span>
         </div>
-        {partidosOrganizados > 0 && (
-          <div className={styles.estadistica}>
-            <span className={styles.estadisticaValor}>{partidosOrganizados}</span>
-            <span className={styles.estadisticaEtiqueta}>
-              {partidosOrganizados === 1 ? "Partido organizado" : "Partidos organizados"}
-            </span>
-          </div>
-        )}
         {edad !== null && (
           <div className={styles.estadistica}>
-            <span className={styles.estadisticaValor}>{edad}</span>
+            <span className={styles.estadisticaValor}>
+              <ContadorAnimado valor={edad} retraso={indiceChip++ * RETRASO_ENTRE_CHIPS} />
+            </span>
             <span className={styles.estadisticaEtiqueta}>años</span>
           </div>
         )}
         {piernaBuena && (
           <div className={styles.estadistica}>
-            <span className={styles.estadisticaValor}>{ETIQUETAS_PIERNA[piernaBuena] ?? piernaBuena}</span>
+            <span className={styles.estadisticaValor}>
+              <TextoEscrito
+                texto={ETIQUETAS_PIERNA[piernaBuena] ?? piernaBuena}
+                retraso={indiceChip++ * RETRASO_ENTRE_CHIPS}
+              />
+            </span>
             <span className={styles.estadisticaEtiqueta}>Pierna buena</span>
           </div>
         )}
@@ -79,6 +103,9 @@ export function TarjetaJugador({
           src={`/fotos/${jugadorId}?v=${fotoActualizadaEn.getTime()}`}
           alt=""
           className={styles.foto}
+          style={{
+            transform: `translate(${fotoOffsetX}px, ${fotoOffsetY}px) scale(${fotoEscala})`,
+          }}
         />
       ) : (
         <span className={styles.fotoPlaceholder} aria-hidden="true">

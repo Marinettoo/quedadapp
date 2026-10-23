@@ -211,6 +211,10 @@
   z-index: 3;
   -webkit-mask-image: linear-gradient(to top, transparent 0%, black 14%);
   mask-image: linear-gradient(to top, transparent 0%, black 14%);
+  /* El encuadre (arrastre + zoom desde "Mi perfil") se aplica como
+     transform en línea; el origen coincide con el anclaje de la foto
+     (abajo a la derecha) para que el zoom resulte natural. */
+  transform-origin: bottom right;
 }
 
 .fotoPlaceholder {

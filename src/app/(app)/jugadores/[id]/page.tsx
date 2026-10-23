@@ -51,13 +51,12 @@ export default async function FichaJugador({
   const tuValoracion =
     jugador.valoracionesRecibidas.find((v) => v.autorId === usuario.id)?.estrellas ?? 0;
 
-  const [partidosJugados, golesMarcados, partidosOrganizados] = await Promise.all([
+  const [partidosJugados, golesMarcados] = await Promise.all([
     prisma.asistencia.count({ where: { usuarioId: jugador.id, cancelado: false } }),
     prisma.golJugador.aggregate({
       where: { usuarioId: jugador.id },
       _sum: { goles: true },
     }),
-    prisma.partido.count({ where: { encargadoId: jugador.id } }),
   ]);
 
   return (
@@ -74,9 +73,11 @@ export default async function FichaJugador({
         cuenta={cuenta}
         partidosJugados={partidosJugados}
         golesMarcados={golesMarcados._sum.goles ?? 0}
-        partidosOrganizados={partidosOrganizados}
         edad={jugador.fechaNacimiento ? calcularEdad(jugador.fechaNacimiento) : null}
         piernaBuena={jugador.piernaBuena}
+        fotoOffsetX={jugador.fotoOffsetX}
+        fotoOffsetY={jugador.fotoOffsetY}
+        fotoEscala={jugador.fotoEscala}
       />
 
       <p className={styles.meta}>En la peña desde el {formatearFecha(jugador.creadoEn)}.</p>

@@ -5,6 +5,7 @@ import { calcularEdad } from "@/lib/usuarios";
 import { AppHeader } from "@/components/AppHeader";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { FormularioFoto } from "@/components/FormularioFoto";
+import { EncuadrarFoto } from "./EncuadrarFoto";
 import { EditarPerfil } from "./EditarPerfil";
 import styles from "./page.module.css";
 
@@ -33,13 +34,12 @@ export default async function Perfil() {
   const media =
     cuenta === 0 ? null : usuario.valoracionesRecibidas.reduce((s, v) => s + v.estrellas, 0) / cuenta;
 
-  const [partidosJugados, golesMarcados, partidosOrganizados] = await Promise.all([
+  const [partidosJugados, golesMarcados] = await Promise.all([
     prisma.asistencia.count({ where: { usuarioId: usuario.id, cancelado: false } }),
     prisma.golJugador.aggregate({
       where: { usuarioId: usuario.id },
       _sum: { goles: true },
     }),
-    prisma.partido.count({ where: { encargadoId: usuario.id } }),
   ]);
 
   return (
@@ -54,9 +54,11 @@ export default async function Perfil() {
         cuenta={cuenta}
         partidosJugados={partidosJugados}
         golesMarcados={golesMarcados._sum.goles ?? 0}
-        partidosOrganizados={partidosOrganizados}
         edad={usuario.fechaNacimiento ? calcularEdad(usuario.fechaNacimiento) : null}
         piernaBuena={usuario.piernaBuena}
+        fotoOffsetX={usuario.fotoOffsetX}
+        fotoOffsetY={usuario.fotoOffsetY}
+        fotoEscala={usuario.fotoEscala}
       />
 
       <section className={styles.seccion}>
@@ -67,6 +69,16 @@ export default async function Perfil() {
         </p>
         <FormularioFoto jugadorId={usuario.id} tieneFoto={!!usuario.fotoActualizadaEn} />
       </section>
+
+      {usuario.fotoActualizadaEn && (
+        <EncuadrarFoto
+          jugadorId={usuario.id}
+          fotoActualizadaEn={usuario.fotoActualizadaEn.getTime()}
+          offsetXInicial={usuario.fotoOffsetX}
+          offsetYInicial={usuario.fotoOffsetY}
+          escalaInicial={usuario.fotoEscala}
+        />
+      )}
 
       <EditarPerfil
         nombreUsuario={usuario.nombreUsuario}
