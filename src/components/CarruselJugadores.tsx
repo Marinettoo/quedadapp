@@ -23,45 +23,96 @@ export type JugadorCarrusel = {
   fotoEscala: number;
 };
 
+const variantes = {
+  entra: (direccion: number) => ({ x: direccion > 0 ? 60 : -60, opacity: 0 }),
+  centro: { x: 0, opacity: 1 },
+  sale: (direccion: number) => ({ x: direccion > 0 ? -60 : 60, opacity: 0 }),
+};
+
 // Carrusel que va pasando solo, cada pocos segundos, entre las fichas
 // de los jugadores de la peña (misma tarjeta que se ve en su ficha,
-// con foto y estadísticas). Pulsar en cualquier parte lleva a la lista
-// completa de jugadores.
+// con foto y estadísticas), con una flecha a cada lado para avanzar o
+// retroceder a mano. Cualquier cambio (automático o manual) reinicia
+// la cuenta atrás del siguiente avance automático. Pulsar la tarjeta
+// o "Ver todos" lleva a la lista completa de jugadores.
 export function CarruselJugadores({ jugadores }: { jugadores: JugadorCarrusel[] }) {
   const [indice, setIndice] = useState(0);
+  const [direccion, setDireccion] = useState(1);
   const reducido = useReducedMotion();
 
   useEffect(() => {
     if (jugadores.length <= 1) return;
-    const id = setInterval(() => {
+    const id = setTimeout(() => {
+      setDireccion(1);
       setIndice((i) => (i + 1) % jugadores.length);
     }, INTERVALO_MS);
-    return () => clearInterval(id);
-  }, [jugadores.length]);
+    return () => clearTimeout(id);
+    // Se reinicia en cada cambio de tarjeta (automático o manual), así
+    // un paso manual no se ve interrumpido enseguida por el automático.
+  }, [indice, jugadores.length]);
 
   if (jugadores.length === 0) {
     return null;
   }
 
+  function irSiguiente() {
+    setDireccion(1);
+    setIndice((i) => (i + 1) % jugadores.length);
+  }
+
+  function irAnterior() {
+    setDireccion(-1);
+    setIndice((i) => (i - 1 + jugadores.length) % jugadores.length);
+  }
+
   const jugador = jugadores[indice];
+  const tarjeta = <TarjetaJugador key={jugador.jugadorId} {...jugador} />;
 
   return (
-    <Link href="/jugadores" className={styles.carrusel} aria-label="Ver todos los jugadores">
-      {reducido ? (
-        <TarjetaJugador key={jugador.jugadorId} {...jugador} />
-      ) : (
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={jugador.jugadorId}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+    <div>
+      <div className={styles.contenedor}>
+        {jugadores.length > 1 && (
+          <button
+            type="button"
+            onClick={irAnterior}
+            className={`${styles.flecha} ${styles.flechaIzquierda}`}
+            aria-label="Jugador anterior"
           >
-            <TarjetaJugador {...jugador} />
-          </motion.div>
-        </AnimatePresence>
-      )}
+            ‹
+          </button>
+        )}
+
+        <Link href="/jugadores" className={styles.carrusel} aria-label="Ver todos los jugadores">
+          {reducido ? (
+            tarjeta
+          ) : (
+            <AnimatePresence mode="wait" initial={false} custom={direccion}>
+              <motion.div
+                key={jugador.jugadorId}
+                custom={direccion}
+                variants={variantes}
+                initial="entra"
+                animate="centro"
+                exit="sale"
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+              >
+                <TarjetaJugador {...jugador} />
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </Link>
+
+        {jugadores.length > 1 && (
+          <button
+            type="button"
+            onClick={irSiguiente}
+            className={`${styles.flecha} ${styles.flechaDerecha}`}
+            aria-label="Jugador siguiente"
+          >
+            ›
+          </button>
+        )}
+      </div>
 
       {jugadores.length > 1 && (
         <div className={styles.puntos} aria-hidden="true">
@@ -71,7 +122,9 @@ export function CarruselJugadores({ jugadores }: { jugadores: JugadorCarrusel[] 
         </div>
       )}
 
-      <p className={styles.pie}>Ver todos los jugadores →</p>
-    </Link>
+      <Link href="/jugadores" className={styles.pie}>
+        Ver todos los jugadores →
+      </Link>
+    </div>
   );
 }

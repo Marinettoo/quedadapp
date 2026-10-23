@@ -1,7 +1,52 @@
+.contenedor {
+  /* Mismo ancho fijo que la tarjeta (TarjetaJugador usa min(340px,
+     100%)): así las flechas, en los bordes de este contenedor, quedan
+     pegadas a los bordes de la tarjeta en vez de a los del bloque
+     (que puede ser más ancho). */
+  position: relative;
+  width: min(340px, 100%);
+  margin: 0 auto;
+}
+
 .carrusel {
   display: block;
   text-decoration: none;
   color: inherit;
+  /* La tarjeta (TarjetaJugador) ya es overflow:visible a propósito,
+     para que la foto pueda asomar por los lados; no se recorta aquí
+     para no perder ese efecto, así que el deslizamiento entre
+     tarjetas es corto (60px) y no se solapan dos a la vez. */
+  overflow: visible;
+}
+
+.flecha {
+  position: absolute;
+  top: 90px;
+  z-index: 4;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flecha:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.flechaIzquierda {
+  left: 4px;
+}
+
+.flechaDerecha {
+  right: 4px;
 }
 
 .puntos {
@@ -23,8 +68,14 @@
 }
 
 .pie {
+  display: block;
   text-align: center;
   font-size: 13px;
   color: var(--meta);
   margin-top: 4px;
+  text-decoration: none;
+}
+
+.pie:hover {
+  color: var(--ink);
 }
