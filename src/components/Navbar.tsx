@@ -33,6 +33,7 @@ const ENLACES_BASE = [
   { href: "/estadisticas", etiqueta: "Estadísticas" },
   { href: "/votaciones", etiqueta: "Votaciones" },
   { href: "/bote", etiqueta: "Bote" },
+  { href: "/perfil", etiqueta: "Mi perfil" },
 ];
 
 const ENLACES_ADMIN = [

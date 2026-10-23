@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
 import { AccionBoton } from "@/components/AccionBoton";
+import { AvatarJugador } from "@/components/AvatarJugador";
 import { valorar } from "./actions";
 import styles from "./page.module.css";
 
@@ -60,14 +62,21 @@ export default async function Jugadores() {
 
           return (
             <li key={j.id} className={styles.item}>
-              <div className={styles.cabecera}>
-                <span className={styles.nombre}>{j.nombreUsuario}</span>
-                <span className={styles.media}>
-                  {media === null
-                    ? "Sin valoraciones todavía"
-                    : `${media.toFixed(1)} ★ (${cuenta} ${cuenta === 1 ? "voto" : "votos"})`}
+              <Link href={`/jugadores/${j.id}`} className={styles.cabecera}>
+                <AvatarJugador
+                  usuarioId={j.id}
+                  nombre={j.nombreUsuario}
+                  fotoActualizadaEn={j.fotoActualizadaEn}
+                />
+                <span className={styles.cabeceraTexto}>
+                  <span className={styles.nombre}>{j.nombreUsuario}</span>
+                  <span className={styles.media}>
+                    {media === null
+                      ? "Sin valoraciones todavía"
+                      : `${media.toFixed(1)} ★ (${cuenta} ${cuenta === 1 ? "voto" : "votos"})`}
+                  </span>
                 </span>
-              </div>
+              </Link>
               <div className={styles.estrellas}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <AccionBoton

@@ -9,3 +9,19 @@ export function identidadDeBaja(usuarioId: string) {
     email: `exjugador_${usuarioId}@baja.quedadapp.local`,
   };
 }
+
+export function calcularEdad(fechaNacimiento: Date): number {
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+  const aunNoCumple =
+    hoy.getMonth() < fechaNacimiento.getMonth() ||
+    (hoy.getMonth() === fechaNacimiento.getMonth() && hoy.getDate() < fechaNacimiento.getDate());
+  if (aunNoCumple) edad--;
+  return edad;
+}
+
+export const ETIQUETAS_PIERNA: Record<string, string> = {
+  DIESTRO: "Diestro",
+  ZURDO: "Zurdo",
+  AMBIDIESTRO: "Ambidiestro",
+};

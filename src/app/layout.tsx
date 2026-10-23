@@ -7,6 +7,9 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
+  // La negrita cursiva de la ficha de jugador usa el itálico real de la
+  // fuente (más nítido que el cursivado sintético del navegador).
+  style: ["normal", "italic"],
 });
 
 // La mayoría de pantallas de esta app dependen de la sesión (cookies),

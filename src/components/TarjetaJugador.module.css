@@ -1,0 +1,229 @@
+/* Bloque de cabecera: fondo lima (como un trozo de césped) con el
+   nombre en grande y la foto recortada (sin fondo) apoyada encima. La
+   foto puede asomar por los lados (rompe el marco del bloque), pero
+   por abajo se queda dentro, fundiéndose en el verde en vez de
+   cortarse en seco contra el fondo blanco de la página. */
+.ficha {
+  position: relative;
+  background: var(--lime);
+  border-radius: var(--radius-block);
+  padding: 22px 24px 24px;
+  min-height: 300px;
+  overflow: visible;
+  color: #000000;
+}
+
+/* Marco interior tipo carta de cromos deportiva: un bisel fino,
+   separado del borde del bloque, en vez de sombras (que no van con
+   el diseño plano de la app). Sin relleno, no interfiere con nada. */
+.fichaMarco {
+  position: absolute;
+  inset: 4px;
+  border: 1.5px solid rgba(0, 0, 0, 0.5);
+  border-radius: calc(var(--radius-block) - 4px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Decoración muy sutil tipo campo de fútbol (círculo central + línea
+   de medio campo), en negro con poca opacidad, para que el bloque
+   lima no se quede plano/vacío. Va en su propia capa con su propio
+   recorte redondeado, independiente del overflow:visible de .ficha
+   (que hace falta para que la foto sí pueda asomar por los lados).
+   El círculo (punteado) gira muy despacio tipo radar, y la línea
+   tiene un brillo que la recorre; ambas animaciones son lentas y
+   discretas, y se desactivan solo con prefers-reduced-motion. */
+.fichaDecoracion {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fichaDecoracion::before {
+  content: "";
+  position: absolute;
+  top: -70px;
+  left: 58%;
+  width: 260px;
+  height: 260px;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}
+
+.fichaDecoracion::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.06) 45%,
+    rgba(0, 0, 0, 0.22) 50%,
+    rgba(0, 0, 0, 0.06) 55%,
+    transparent 100%
+  );
+  background-size: 260% 100%;
+}
+
+.fichaPunto {
+  position: absolute;
+  top: 60px;
+  left: 58%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+/* Arco tipo "saque de esquina", apoyado en la esquina inferior
+   izquierda: un círculo punteado a medio salir del bloque que el
+   propio recorte redondeado de .fichaDecoracion deja solo en cuarto
+   de círculo. Rellena el hueco que queda ahí abajo cuando el nombre
+   y las estadísticas no llegan tan lejos. */
+.fichaEsquina {
+  position: absolute;
+  left: -30px;
+  bottom: -30px;
+  width: 90px;
+  height: 90px;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fichaDecoracion::before {
+    animation: girarCirculo 50s linear infinite;
+  }
+
+  .fichaDecoracion::after {
+    animation: recorrerLinea 7s ease-in-out infinite;
+  }
+
+  .fichaPunto {
+    animation: latirPunto 3s ease-in-out infinite;
+  }
+
+  .fichaEsquina {
+    animation: girarCirculo 35s linear infinite reverse;
+  }
+}
+
+@keyframes girarCirculo {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes recorrerLinea {
+  0% {
+    background-position: 130% 0;
+  }
+  100% {
+    background-position: -130% 0;
+  }
+}
+
+@keyframes latirPunto {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0.5;
+  }
+}
+
+/* Negrita cursiva, grande y compacta: busca un aire de "dorsal"/cartel
+   deportivo en vez del título plano del resto de la app. */
+.nombre {
+  position: relative;
+  z-index: 2;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  max-width: 54%;
+  padding-bottom: 18px;
+}
+
+/* Las estadísticas viven dentro del bloque lima (en vez de debajo, en
+   tarjetas aparte) para no dejar hueco verde vacío: chips oscuros,
+   como una franja de datos bajo el nombre. */
+.estadisticas {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 54%;
+}
+
+.estadistica {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.estadisticaValor {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  /* Blanco fijo (no var(--paper)): el chip es siempre negro, en los
+     dos temas, así que el texto tiene que ser siempre blanco. */
+  color: #ffffff;
+}
+
+.estadisticaEtiqueta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+/* right negativo: la foto sobresale un poco por el lado derecho del
+   bloque. bottom: 0 (en vez de negativo): la foto no baja más allá
+   del propio bloque, y la máscara difumina solo su franja inferior
+   para que se funda en el verde ahí, no para "borrar" a la persona
+   (por eso el porcentaje es pequeño y es solo en la base). */
+.foto {
+  position: absolute;
+  right: -18px;
+  bottom: 0;
+  height: 280px;
+  width: auto;
+  max-width: 78%;
+  object-fit: contain;
+  object-position: bottom right;
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 14%);
+  mask-image: linear-gradient(to top, transparent 0%, black 14%);
+}
+
+.fotoPlaceholder {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}

@@ -1,0 +1,38 @@
+.fotoForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.fotoInput {
+  flex: 1;
+  min-width: 180px;
+  font-size: 13px;
+}
+
+.fotoBoton {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.fotoBoton:hover {
+  opacity: 0.85;
+}
+
+.fotoQuitar {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--meta);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}

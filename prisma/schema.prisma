@@ -23,6 +23,12 @@ enum EstadoCuenta {
   RECHAZADA
 }
 
+enum PiernaBuena {
+  DIESTRO
+  ZURDO
+  AMBIDIESTRO
+}
+
 model Usuario {
   id                   String              @id @default(cuid())
   nombreUsuario        String              @unique
@@ -31,6 +37,14 @@ model Usuario {
   rol                  Rol                 @default(USUARIO)
   estado               EstadoCuenta        @default(PENDIENTE)
   creadoEn             DateTime            @default(now())
+  // null = sin foto de perfil; si no es null, hay un archivo guardado en
+  // disco (fuera de la base de datos) y este campo sirve también para
+  // forzar que el navegador recargue la imagen cuando cambia.
+  fotoActualizadaEn    DateTime?
+  // datos de jugador para la ficha; opcionales, los pone cada uno desde
+  // "Mi perfil".
+  fechaNacimiento      DateTime?
+  piernaBuena          PiernaBuena?
   sesiones             Sesion[]
   partidosEncargados   Partido[]           @relation("PartidosEncargados")
   partidosCreados      Partido[]           @relation("PartidosCreados")

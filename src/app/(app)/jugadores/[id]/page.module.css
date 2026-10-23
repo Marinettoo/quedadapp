@@ -1,0 +1,67 @@
+.screen {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.volver {
+  font-size: 14px;
+  color: var(--meta);
+  text-decoration: none;
+}
+
+.volver:hover {
+  color: var(--ink);
+}
+
+.enlace {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.meta {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subtitulo {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.estrellas {
+  display: flex;
+  gap: 2px;
+}
+
+.estrellaLlena,
+.estrellaVacia {
+  border: none;
+  background: none;
+  font-size: 26px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.estrellaLlena {
+  color: #f2b705;
+}
+
+.estrellaVacia {
+  color: #9ca3af;
+}
+
+.estrellaVacia:hover {
+  color: #f2b705;
+}

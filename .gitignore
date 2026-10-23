@@ -49,6 +49,10 @@ next-env.d.ts
 /prisma/*.db
 /prisma/*.db-journal
 
+# fotos de perfil subidas en local (en producción viven en ./data, ya
+# ignorado más abajo; en local quedan junto a dev.db, en la raíz)
+/fotos
+
 # datos y copias de seguridad del servidor (Docker)
 /data
 /backups
