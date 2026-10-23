@@ -8,7 +8,7 @@
   background: var(--lime);
   border-radius: var(--radius-block);
   padding: 22px 24px 24px;
-  min-height: 300px;
+  min-height: clamp(220px, 54vw, 300px);
   overflow: visible;
   color: #000000;
 }
@@ -201,7 +201,11 @@
   position: absolute;
   right: -18px;
   bottom: 0;
-  height: 280px;
+  /* Responsive (no un px fijo): así la foto guarda las mismas
+     proporciones respecto al bloque en móvil que en escritorio, y el
+     encuadre (que se guarda en % de este tamaño, ver más abajo) se ve
+     igual en los dos en vez de descuadrarse en uno de ellos. */
+  height: clamp(170px, 50vw, 280px);
   width: auto;
   max-width: 78%;
   object-fit: contain;

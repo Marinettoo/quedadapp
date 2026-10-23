@@ -104,7 +104,11 @@ export function TarjetaJugador({
           alt=""
           className={styles.foto}
           style={{
-            transform: `translate(${fotoOffsetX}px, ${fotoOffsetY}px) scale(${fotoEscala})`,
+            // Porcentajes (no px): en CSS, translate(x%, y%) se calcula
+            // sobre el propio tamaño del elemento, así que el mismo
+            // encuadre se ve igual tanto si la foto es grande (PC) como
+            // pequeña (móvil), en vez de desplazarse de más o de menos.
+            transform: `translate(${fotoOffsetX}%, ${fotoOffsetY}%) scale(${fotoEscala})`,
           }}
         />
       ) : (

@@ -100,7 +100,9 @@ export async function quitarFoto(formData: FormData) {
   revalidatePath("/perfil");
 }
 
-const LIMITE_DESPLAZAMIENTO = 150;
+// En % del tamaño de la propia foto (no en píxeles): así el mismo
+// encuadre se ve igual en pantallas grandes y pequeñas.
+const LIMITE_DESPLAZAMIENTO = 70;
 
 export async function actualizarEncuadreFoto(formData: FormData) {
   const usuario = await obtenerUsuarioSesion();

@@ -5,7 +5,11 @@ import { actualizarEncuadreFoto } from "../jugadores/actions";
 import tarjetaStyles from "@/components/TarjetaJugador.module.css";
 import styles from "./page.module.css";
 
-const LIMITE_DESPLAZAMIENTO = 150;
+// En % del tamaño de la propia foto (no en píxeles): el mismo encuadre
+// se ve igual en escritorio y en móvil, donde la foto se renderiza más
+// pequeña. Ver TarjetaJugador.module.css (.foto usa clamp() en vez de
+// un alto fijo) y el mismo límite en jugadores/actions.ts.
+const LIMITE_DESPLAZAMIENTO = 70;
 const ESCALA_MIN = 0.6;
 const ESCALA_MAX = 1.8;
 
@@ -35,20 +39,34 @@ export function EncuadrarFoto({
   const [arrastrando, setArrastrando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(true);
-  const inicio = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  const fotoRef = useRef<HTMLImageElement>(null);
+  const inicio = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0, anchoFoto: 1, altoFoto: 1 });
 
   function alEmpezar(e: ReactPointerEvent<HTMLDivElement>) {
     e.currentTarget.setPointerCapture(e.pointerId);
-    inicio.current = { x: e.clientX, y: e.clientY, offsetX, offsetY };
+    const rect = fotoRef.current?.getBoundingClientRect();
+    inicio.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX,
+      offsetY,
+      // El tamaño real en pantalla de la foto en este momento: hace
+      // falta para convertir el arrastre (en px del dedo/ratón) a %
+      // relativo a la propia foto, que es como se guarda y se aplica.
+      anchoFoto: rect?.width || 1,
+      altoFoto: rect?.height || 1,
+    };
     setArrastrando(true);
   }
 
   function alMover(e: ReactPointerEvent<HTMLDivElement>) {
     if (!arrastrando) return;
-    const dx = e.clientX - inicio.current.x;
-    const dy = e.clientY - inicio.current.y;
-    setOffsetX(limitar(inicio.current.offsetX + dx));
-    setOffsetY(limitar(inicio.current.offsetY + dy));
+    const dxPx = e.clientX - inicio.current.x;
+    const dyPx = e.clientY - inicio.current.y;
+    const dxPorcentaje = (dxPx / inicio.current.anchoFoto) * 100;
+    const dyPorcentaje = (dyPx / inicio.current.altoFoto) * 100;
+    setOffsetX(limitar(inicio.current.offsetX + dxPorcentaje));
+    setOffsetY(limitar(inicio.current.offsetY + dyPorcentaje));
     setGuardado(false);
   }
 
@@ -96,11 +114,12 @@ export function EncuadrarFoto({
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- imagen servida desde disco vía /fotos/[id], no optimizable por next/image */}
         <img
+          ref={fotoRef}
           src={`/fotos/${jugadorId}?v=${fotoActualizadaEn}`}
           alt=""
           draggable={false}
           className={tarjetaStyles.foto}
-          style={{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${escala})` }}
+          style={{ transform: `translate(${offsetX}%, ${offsetY}%) scale(${escala})` }}
         />
       </div>
 
