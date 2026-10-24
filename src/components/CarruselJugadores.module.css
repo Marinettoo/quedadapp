@@ -1,9 +1,6 @@
 .contenedor {
   /* Mismo ancho fijo que la tarjeta (TarjetaJugador usa min(340px,
-     100%)): así las flechas, en los bordes de este contenedor, quedan
-     pegadas a los bordes de la tarjeta en vez de a los del bloque
-     (que puede ser más ancho). */
-  position: relative;
+     100%)): así el carrusel no se ensancha más que la propia tarjeta. */
   width: min(340px, 100%);
   margin: 0 auto;
 }
@@ -17,21 +14,34 @@
      para no perder ese efecto, así que el deslizamiento entre
      tarjetas es corto (60px) y no se solapan dos a la vez. */
   overflow: visible;
+  /* Permite deslizar el dedo en horizontal para cambiar de tarjeta sin
+     que el navegador lo confunda con un gesto de "volver atrás"; el
+     scroll vertical de la página sigue funcionando igual. */
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+/* Fila de controles separada, debajo de la tarjeta (no encima): antes
+   las flechas estaban pegadas a los bordes de la propia tarjeta y era
+   fácil tocarlas sin querer en vez de la tarjeta (eso llevaba sin
+   querer a "Jugadores"). Aquí no se solapan con nada tocable. */
+.controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
 }
 
 .flecha {
-  position: absolute;
-  /* Centrado según la altura real de la tarjeta en cada momento (que
-     varía con el número de estadísticas rellenas), no un valor fijo. */
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 4;
+  flex: none;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.55);
-  color: #ffffff;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -41,22 +51,13 @@
 }
 
 .flecha:hover {
-  background: rgba(0, 0, 0, 0.75);
-}
-
-.flechaIzquierda {
-  left: 4px;
-}
-
-.flechaDerecha {
-  right: 4px;
+  background: var(--border);
 }
 
 .puntos {
   display: flex;
   justify-content: center;
   gap: 6px;
-  margin-top: 12px;
 }
 
 .punto {
@@ -75,7 +76,7 @@
   text-align: center;
   font-size: 13px;
   color: var(--meta);
-  margin-top: 4px;
+  margin-top: 10px;
   text-decoration: none;
 }
 
