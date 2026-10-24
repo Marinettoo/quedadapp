@@ -6,6 +6,7 @@ import { calcularEdad } from "@/lib/usuarios";
 import { AccionBoton } from "@/components/AccionBoton";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { FormularioFoto } from "@/components/FormularioFoto";
+import { EncuadrarFoto } from "@/components/EncuadrarFoto";
 import { valorar } from "../actions";
 import styles from "./page.module.css";
 
@@ -110,6 +111,17 @@ export default async function FichaJugador({
           </p>
           <FormularioFoto jugadorId={jugador.id} tieneFoto={!!jugador.fotoActualizadaEn} />
         </section>
+      )}
+
+      {puedeCambiarFoto && jugador.fotoActualizadaEn && (
+        <EncuadrarFoto
+          jugadorId={jugador.id}
+          fotoActualizadaEn={jugador.fotoActualizadaEn.getTime()}
+          offsetXInicial={jugador.fotoOffsetX}
+          offsetYInicial={jugador.fotoOffsetY}
+          escalaInicial={jugador.fotoEscala}
+          esPropia={esYo}
+        />
       )}
 
       {esYo && (

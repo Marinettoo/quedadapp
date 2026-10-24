@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { actualizarEncuadreFoto } from "../jugadores/actions";
-import tarjetaStyles from "@/components/TarjetaJugador.module.css";
-import styles from "./page.module.css";
+import { actualizarEncuadreFoto } from "@/app/(app)/jugadores/actions";
+import tarjetaStyles from "./TarjetaJugador.module.css";
+import styles from "./EncuadrarFoto.module.css";
 
 // En % del tamaño de la propia foto (no en píxeles): el mismo encuadre
 // se ve igual en escritorio y en móvil, donde la foto se renderiza más
@@ -17,21 +17,25 @@ function limitar(valor: number) {
   return Math.min(LIMITE_DESPLAZAMIENTO, Math.max(-LIMITE_DESPLAZAMIENTO, valor));
 }
 
-// Arrastrar + zoom para encuadrar la foto a gusto de cada uno. La vista
-// previa usa las mismas clases que la tarjeta real (TarjetaJugador),
-// así que lo que se ve aquí es exactamente lo que saldrá en la ficha.
+// Arrastrar + zoom para encuadrar la foto a gusto. La vista previa usa
+// las mismas clases que la tarjeta real (TarjetaJugador), así que lo
+// que se ve aquí es exactamente lo que saldrá en la ficha. Lo usan
+// tanto "Mi perfil" (cada uno con la suya) como la ficha pública de
+// cualquier jugador cuando quien mira es un admin.
 export function EncuadrarFoto({
   jugadorId,
   fotoActualizadaEn,
   offsetXInicial,
   offsetYInicial,
   escalaInicial,
+  esPropia = true,
 }: {
   jugadorId: string;
   fotoActualizadaEn: number;
   offsetXInicial: number;
   offsetYInicial: number;
   escalaInicial: number;
+  esPropia?: boolean;
 }) {
   const [offsetX, setOffsetX] = useState(offsetXInicial);
   const [offsetY, setOffsetY] = useState(offsetYInicial);
@@ -89,6 +93,7 @@ export function EncuadrarFoto({
   async function guardar() {
     setGuardando(true);
     const formData = new FormData();
+    formData.append("usuarioId", jugadorId);
     formData.append("offsetX", String(offsetX));
     formData.append("offsetY", String(offsetY));
     formData.append("escala", String(escala));
@@ -101,7 +106,9 @@ export function EncuadrarFoto({
     <section className={styles.seccion}>
       <h2 className={styles.subtitulo}>Encuadrar foto</h2>
       <p className={styles.meta}>
-        Arrastra la foto para colocarla donde quieras y usa el control para acercarla o alejarla.
+        {esPropia
+          ? "Arrastra la foto para colocarla donde quieras y usa el control para acercarla o alejarla."
+          : "Como admin, puedes ajustar el encuadre de la foto de este jugador: arrástrala y usa el control de zoom."}
       </p>
 
       <div

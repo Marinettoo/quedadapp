@@ -105,10 +105,8 @@ export async function quitarFoto(formData: FormData) {
 const LIMITE_DESPLAZAMIENTO = 70;
 
 export async function actualizarEncuadreFoto(formData: FormData) {
-  const usuario = await obtenerUsuarioSesion();
-  if (!usuario || usuario.estado !== "APROBADA") {
-    throw new Error("No autorizado.");
-  }
+  const objetivoId = String(formData.get("usuarioId"));
+  await exigirPermisoFoto(objetivoId);
 
   const offsetX = Number(formData.get("offsetX"));
   const offsetY = Number(formData.get("offsetY"));
@@ -121,7 +119,7 @@ export async function actualizarEncuadreFoto(formData: FormData) {
   const clamp = (v: number, limite: number) => Math.min(limite, Math.max(-limite, v));
 
   await prisma.usuario.update({
-    where: { id: usuario.id },
+    where: { id: objetivoId },
     data: {
       fotoOffsetX: clamp(offsetX, LIMITE_DESPLAZAMIENTO),
       fotoOffsetY: clamp(offsetY, LIMITE_DESPLAZAMIENTO),
@@ -131,5 +129,5 @@ export async function actualizarEncuadreFoto(formData: FormData) {
 
   revalidatePath("/perfil");
   revalidatePath("/jugadores");
-  revalidatePath(`/jugadores/${usuario.id}`);
+  revalidatePath(`/jugadores/${objetivoId}`);
 }

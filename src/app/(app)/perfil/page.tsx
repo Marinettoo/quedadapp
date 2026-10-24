@@ -5,7 +5,7 @@ import { calcularEdad } from "@/lib/usuarios";
 import { AppHeader } from "@/components/AppHeader";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { FormularioFoto } from "@/components/FormularioFoto";
-import { EncuadrarFoto } from "./EncuadrarFoto";
+import { EncuadrarFoto } from "@/components/EncuadrarFoto";
 import { EditarPerfil } from "./EditarPerfil";
 import styles from "./page.module.css";
 
