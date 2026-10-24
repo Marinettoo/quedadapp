@@ -18,7 +18,7 @@ export default async function Jugadores() {
   }
 
   const jugadores = await prisma.usuario.findMany({
-    where: { estado: "APROBADA", id: { not: usuario.id } },
+    where: { estado: "APROBADA" },
     orderBy: { nombreUsuario: "asc" },
     include: {
       valoracionesRecibidas: { select: { estrellas: true, autorId: true } },
@@ -91,19 +91,23 @@ export default async function Jugadores() {
                   fotoEscala={j.fotoEscala}
                 />
               </Link>
-              <div className={styles.estrellas}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <AccionBoton
-                    key={n}
-                    accion={valorar}
-                    campos={{ valoradoId: j.id, estrellas: String(n) }}
-                    className={n <= tuValoracion ? styles.estrellaLlena : styles.estrellaVacia}
-                    ariaLabel={`${n} ${n === 1 ? "estrella" : "estrellas"}`}
-                  >
-                    ★
-                  </AccionBoton>
-                ))}
-              </div>
+              {j.id === usuario.id ? (
+                <span className={styles.aviso}>Esta es tu ficha, no puedes valorarte a ti mismo.</span>
+              ) : (
+                <div className={styles.estrellas}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <AccionBoton
+                      key={n}
+                      accion={valorar}
+                      campos={{ valoradoId: j.id, estrellas: String(n) }}
+                      className={n <= tuValoracion ? styles.estrellaLlena : styles.estrellaVacia}
+                      ariaLabel={`${n} ${n === 1 ? "estrella" : "estrellas"}`}
+                    >
+                      ★
+                    </AccionBoton>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}
