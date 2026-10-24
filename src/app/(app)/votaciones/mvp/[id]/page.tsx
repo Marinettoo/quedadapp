@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { AppHeader } from "@/components/AppHeader";
 import { AccionBoton } from "@/components/AccionBoton";
 import { votarMvp, cerrarVotacionMvp } from "../actions";
+import { AccionesVotacionMvp } from "./AccionesVotacionMvp";
 import styles from "../../page.module.css";
 
 export const instant = false;
@@ -162,6 +163,10 @@ export default async function DetalleVotacionMvp({
         >
           Cerrar votación
         </AccionBoton>
+      )}
+
+      {usuario.rol === "ADMIN" && (
+        <AccionesVotacionMvp votacionId={votacion.id} cerrada={votacion.cerrada} />
       )}
     </main>
   );
