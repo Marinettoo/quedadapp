@@ -1,5 +1,7 @@
 .screen {
-  max-width: 560px;
+  /* Más ancho que el resto de la app (560px): aquí hace falta sitio
+     para varias fichas por fila en pantallas grandes. */
+  max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px 48px;
   display: flex;
@@ -24,9 +26,16 @@
 
 .lista {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
+  display: grid;
+  /* Tantas columnas de ~240px como quepan (3 o 4 en pantallas grandes,
+     1 en móvil): se adapta sola al ancho, sin puntos de ruptura fijos. */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* Separación horizontal amplia (más que la vertical): la foto de
+     cada ficha sobresale por el lado derecho, y con poco hueco se
+     solaparía con la ficha de al lado. */
+  column-gap: 56px;
+  row-gap: 36px;
+  justify-items: center;
 }
 
 .item {
@@ -34,6 +43,9 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  /* No estirar al ancho de la columna (que puede ser mayor que la
+     ficha, de tamaño fijo): así se centra en vez de dejar hueco. */
+  width: fit-content;
 }
 
 .tarjetaEnlace {
