@@ -40,6 +40,12 @@
   font-size: 15px;
 }
 
+.mvpEnlace {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .vacio {
   display: flex;
   flex-direction: column;

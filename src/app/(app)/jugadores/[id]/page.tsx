@@ -79,6 +79,7 @@ export default async function FichaJugador({
         fotoOffsetX={jugador.fotoOffsetX}
         fotoOffsetY={jugador.fotoOffsetY}
         fotoEscala={jugador.fotoEscala}
+        esMvp={jugador.esMvpActual}
       />
 
       <p className={styles.meta}>En la peña desde el {formatearFecha(jugador.creadoEn)}.</p>

@@ -18,6 +18,10 @@
   margin: 0 auto;
   overflow: visible;
   color: #000000;
+  /* Color base (en "R, G, B") de la decoración (marco, círculo, línea,
+     placeholder de foto): negro sobre los fondos claros de siempre.
+     .ficha_mvp lo cambia a blanco, porque su fondo es negro. */
+  --decor-rgb: 0, 0, 0;
 }
 
 /* Nivel de la tarjeta según la valoración media (ver nivelDe en
@@ -36,6 +40,23 @@
 
 .ficha.ficha_oro {
   background: #f5c64b;
+}
+
+/* MVP de la semana: sustituye al color de nivel (no se combinan),
+   fondo negro con el texto y los chips en dorado. Se corona en
+   votaciones/mvp y dura hasta que se cierre la siguiente votación. */
+.ficha.ficha_mvp {
+  background: #0a0a0a;
+  color: #f2c94c;
+  --decor-rgb: 255, 255, 255;
+}
+
+.ficha.ficha_mvp .estadistica {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ficha.ficha_mvp .estadisticaValor {
+  color: #f2c94c;
 }
 
 /* Brillo que recorre la tarjeta en diagonal, solo cuando tiene nivel
@@ -96,7 +117,7 @@
 .fichaMarco {
   position: absolute;
   inset: 4px;
-  border: 1.5px solid rgba(0, 0, 0, 0.5);
+  border: 1.5px solid rgba(var(--decor-rgb), 0.5);
   border-radius: calc(var(--radius-block) - 4px);
   z-index: 2;
   pointer-events: none;
@@ -126,7 +147,7 @@
   left: 58%;
   width: 260px;
   height: 260px;
-  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border: 2px dashed rgba(var(--decor-rgb), 0.1);
   border-radius: 50%;
 }
 
@@ -140,9 +161,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.06) 45%,
-    rgba(0, 0, 0, 0.22) 50%,
-    rgba(0, 0, 0, 0.06) 55%,
+    rgba(var(--decor-rgb), 0.06) 45%,
+    rgba(var(--decor-rgb), 0.22) 50%,
+    rgba(var(--decor-rgb), 0.06) 55%,
     transparent 100%
   );
   background-size: 260% 100%;
@@ -156,7 +177,7 @@
   height: 6px;
   margin: -3px 0 0 -3px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.16);
+  background: rgba(var(--decor-rgb), 0.16);
 }
 
 /* Arco tipo "saque de esquina", apoyado en la esquina inferior
@@ -170,7 +191,7 @@
   bottom: -30px;
   width: 90px;
   height: 90px;
-  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border: 2px dashed rgba(var(--decor-rgb), 0.1);
   border-radius: 50%;
 }
 
@@ -305,12 +326,12 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(var(--decor-rgb), 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 36px;
   font-weight: 700;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(var(--decor-rgb), 0.5);
   z-index: 3;
 }

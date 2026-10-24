@@ -89,6 +89,7 @@ export default async function Jugadores() {
                   fotoOffsetX={j.fotoOffsetX}
                   fotoOffsetY={j.fotoOffsetY}
                   fotoEscala={j.fotoEscala}
+                  esMvp={j.esMvpActual}
                 />
               </Link>
               {j.id === usuario.id ? (

@@ -51,6 +51,10 @@ model Usuario {
   // "Mi perfil".
   fechaNacimiento      DateTime?
   piernaBuena          PiernaBuena?
+  // true solo para quien ganó la última votación de MVP cerrada (uno
+  // como mucho a la vez): pinta su ficha en negro y dorado hasta que se
+  // cierre la siguiente votación de MVP.
+  esMvpActual          Boolean             @default(false)
   sesiones             Sesion[]
   partidosEncargados   Partido[]           @relation("PartidosEncargados")
   partidosCreados      Partido[]           @relation("PartidosCreados")
@@ -69,6 +73,9 @@ model Usuario {
   goles                GolJugador[]
   votacionesCreadas    VotacionFecha[]
   votosFecha           VotoFecha[]
+  votacionesMvpCreadas VotacionMvp[]       @relation("VotacionMvpCreadaPor")
+  mvpVotosRecibidos    VotoMvp[]           @relation("VotoMvpCandidato")
+  mvpVotosEmitidos     VotoMvp[]           @relation("VotoMvpAutor")
   notificaciones       Notificacion[]
   suscripcionesPush    SuscripcionPush[]
   miembroGrupos        MiembroGrupo[]
@@ -102,6 +109,7 @@ model Partido {
   coloresEquipo ColorEquipo[]
   apuestas      Apuesta[]
   grupos        Grupo[]
+  votacionesMvp VotacionMvp[]
 }
 
 // Grupo de jugadores que quieren coincidir en el mismo equipo al generar
@@ -345,6 +353,39 @@ model VotoFecha {
   votadoEn   DateTime             @default(now())
 
   @@unique([votacionId, usuarioId])
+}
+
+// Votación para elegir al MVP de un partido concreto: dura hasta que un
+// admin la cierra (sin fecha límite), y al cerrarla se corona a quien
+// tenga más votos (Usuario.esMvpActual) hasta la siguiente votación de
+// MVP que se cierre. Si hay empate, cerrarVotacionMvp exige indicar a
+// mano cuál de los empatados gana.
+model VotacionMvp {
+  id          String    @id @default(cuid())
+  partidoId   String
+  partido     Partido   @relation(fields: [partidoId], references: [id], onDelete: Cascade)
+  creadaPorId String
+  creadaPor   Usuario   @relation("VotacionMvpCreadaPor", fields: [creadaPorId], references: [id])
+  creadaEn    DateTime  @default(now())
+  cerrada     Boolean   @default(false)
+  cerradaEn   DateTime?
+  // null si se cerró sin votos; si hubo empate, quien cerró la votación
+  // tuvo que elegir uno de los empatados.
+  ganadorId   String?
+  votos       VotoMvp[]
+}
+
+model VotoMvp {
+  id          String      @id @default(cuid())
+  votacionId  String
+  votacion    VotacionMvp @relation(fields: [votacionId], references: [id], onDelete: Cascade)
+  candidatoId String
+  candidato   Usuario     @relation("VotoMvpCandidato", fields: [candidatoId], references: [id], onDelete: Cascade)
+  autorId     String
+  autor       Usuario     @relation("VotoMvpAutor", fields: [autorId], references: [id], onDelete: Cascade)
+  votadoEn    DateTime    @default(now())
+
+  @@unique([votacionId, autorId])
 }
 
 // Avisos dentro de la app (campanita) para un jugador concreto: nuevos

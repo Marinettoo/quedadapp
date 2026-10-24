@@ -59,6 +59,7 @@ export default async function Perfil() {
         fotoOffsetX={usuario.fotoOffsetX}
         fotoOffsetY={usuario.fotoOffsetY}
         fotoEscala={usuario.fotoEscala}
+        esMvp={usuario.esMvpActual}
       />
 
       <section className={styles.seccion}>

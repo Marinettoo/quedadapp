@@ -25,6 +25,7 @@ export function TarjetaJugador({
   fotoOffsetX = 0,
   fotoOffsetY = 0,
   fotoEscala = 1,
+  esMvp = false,
 }: {
   jugadorId: string;
   nombreUsuario: string;
@@ -39,10 +40,13 @@ export function TarjetaJugador({
   fotoOffsetX?: number;
   fotoOffsetY?: number;
   fotoEscala?: number;
+  // MVP de la última votación cerrada: sustituye al color de nivel
+  // (bronce/plata/oro), no se combinan.
+  esMvp?: boolean;
 }) {
   let indiceChip = 0;
   const nivel = nivelDe(media);
-  const claseNivel = nivel ? styles[`ficha_${nivel}`] : "";
+  const claseNivel = esMvp ? styles.ficha_mvp : nivel ? styles[`ficha_${nivel}`] : "";
 
   return (
     <div className={`${styles.ficha} ${claseNivel}`}>
@@ -50,7 +54,7 @@ export function TarjetaJugador({
         <span className={styles.fichaPunto} />
         <span className={styles.fichaEsquina} />
       </div>
-      {nivel && <div className={styles.brillo} aria-hidden="true" />}
+      {(esMvp || nivel) && <div className={styles.brillo} aria-hidden="true" />}
       <div className={styles.fichaMarco} aria-hidden="true" />
       <h1 className={styles.nombre}>{nombreUsuario}</h1>
 

@@ -8,6 +8,7 @@ import { BallMark } from "@/components/BallMark";
 import { salir } from "@/app/actions";
 import { CreadorModal } from "@/components/CreadorModal";
 import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJugadores";
+import { TarjetaJugador } from "@/components/TarjetaJugador";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -76,8 +77,11 @@ export default async function Panel() {
       fotoOffsetX: j.fotoOffsetX,
       fotoOffsetY: j.fotoOffsetY,
       fotoEscala: j.fotoEscala,
+      esMvp: j.esMvpActual,
     };
   });
+
+  const mvp = jugadoresCarrusel.find((j) => j.esMvp) ?? null;
 
   return (
     <main className={styles.screen}>
@@ -138,6 +142,15 @@ export default async function Panel() {
           </>
         )}
       </section>
+
+      {mvp && (
+        <section className={styles.seccion}>
+          <h2 className={styles.subtitulo}>MVP de esta semana</h2>
+          <Link href={`/jugadores/${mvp.jugadorId}`} className={styles.mvpEnlace}>
+            <TarjetaJugador {...mvp} />
+          </Link>
+        </section>
+      )}
 
       {jugadoresCarrusel.length > 0 && (
         <section className={styles.seccion}>

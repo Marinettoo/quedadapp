@@ -28,6 +28,7 @@ export type JugadorCarrusel = {
   fotoOffsetX: number;
   fotoOffsetY: number;
   fotoEscala: number;
+  esMvp: boolean;
 };
 
 const variantes = {
