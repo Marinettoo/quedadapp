@@ -2,9 +2,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { calcularEdad } from "@/lib/usuarios";
 import { AppHeader } from "@/components/AppHeader";
 import { AccionBoton } from "@/components/AccionBoton";
-import { AvatarJugador } from "@/components/AvatarJugador";
+import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { valorar } from "./actions";
 import styles from "./page.module.css";
 
@@ -24,10 +25,22 @@ export default async function Jugadores() {
     },
   });
 
-  const miValoracion = await prisma.valoracion.findMany({
-    where: { valoradoId: usuario.id },
-    select: { estrellas: true },
-  });
+  const [miValoracion, partidosPorJugador, golesPorJugador] = await Promise.all([
+    prisma.valoracion.findMany({ where: { valoradoId: usuario.id }, select: { estrellas: true } }),
+    prisma.asistencia.groupBy({
+      by: ["usuarioId"],
+      where: { cancelado: false },
+      _count: { _all: true },
+    }),
+    prisma.golJugador.groupBy({
+      by: ["usuarioId"],
+      where: { usuarioId: { not: null } },
+      _sum: { goles: true },
+    }),
+  ]);
+  const partidosMapa = new Map(partidosPorJugador.map((p) => [p.usuarioId, p._count._all]));
+  const golesMapa = new Map(golesPorJugador.map((g) => [g.usuarioId, g._sum.goles ?? 0]));
+
   const miMedia =
     miValoracion.length === 0
       ? null
@@ -62,20 +75,21 @@ export default async function Jugadores() {
 
           return (
             <li key={j.id} className={styles.item}>
-              <Link href={`/jugadores/${j.id}`} className={styles.cabecera}>
-                <AvatarJugador
-                  usuarioId={j.id}
-                  nombre={j.nombreUsuario}
+              <Link href={`/jugadores/${j.id}`} className={styles.tarjetaEnlace}>
+                <TarjetaJugador
+                  jugadorId={j.id}
+                  nombreUsuario={j.nombreUsuario}
                   fotoActualizadaEn={j.fotoActualizadaEn}
+                  media={media}
+                  cuenta={cuenta}
+                  partidosJugados={partidosMapa.get(j.id) ?? 0}
+                  golesMarcados={golesMapa.get(j.id) ?? 0}
+                  edad={j.fechaNacimiento ? calcularEdad(j.fechaNacimiento) : null}
+                  piernaBuena={j.piernaBuena}
+                  fotoOffsetX={j.fotoOffsetX}
+                  fotoOffsetY={j.fotoOffsetY}
+                  fotoEscala={j.fotoEscala}
                 />
-                <span className={styles.cabeceraTexto}>
-                  <span className={styles.nombre}>{j.nombreUsuario}</span>
-                  <span className={styles.media}>
-                    {media === null
-                      ? "Sin valoraciones todavía"
-                      : `${media.toFixed(1)} ★ (${cuenta} ${cuenta === 1 ? "voto" : "votos"})`}
-                  </span>
-                </span>
               </Link>
               <div className={styles.estrellas}>
                 {[1, 2, 3, 4, 5].map((n) => (

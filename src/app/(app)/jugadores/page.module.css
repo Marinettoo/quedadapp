@@ -26,30 +26,21 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 28px;
 }
 
 .item {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  padding: 16px 20px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
 }
 
-.cabecera {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.tarjetaEnlace {
+  display: block;
   text-decoration: none;
   color: inherit;
-}
-
-.cabeceraTexto {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  width: 100%;
 }
 
 .nombre {
