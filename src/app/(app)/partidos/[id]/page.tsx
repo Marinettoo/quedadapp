@@ -20,6 +20,7 @@ import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
 import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
 import { EditarPartido } from "./EditarPartido";
+import { ResultadoForm, type JugadorOpcion } from "./ResultadoForm";
 import styles from "./page.module.css";
 
 export const instant = false;
@@ -116,54 +117,45 @@ export default async function DetallePartido({
   type GolesDeEnfrentamiento = {
     goles: { usuarioId: string | null; invitadoId: string | null; goles: number }[];
   };
-  function golesExistentes(enfrentamiento?: GolesDeEnfrentamiento) {
-    const mapa = new Map<string, number>();
+  function golesExistentes(enfrentamiento?: GolesDeEnfrentamiento): Record<string, number> {
+    const mapa: Record<string, number> = {};
     enfrentamiento?.goles.forEach((g) => {
       const clave = g.usuarioId ? `u:${g.usuarioId}` : `i:${g.invitadoId}`;
-      mapa.set(clave, g.goles);
+      mapa[clave] = g.goles;
     });
     return mapa;
   }
 
-  function renderCamposGoles(golesPrevios?: Map<string, number>) {
-    if (jugadoresQueJuegan.length === 0) {
-      return null;
-    }
-    return (
-      <div className={styles.golesJugadores}>
-        <p className={styles.meta}>
-          El resultado se calcula con los goles de cada jugador. Deja a 0 quien no haya marcado.
-        </p>
-        {equipos.map((equipo, i) => {
-          if (equipo.length === 0) return null;
-          return (
-            <div key={i} className={styles.golesEquipo}>
-              <h4 className={styles.golesEquipoTitulo}>Equipo {i + 1}</h4>
-              <div className={styles.golesLista}>
-                {equipo.map((a) => {
-                  const clave = claveAsignacion(a);
-                  const nombreCampo = a.usuario ? `golU_${a.usuario.id}` : `golI_${a.invitado!.id}`;
-                  const valorPrevio = golesPrevios?.get(clave) ?? 0;
-                  return (
-                    <label key={clave} className={styles.golJugadorFila}>
-                      <span>{nombreAsignacion(a)}</span>
-                      <input
-                        type="number"
-                        name={nombreCampo}
-                        min={0}
-                        defaultValue={valorPrevio}
-                        className={styles.golesInput}
-                      />
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
+  // Lista plana de candidatos a gol (con su equipo), para el formulario
+  // con botones + / −: filtra sola a los dos equipos que juegan cada
+  // mini partido.
+  const jugadoresOpciones: JugadorOpcion[] = equipos.flatMap((equipo, i) =>
+    equipo.map((a) => ({
+      clave: claveAsignacion(a),
+      nombre: nombreAsignacion(a),
+      campoName: a.usuario ? `golU_${a.usuario.id}` : `golI_${a.invitado!.id}`,
+      equipo: i + 1,
+    })),
+  );
+  const nombrePorClave = new Map(jugadoresQueJuegan.map((a) => [claveAsignacion(a), nombreAsignacion(a)]));
+
+  function goleadoresDe(goles: { usuarioId: string | null; invitadoId: string | null; goles: number }[]) {
+    return goles
+      .map((g) => {
+        const clave = g.usuarioId ? `u:${g.usuarioId}` : `i:${g.invitadoId}`;
+        return { nombre: nombrePorClave.get(clave) ?? "?", goles: g.goles };
+      })
+      .sort((a, b) => b.goles - a.goles);
   }
+
+  const goleadoresPartido = goleadoresDe(partido.enfrentamientos.flatMap((e) => e.goles)).reduce<
+    { nombre: string; goles: number }[]
+  >((acc, g) => {
+    const existente = acc.find((x) => x.nombre === g.nombre);
+    if (existente) existente.goles += g.goles;
+    else acc.push({ ...g });
+    return acc;
+  }, []).sort((a, b) => b.goles - a.goles);
 
   const puedeVerPagos =
     usuario.rol === "ADMIN" ||
@@ -250,63 +242,81 @@ export default async function DetallePartido({
               </table>
 
               {partido.enfrentamientos.length > 0 && (
-                <ul className={styles.lista}>
-                  {partido.enfrentamientos.map((e) => (
-                    <li key={e.id} className={styles.pagoFila}>
-                      <span>
-                        Equipo {e.equipoLocal} {e.golesLocal} - {e.golesVisitante} Equipo{" "}
-                        {e.equipoVisitante}
-                      </span>
-                      {puedeGenerar && (
-                        <AccionBoton
-                          accion={eliminarEnfrentamiento}
-                          campos={{ partidoId: partido.id, id: e.id }}
-                          className={styles.pagoBotonSecundario}
-                        >
-                          Eliminar
-                        </AccionBoton>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className={styles.miniResultados}>
+                  {partido.enfrentamientos.map((e) => {
+                    const goleadores = goleadoresDe(e.goles);
+                    return (
+                      <div key={e.id} className={styles.miniResultado}>
+                        <div className={styles.miniMarcador}>
+                          <span
+                            className={
+                              e.golesLocal >= e.golesVisitante
+                                ? `${styles.miniMarcadorEquipo} ${styles.miniMarcadorGanador}`
+                                : styles.miniMarcadorEquipo
+                            }
+                          >
+                            Equipo {e.equipoLocal}
+                            <span className={styles.miniMarcadorCifra}>{e.golesLocal}</span>
+                          </span>
+                          <span className={styles.miniMarcadorSeparador}>–</span>
+                          <span
+                            className={
+                              e.golesVisitante >= e.golesLocal
+                                ? `${styles.miniMarcadorEquipo} ${styles.miniMarcadorGanador}`
+                                : styles.miniMarcadorEquipo
+                            }
+                          >
+                            <span className={styles.miniMarcadorCifra}>{e.golesVisitante}</span>
+                            Equipo {e.equipoVisitante}
+                          </span>
+                        </div>
+                        {goleadores.length > 0 && (
+                          <p className={styles.miniGoleadores}>
+                            ⚽ {goleadores.map((g) => `${g.nombre} (${g.goles})`).join(", ")}
+                          </p>
+                        )}
+                        {puedeGenerar && (
+                          <div className={styles.miniAcciones}>
+                            <AccionBoton
+                              accion={eliminarEnfrentamiento}
+                              campos={{ partidoId: partido.id, id: e.id }}
+                              className={styles.pagoBotonSecundario}
+                            >
+                              Eliminar
+                            </AccionBoton>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
 
               {puedeGenerar && (
-                <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
-                  <input type="hidden" name="partidoId" value={partido.id} />
-                  <select name="equipoLocal" defaultValue="1" required>
-                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        Equipo {n}
-                      </option>
-                    ))}
-                  </select>
-                  <span>contra</span>
-                  <select name="equipoVisitante" defaultValue="2" required>
-                    {Array.from({ length: numEquipos }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        Equipo {n}
-                      </option>
-                    ))}
-                  </select>
-                  {renderCamposGoles()}
-                  <button type="submit" className={styles.generar}>
-                    Añadir
-                  </button>
-                </form>
+                <ResultadoForm
+                  partidoId={partido.id}
+                  accion={agregarEnfrentamiento}
+                  numEquipos={numEquipos}
+                  jugadores={jugadoresOpciones}
+                  equipoLocalInicial={1}
+                  equipoVisitanteInicial={2}
+                  mostrarSelects
+                  textoBoton="Añadir"
+                />
               )}
             </>
           ) : !resultadoDosEquipos ? (
             puedeGenerar ? (
-              <form action={agregarEnfrentamiento} className={styles.resultadoForm}>
-                <input type="hidden" name="partidoId" value={partido.id} />
-                <input type="hidden" name="equipoLocal" value={1} />
-                <input type="hidden" name="equipoVisitante" value={2} />
-                {renderCamposGoles()}
-                <button type="submit" className={styles.generar}>
-                  Guardar resultado
-                </button>
-              </form>
+              <ResultadoForm
+                partidoId={partido.id}
+                accion={agregarEnfrentamiento}
+                numEquipos={numEquipos}
+                jugadores={jugadoresOpciones}
+                equipoLocalInicial={1}
+                equipoVisitanteInicial={2}
+                mostrarSelects={false}
+                textoBoton="Guardar resultado"
+              />
             ) : (
               <p className={styles.meta}>Todavía no hay resultado.</p>
             )
@@ -335,18 +345,46 @@ export default async function DetallePartido({
                   <span className={styles.marcadorCifra}>{resultadoDosEquipos.golesVisitante}</span>
                 </div>
               </div>
+              {goleadoresDe(resultadoDosEquipos.goles).length > 0 && (
+                <p className={styles.miniGoleadores}>
+                  ⚽{" "}
+                  {goleadoresDe(resultadoDosEquipos.goles)
+                    .map((g) => `${g.nombre} (${g.goles})`)
+                    .join(", ")}
+                </p>
+              )}
               {puedeGenerar && (
-                <form action={editarEnfrentamiento} className={styles.resultadoForm}>
-                  <input type="hidden" name="partidoId" value={partido.id} />
-                  <input type="hidden" name="id" value={resultadoDosEquipos.id} />
-                  {renderCamposGoles(golesExistentes(resultadoDosEquipos))}
-                  <button type="submit" className={styles.pagoBotonSecundario}>
-                    Corregir
-                  </button>
-                </form>
+                <ResultadoForm
+                  partidoId={partido.id}
+                  accion={editarEnfrentamiento}
+                  numEquipos={numEquipos}
+                  jugadores={jugadoresOpciones}
+                  equipoLocalInicial={1}
+                  equipoVisitanteInicial={2}
+                  mostrarSelects={false}
+                  enfrentamientoId={resultadoDosEquipos.id}
+                  golesPrevios={golesExistentes(resultadoDosEquipos)}
+                  textoBoton="Corregir"
+                />
               )}
             </div>
           )}
+        </section>
+      )}
+
+      {generacion && goleadoresPartido.length > 0 && (
+        <section>
+          <h2 className={styles.subtitulo}>Estadísticas del partido</h2>
+          <div className={styles.goleadores}>
+            {goleadoresPartido.map((g) => (
+              <div key={g.nombre} className={styles.goleadorFila}>
+                <span>{g.nombre}</span>
+                <span className={styles.goleadorGoles}>
+                  {g.goles} {g.goles === 1 ? "gol" : "goles"}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

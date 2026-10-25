@@ -394,6 +394,51 @@
   text-align: center;
 }
 
+.golStepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.golStepperBoton {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.golStepperBoton:hover {
+  background: var(--border);
+}
+
+.golStepperValor {
+  width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font-family: inherit;
+  /* De solo lectura: se cambia con los botones, no escribiendo. */
+  pointer-events: none;
+}
+
+.golStepperValor::-webkit-inner-spin-button,
+.golStepperValor::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .golesJugadores {
   flex-basis: 100%;
   display: flex;
@@ -481,6 +526,88 @@
 .marcadorPendiente {
   font-size: 15px;
   color: var(--meta);
+}
+
+.miniResultados {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.miniResultado {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.miniMarcador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.miniMarcadorEquipo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--meta);
+}
+
+.miniMarcadorCifra {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.miniMarcadorGanador {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.miniMarcadorSeparador {
+  font-size: 14px;
+  color: var(--meta);
+}
+
+.miniGoleadores {
+  font-size: 13px;
+  color: var(--meta);
+  text-align: center;
+}
+
+.miniAcciones {
+  display: flex;
+  justify-content: center;
+}
+
+.goleadores {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goleadorFila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.goleadorGoles {
+  font-weight: 700;
 }
 
 .editarSeccion {
