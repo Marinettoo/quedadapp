@@ -14,7 +14,10 @@
      solo la encoge en pantallas más estrechas que 340px de contenido
      (muy pocas), para que nunca desborde la página. */
   width: min(340px, 100%);
-  min-height: 300px;
+  /* Altura fija (no min-height): todas las fichas del mismo tamaño,
+     tenga el jugador 3 estadísticas rellenas o las 5 (edad y pierna
+     buena son opcionales). */
+  height: 420px;
   margin: 0 auto;
   overflow: visible;
   color: #000000;
