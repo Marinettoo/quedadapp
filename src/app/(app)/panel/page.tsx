@@ -9,6 +9,7 @@ import { salir } from "@/app/actions";
 import { CreadorModal } from "@/components/CreadorModal";
 import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJugadores";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
+import { AvatarJugador } from "@/components/AvatarJugador";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -83,6 +84,46 @@ export default async function Panel() {
 
   const mvp = jugadoresCarrusel.find((j) => j.esMvp) ?? null;
 
+  // Podio: 2º y 3er más votados en la votación que coronó al MVP actual
+  // (la última cerrada con ese ganador), para acompañarlo a los lados.
+  type PuestoPodio = { id: string; nombreUsuario: string; fotoActualizadaEn: Date | null; votos: number };
+  let segundo: PuestoPodio | null = null;
+  let tercero: PuestoPodio | null = null;
+
+  if (mvp) {
+    const votacionGanadora = await prisma.votacionMvp.findFirst({
+      where: { cerrada: true, ganadorId: mvp.jugadorId },
+      orderBy: { cerradaEn: "desc" },
+      include: { votos: true },
+    });
+
+    if (votacionGanadora) {
+      const cuentas = new Map<string, number>();
+      for (const v of votacionGanadora.votos) {
+        cuentas.set(v.candidatoId, (cuentas.get(v.candidatoId) ?? 0) + 1);
+      }
+      cuentas.delete(mvp.jugadorId);
+
+      const siguientes = [...cuentas.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
+      if (siguientes.length > 0) {
+        const usuarios = await prisma.usuario.findMany({
+          where: { id: { in: siguientes.map(([id]) => id) } },
+          select: { id: true, nombreUsuario: true, fotoActualizadaEn: true },
+        });
+        const porId = new Map(usuarios.map((u) => [u.id, u]));
+        const [idSegundo, votosSegundo] = siguientes[0];
+        const usuSegundo = porId.get(idSegundo);
+        if (usuSegundo) segundo = { ...usuSegundo, votos: votosSegundo };
+
+        if (siguientes[1]) {
+          const [idTercero, votosTercero] = siguientes[1];
+          const usuTercero = porId.get(idTercero);
+          if (usuTercero) tercero = { ...usuTercero, votos: votosTercero };
+        }
+      }
+    }
+  }
+
   return (
     <main className={styles.screen}>
       <AppHeader
@@ -146,9 +187,49 @@ export default async function Panel() {
       {mvp && (
         <section className={styles.seccion}>
           <h2 className={styles.subtitulo}>MVP de esta semana</h2>
-          <Link href={`/jugadores/${mvp.jugadorId}`} className={styles.mvpEnlace}>
-            <TarjetaJugador {...mvp} />
-          </Link>
+          <div className={styles.podio}>
+            {segundo && (
+              <Link
+                href={`/jugadores/${segundo.id}`}
+                className={`${styles.podioPuesto} ${styles.podioSegundo}`}
+              >
+                <AvatarJugador
+                  usuarioId={segundo.id}
+                  nombre={segundo.nombreUsuario}
+                  fotoActualizadaEn={segundo.fotoActualizadaEn}
+                  tamano={84}
+                />
+                <span className={`${styles.podioMedalla} ${styles.podioMedallaPlata}`}>2</span>
+                <span className={styles.podioNombre}>{segundo.nombreUsuario}</span>
+                <span className={styles.podioVotos}>
+                  {segundo.votos} {segundo.votos === 1 ? "voto" : "votos"}
+                </span>
+              </Link>
+            )}
+
+            <Link href={`/jugadores/${mvp.jugadorId}`} className={`${styles.podioPuesto} ${styles.podioPrimero}`}>
+              <TarjetaJugador {...mvp} />
+            </Link>
+
+            {tercero && (
+              <Link
+                href={`/jugadores/${tercero.id}`}
+                className={`${styles.podioPuesto} ${styles.podioTercero}`}
+              >
+                <AvatarJugador
+                  usuarioId={tercero.id}
+                  nombre={tercero.nombreUsuario}
+                  fotoActualizadaEn={tercero.fotoActualizadaEn}
+                  tamano={64}
+                />
+                <span className={`${styles.podioMedalla} ${styles.podioMedallaBronce}`}>3</span>
+                <span className={styles.podioNombre}>{tercero.nombreUsuario}</span>
+                <span className={styles.podioVotos}>
+                  {tercero.votos} {tercero.votos === 1 ? "voto" : "votos"}
+                </span>
+              </Link>
+            )}
+          </div>
         </section>
       )}
 
