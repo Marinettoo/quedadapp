@@ -48,6 +48,7 @@
   align-items: flex-end;
   justify-content: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .podioPuesto {
@@ -108,6 +109,24 @@
 .podioVotos {
   font-size: 11px;
   color: var(--meta);
+}
+
+/* En pantallas estrechas no caben los 3 en una fila (la ficha del
+   ganador tiene ancho fijo, no se encoge): la ficha pasa a ocupar su
+   propia fila entera y los dos avatares quedan juntos debajo. */
+@media (max-width: 480px) {
+  .podioPrimero {
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .podioSegundo {
+    order: 2;
+  }
+
+  .podioTercero {
+    order: 3;
+  }
 }
 
 .vacio {
