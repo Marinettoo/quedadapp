@@ -19,8 +19,16 @@ export function CrearPartidoForm({ encargados }: { encargados: Encargado[] }) {
         <input id="fecha" name="fecha" type="date" required />
       </div>
       <div className={styles.field}>
-        <label htmlFor="hora">Hora</label>
+        <label htmlFor="hora">Hora de inicio</label>
         <input id="hora" name="hora" type="time" required />
+      </div>
+      <div className={styles.field}>
+        <label htmlFor="horaFin">Hora de fin</label>
+        <input id="horaFin" name="horaFin" type="time" required />
+        <p className={styles.meta}>
+          Mientras el partido esté en curso seguirá viéndose en Inicio; al terminar se abre sola
+          la votación de MVP.
+        </p>
       </div>
       <div className={styles.field}>
         <label htmlFor="ubicacion">Ubicación</label>

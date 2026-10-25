@@ -11,6 +11,7 @@ const estadoInicial: ResultadoFormulario = null;
 type Partido = {
   id: string;
   fechaHora: Date;
+  horaFin: Date | null;
   ubicacion: string;
   horasCierre: number;
 };
@@ -87,6 +88,15 @@ export function EditarPartido({ partido }: { partido: Partido }) {
             <input type="date" name="fecha" defaultValue={paraInputFecha(partido.fechaHora)} required />
             <input type="time" name="hora" defaultValue={paraInputHora(partido.fechaHora)} required />
           </div>
+          <label htmlFor="horaFin" className={styles.meta}>
+            Hora de fin (en blanco si no se sabe aún)
+          </label>
+          <input
+            id="horaFin"
+            type="time"
+            name="horaFin"
+            defaultValue={partido.horaFin ? paraInputHora(partido.horaFin) : ""}
+          />
           <input type="text" name="ubicacion" defaultValue={partido.ubicacion} required placeholder="Ubicación" />
           <label htmlFor="horasCierre" className={styles.meta}>
             Horas de antelación para cerrar asistencia

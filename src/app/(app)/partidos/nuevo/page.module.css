@@ -24,6 +24,11 @@
   color: var(--meta);
 }
 
+.meta {
+  font-size: 13px;
+  color: var(--meta);
+}
+
 .field input,
 .field select {
   font-size: 16px;

@@ -38,12 +38,16 @@ export async function crearPartido(
 
   const fecha = String(formData.get("fecha") ?? "");
   const hora = String(formData.get("hora") ?? "");
+  const horaFinTexto = String(formData.get("horaFin") ?? "");
   const ubicacion = String(formData.get("ubicacion") ?? "").trim();
   const encargadoId = String(formData.get("encargadoId") ?? "");
   const horasCierre = Number(formData.get("horasCierre") ?? 2);
 
   if (!fecha || !hora) {
     return { error: "Indica fecha y hora del partido." };
+  }
+  if (!horaFinTexto) {
+    return { error: "Indica a qué hora termina el partido." };
   }
   if (!ubicacion) {
     return { error: "Indica la ubicación." };
@@ -59,6 +63,13 @@ export async function crearPartido(
   if (Number.isNaN(fechaHora.getTime())) {
     return { error: "La fecha u hora no son válidas." };
   }
+  const horaFin = fechaHoraMadrid(fecha, horaFinTexto);
+  if (Number.isNaN(horaFin.getTime())) {
+    return { error: "La hora de fin no es válida." };
+  }
+  if (horaFin <= fechaHora) {
+    return { error: "La hora de fin debe ser posterior a la de inicio (el mismo día)." };
+  }
 
   const encargado = await prisma.usuario.findUnique({ where: { id: encargadoId } });
   if (!encargado || encargado.estado !== "APROBADA") {
@@ -68,6 +79,7 @@ export async function crearPartido(
   const partido = await prisma.partido.create({
     data: {
       fechaHora,
+      horaFin,
       ubicacion,
       horasCierre,
       encargadoId,
@@ -112,6 +124,7 @@ export async function editarPartido(
 
   const fecha = String(formData.get("fecha") ?? "");
   const hora = String(formData.get("hora") ?? "");
+  const horaFinTexto = String(formData.get("horaFin") ?? "");
   const ubicacion = String(formData.get("ubicacion") ?? "").trim();
   const horasCierre = Number(formData.get("horasCierre") ?? 2);
 
@@ -130,9 +143,22 @@ export async function editarPartido(
     return { error: "La fecha u hora no son válidas." };
   }
 
+  // Opcional (los partidos antiguos no la tenían): si se deja en blanco,
+  // se borra la hora de fin en vez de exigirla para poder guardar.
+  let horaFin: Date | null = null;
+  if (horaFinTexto) {
+    horaFin = fechaHoraMadrid(fecha, horaFinTexto);
+    if (Number.isNaN(horaFin.getTime())) {
+      return { error: "La hora de fin no es válida." };
+    }
+    if (horaFin <= fechaHora) {
+      return { error: "La hora de fin debe ser posterior a la de inicio (el mismo día)." };
+    }
+  }
+
   await prisma.partido.update({
     where: { id: partidoId },
-    data: { fechaHora, ubicacion, horasCierre },
+    data: { fechaHora, horaFin, ubicacion, horasCierre },
   });
 
   revalidatePath(`/partidos/${partidoId}`);

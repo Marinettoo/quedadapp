@@ -42,12 +42,14 @@ export async function crearVotacionMvp(
     data: { partidoId, creadaPorId: usuario.id },
   });
 
-  const resto = await prisma.usuario.findMany({
-    where: { estado: "APROBADA", id: { not: usuario.id } },
-    select: { id: true },
+  // Solo pueden votar quienes asistieron a ese partido: avisar solo a
+  // ellos, no a toda la peña.
+  const asistentes = await prisma.asistencia.findMany({
+    where: { partidoId, cancelado: false, usuarioId: { not: usuario.id } },
+    select: { usuarioId: true },
   });
   await crearNotificacionParaVarios(
-    resto.map((u) => u.id),
+    asistentes.map((a) => a.usuarioId),
     {
       tipo: "NUEVA_VOTACION_MVP",
       mensaje: "Nueva votación: elige al MVP del partido.",
@@ -74,6 +76,13 @@ export async function votarMvp(formData: FormData) {
   }
   if (votacion.cerrada) {
     throw new Error("Esta votación ya está cerrada.");
+  }
+
+  const asistio = await prisma.asistencia.findFirst({
+    where: { partidoId: votacion.partidoId, usuarioId: usuario.id, cancelado: false },
+  });
+  if (!asistio) {
+    throw new Error("Solo pueden votar quienes asistieron a ese partido.");
   }
 
   await prisma.votoMvp.upsert({

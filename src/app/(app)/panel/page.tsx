@@ -10,6 +10,7 @@ import { CreadorModal } from "@/components/CreadorModal";
 import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJugadores";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { AvatarJugador } from "@/components/AvatarJugador";
+import { abrirVotacionesMvpPendientes } from "@/lib/mvp";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -32,11 +33,20 @@ export default async function Panel() {
     redirect("/");
   }
 
+  // Antes de leer los partidos: si alguno ya ha terminado y todavía no
+  // tiene votación de MVP, se abre sola aquí.
+  await abrirVotacionesMvpPendientes();
+
+  const ahora = new Date();
   const partidos = await prisma.partido.findMany({
-    where: { fechaHora: { gte: new Date() } },
+    where: { OR: [{ fechaHora: { gte: ahora } }, { horaFin: { gt: ahora } }] },
     orderBy: { fechaHora: "asc" },
     include: { _count: { select: { asistencias: { where: { cancelado: false } } } } },
   });
+
+  function enCurso(p: (typeof partidos)[number]) {
+    return !!p.horaFin && p.fechaHora <= ahora && p.horaFin > ahora;
+  }
 
   const [proximo, ...resto] = partidos;
 
@@ -159,7 +169,9 @@ export default async function Panel() {
         ) : (
           <>
             <Link href={`/partidos/${proximo.id}`} className={styles.destacado}>
-              <span className={styles.destacadoEtiqueta}>El próximo</span>
+              <span className={enCurso(proximo) ? styles.destacadoEtiquetaEnCurso : styles.destacadoEtiqueta}>
+                {enCurso(proximo) ? "⚽ En curso" : "El próximo"}
+              </span>
               <span className={styles.destacadoFecha}>{formatearFecha(proximo.fechaHora)}</span>
               <span className={styles.destacadoMeta}>
                 {proximo.ubicacion} · {proximo._count.asistencias} apuntados
@@ -171,7 +183,9 @@ export default async function Panel() {
                 {resto.map((p) => (
                   <li key={p.id}>
                     <Link className={styles.partido} href={`/partidos/${p.id}`}>
-                      <span className={styles.partidoFecha}>{formatearFecha(p.fechaHora)}</span>
+                      <span className={styles.partidoFecha}>
+                        {enCurso(p) ? "⚽ En curso" : formatearFecha(p.fechaHora)}
+                      </span>
                       <span className={styles.partidoMeta}>
                         {p.ubicacion} · {p._count.asistencias} apuntados
                       </span>

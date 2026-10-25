@@ -93,6 +93,11 @@ model Sesion {
 model Partido {
   id            String             @id @default(cuid())
   fechaHora     DateTime
+  // Hora prevista de fin: opcional (los partidos antiguos no la tienen).
+  // Mientras ahora esté entre fechaHora y horaFin, el partido se
+  // considera "en curso" y sigue viéndose en Inicio; al pasar horaFin se
+  // abre sola la votación de MVP de ese partido.
+  horaFin       DateTime?
   ubicacion     String
   horasCierre   Int                @default(2)
   encargadoId   String

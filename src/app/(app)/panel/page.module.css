@@ -164,6 +164,11 @@
   font-weight: 500;
 }
 
+.destacadoEtiquetaEnCurso {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .destacadoFecha {
   font-weight: 700;
   font-size: 22px;

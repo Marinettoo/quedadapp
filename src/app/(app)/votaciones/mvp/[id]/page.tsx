@@ -76,6 +76,9 @@ export default async function DetalleVotacionMvp({
     ? candidatos.find((c) => c.usuarioId === votacion.ganadorId)?.usuario
     : null;
 
+  // Solo pueden votar quienes asistieron (y confirmaron) a ese partido.
+  const yoAsisti = candidatos.some((c) => c.usuarioId === usuario.id);
+
   return (
     <main className={styles.screen}>
       <AppHeader
@@ -98,6 +101,10 @@ export default async function DetalleVotacionMvp({
         </p>
       )}
 
+      {!votacion.cerrada && candidatos.length > 0 && !yoAsisti && (
+        <p className={styles.meta}>Solo pueden votar quienes asistieron a ese partido.</p>
+      )}
+
       {candidatos.length === 0 ? (
         <p className={styles.vacio}>Nadie se apuntó (y confirmó) a ese partido.</p>
       ) : (
@@ -106,7 +113,7 @@ export default async function DetalleVotacionMvp({
             const esTuVoto = tuVoto?.candidatoId === candidato.id;
             const esGanadora = votacion.cerrada && ganador?.nombreUsuario === candidato.nombreUsuario;
             const porcentaje = totalVotos > 0 ? Math.round((cuenta / totalVotos) * 100) : 0;
-            const puedesVotarle = !votacion.cerrada && candidato.id !== usuario.id;
+            const puedesVotarle = !votacion.cerrada && candidato.id !== usuario.id && yoAsisti;
 
             return (
               <div
