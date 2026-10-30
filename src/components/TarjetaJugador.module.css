@@ -262,7 +262,9 @@
    como una franja de datos bajo el nombre. */
 .estadisticas {
   position: relative;
-  z-index: 2;
+  /* Por encima de la foto (z-index 3): la foto sigue asomando por los
+     lados del cuadro igual que antes, pero ya no tapa los chips. */
+  z-index: 4;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
