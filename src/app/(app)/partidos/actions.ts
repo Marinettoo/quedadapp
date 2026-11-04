@@ -217,6 +217,55 @@ export async function cancelarAsistencia(formData: FormData) {
   revalidatePath(`/partidos/${partidoId}`);
 }
 
+async function exigirAdmin() {
+  const usuario = await exigirUsuarioAprobado();
+  if (usuario.rol !== "ADMIN") {
+    throw new Error("Solo un administrador puede hacer esto.");
+  }
+  return usuario;
+}
+
+// A diferencia de apuntarse/cancelarAsistencia (cada uno lo suyo, y
+// solo mientras el plazo está abierto), un admin puede apuntar o
+// quitar a cualquiera en cualquier momento, incluso con el plazo ya
+// cerrado: para eso sirve, arreglar un apunte a mano.
+export async function apuntarUsuario(formData: FormData) {
+  await exigirAdmin();
+  const partidoId = String(formData.get("partidoId"));
+  const usuarioId = String(formData.get("usuarioId"));
+
+  const partido = await prisma.partido.findUnique({ where: { id: partidoId } });
+  if (!partido) {
+    throw new Error("El partido no existe.");
+  }
+
+  const objetivo = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!objetivo || objetivo.estado !== "APROBADA") {
+    throw new Error("Ese jugador no existe o no está aprobado.");
+  }
+
+  await prisma.asistencia.upsert({
+    where: { partidoId_usuarioId: { partidoId, usuarioId } },
+    update: { cancelado: false, canceladoEn: null, apuntadoEn: new Date() },
+    create: { partidoId, usuarioId },
+  });
+
+  revalidatePath(`/partidos/${partidoId}`);
+}
+
+export async function quitarAsistenciaUsuario(formData: FormData) {
+  await exigirAdmin();
+  const partidoId = String(formData.get("partidoId"));
+  const usuarioId = String(formData.get("usuarioId"));
+
+  await prisma.asistencia.updateMany({
+    where: { partidoId, usuarioId },
+    data: { cancelado: true, canceladoEn: new Date() },
+  });
+
+  revalidatePath(`/partidos/${partidoId}`);
+}
+
 // Si juego de portero es cosa de cada partido, no del jugador en general:
 // cada uno marca lo suyo, y el admin o el encargado pueden marcarlo por
 // cualquier apuntado (por si alguien se olvida).

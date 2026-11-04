@@ -3,7 +3,14 @@ import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { asistenciaAbierta, cierreAsistencia } from "@/lib/partidos";
-import { apuntarse, cancelarAsistencia, cambiarMiPortero, cambiarPorteroDeUsuario } from "../actions";
+import {
+  apuntarse,
+  cancelarAsistencia,
+  cambiarMiPortero,
+  cambiarPorteroDeUsuario,
+  apuntarUsuario,
+  quitarAsistenciaUsuario,
+} from "../actions";
 import {
   establecerImporte,
   indicarPago,
@@ -83,6 +90,20 @@ export default async function DetallePartido({
   const yaApuntado = asistenciasActivas.some((a) => a.usuarioId === usuario.id);
   const miAsistencia = asistenciasActivas.find((a) => a.usuarioId === usuario.id);
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
+  const esAdmin = usuario.rol === "ADMIN";
+
+  // Para que el admin pueda apuntar a alguien a mano: cualquier cuenta
+  // aprobada que todavía no esté ya apuntada a este partido.
+  const idsApuntados = new Set(asistenciasActivas.map((a) => a.usuarioId));
+  const usuariosParaApuntar = esAdmin
+    ? (
+        await prisma.usuario.findMany({
+          where: { estado: "APROBADA" },
+          select: { id: true, nombreUsuario: true },
+          orderBy: { nombreUsuario: "asc" },
+        })
+      ).filter((u) => !idsApuntados.has(u.id))
+    : [];
   // Confirmar pagos es solo cosa de quien reserva, aunque sea admin.
   const puedeConfirmarPagos = partido.encargadoId === usuario.id;
 
@@ -400,7 +421,7 @@ export default async function DetallePartido({
               <ItemAnimado
                 key={a.id}
                 indice={indice}
-                className={puedeGenerar ? styles.pagoFila : undefined}
+                className={puedeGenerar || esAdmin ? styles.pagoFila : undefined}
               >
                 <span>
                   {a.usuario.nombreUsuario}
@@ -415,6 +436,15 @@ export default async function DetallePartido({
                     {a.esPortero ? "Quitar portero" : "Marcar portero"}
                   </AccionBoton>
                 )}
+                {esAdmin && (
+                  <AccionBoton
+                    accion={quitarAsistenciaUsuario}
+                    campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                    className={styles.pagoBotonSecundario}
+                  >
+                    Quitar
+                  </AccionBoton>
+                )}
               </ItemAnimado>
             ))}
             {partido.invitados.map((i, indice) => (
@@ -424,6 +454,25 @@ export default async function DetallePartido({
               </ItemAnimado>
             ))}
           </ListaAnimada>
+        )}
+
+        {esAdmin && usuariosParaApuntar.length > 0 && (
+          <form action={apuntarUsuario} className={styles.resultadoForm}>
+            <input type="hidden" name="partidoId" value={partido.id} />
+            <select name="usuarioId" required defaultValue="">
+              <option value="" disabled>
+                Apuntar a alguien
+              </option>
+              {usuariosParaApuntar.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nombreUsuario}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className={styles.generar}>
+              Apuntar
+            </button>
+          </form>
         )}
       </section>
 
