@@ -7,6 +7,10 @@ import type { Usuario } from "@/generated/prisma/client";
 
 const NOMBRE_COOKIE = "sesion";
 const DURACION_SESION_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
+// No actualizar ultimoAcceso en cada petición (la sesión dura 30 días
+// y se usa en casi cada página): con que quede al día a este nivel de
+// detalle basta para saber quién ha usado la app estos días.
+const UMBRAL_ACTUALIZAR_ACCESO_MS = 5 * 60 * 1000;
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -47,6 +51,15 @@ export const obtenerUsuarioSesion = cache(async (): Promise<Usuario | null> => {
 
   if (!sesion || sesion.expiraEn < new Date()) {
     return null;
+  }
+
+  const ahora = new Date();
+  const ultimo = sesion.usuario.ultimoAcceso;
+  if (!ultimo || ahora.getTime() - ultimo.getTime() > UMBRAL_ACTUALIZAR_ACCESO_MS) {
+    await prisma.usuario.update({
+      where: { id: sesion.usuario.id },
+      data: { ultimoAcceso: ahora },
+    });
   }
 
   return sesion.usuario;
