@@ -35,18 +35,20 @@ function formatearFecha(fecha: Date) {
   }).format(fecha);
 }
 
+// Portería en vez de guante: a 17px un guante se vuelve una mancha
+// irreconocible, mientras que el marco de la portería sigue leyéndose
+// bien de pequeño y representa igual de claro "portero".
 function IconoPortero() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
-        d="M7 21v-6.5a5 5 0 0 1 10 0V21"
+        d="M5 20V6h14v14"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M9.5 21v-9M14.5 21v-9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M7 16c-1.6-.2-2.8-1.4-2.8-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M5 10.5h3.5M15.5 10.5H19" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
