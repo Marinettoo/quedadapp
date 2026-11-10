@@ -24,19 +24,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--paper);
   color: var(--ink);
-  font-size: 15px;
-  line-height: 1;
   cursor: pointer;
 }
 
 .iconoAccion:hover {
   background: var(--surface);
+}
+
+.iconoAccion svg {
+  width: 17px;
+  height: 17px;
 }
 
 .titulo {

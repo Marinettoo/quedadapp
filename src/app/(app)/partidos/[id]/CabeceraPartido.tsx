@@ -30,6 +30,35 @@ function paraInputHora(fecha: Date) {
   return local.toISOString().slice(11, 16);
 }
 
+function IconoLapiz() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconoPapelera() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4.5 7h15M9.5 7V4.8c0-.4.4-.8.8-.8h3.4c.4 0 .8.4.8.8V7M6.5 7l.8 12c.05.9.8 1.6 1.7 1.6h5.9c.9 0 1.65-.7 1.7-1.6l.8-12"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 10.8v6.5M14 10.8v6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Cabecera del partido con, si eres admin, un lápiz y una papelera para
 // editar o eliminar: antes eran dos botones de texto debajo del cuadro
 // de asistencia, pegados a "Apuntados" sin espacio lateral. Al vivir
@@ -67,7 +96,7 @@ export function CabeceraPartido({
                   setConfirmarBorrado(false);
                 }}
               >
-                ✏️
+                <IconoLapiz />
               </button>
               <button
                 type="button"
@@ -78,7 +107,7 @@ export function CabeceraPartido({
                   setMostrarEditar(false);
                 }}
               >
-                🗑️
+                <IconoPapelera />
               </button>
             </>
           )

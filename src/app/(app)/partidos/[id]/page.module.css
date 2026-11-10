@@ -309,16 +309,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--paper);
   color: var(--ink);
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.iconoBoton svg {
+  width: 17px;
+  height: 17px;
 }
 
 .iconoBoton:hover {
@@ -327,6 +330,7 @@
 
 .iconoBotonActivo {
   background: var(--ink);
+  color: var(--paper);
   border-color: var(--ink);
 }
 
@@ -349,6 +353,18 @@
 
 .pagoResumenEnlace:hover {
   background: var(--surface);
+}
+
+.pagoResumenTexto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagoResumenTexto svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .avisoFlecha {

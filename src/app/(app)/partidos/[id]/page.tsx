@@ -35,6 +35,44 @@ function formatearFecha(fecha: Date) {
   }).format(fecha);
 }
 
+function IconoPortero() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7 21v-6.5a5 5 0 0 1 10 0V21"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M9.5 21v-9M14.5 21v-9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M7 16c-1.6-.2-2.8-1.4-2.8-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoCerrar() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoPago() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M14.8 9.3a3 3 0 0 0-2.6-1.3c-1.9 0-3.2 1.7-3.2 4s1.3 4 3.2 4a3 3 0 0 0 2.6-1.3M8.3 11h4.4M8.3 13.3h4.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default async function DetallePartido({
   params,
 }: {
@@ -421,7 +459,7 @@ export default async function DetallePartido({
                               : `Marcar a ${a.usuario.nombreUsuario} de portero`
                           }
                         >
-                          🧤
+                          <IconoPortero />
                         </AccionBoton>
                       ) : (
                         esMiFila && (
@@ -435,7 +473,7 @@ export default async function DetallePartido({
                             }
                             ariaLabel={a.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
                           >
-                            🧤
+                            <IconoPortero />
                           </AccionBoton>
                         )
                       )}
@@ -446,7 +484,7 @@ export default async function DetallePartido({
                           className={styles.iconoBoton}
                           ariaLabel={`Quitar a ${a.usuario.nombreUsuario} de la asistencia`}
                         >
-                          ✕
+                          <IconoCerrar />
                         </AccionBoton>
                       )}
                     </div>
@@ -495,8 +533,8 @@ export default async function DetallePartido({
 
       {puedeVerPagos && asistentesParaPago.length > 0 && (
         <Link href={`/partidos/${partido.id}/pagos`} className={styles.pagoResumenEnlace}>
-          <span>
-            💳{" "}
+          <span className={styles.pagoResumenTexto}>
+            <IconoPago />
             {parteImporte !== null
               ? `${parteImporte.toFixed(2)} € por jugador`
               : partido.importeTotal === null && puedeGenerar
