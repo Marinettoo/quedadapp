@@ -38,6 +38,17 @@ function formatearFecha(fecha: Date) {
   }).format(fecha);
 }
 
+// Solo el día, sin hora: para mensajes cortos como el aviso de pago
+// pendiente, donde la hora no aporta y alarga la línea.
+function formatearDia(fecha: Date) {
+  return new Intl.DateTimeFormat("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/Madrid",
+  }).format(fecha);
+}
+
 export default async function Panel() {
   const usuario = await obtenerUsuarioSesion();
   if (!usuario) {
@@ -233,7 +244,7 @@ export default async function Panel() {
             <Link href={`/partidos/${proximo.id}`} className={styles.avisoPago}>
               <span className={styles.avisoPagoTexto}>
                 <IconoInfo />
-                Te falta indicar tu pago de {proximo.ubicacion}
+                Te falta indicar tu pago del partido del {formatearDia(proximo.fechaHora)}
               </span>
               <span className={styles.avisoFlecha}>Ver →</span>
             </Link>
