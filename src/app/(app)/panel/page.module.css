@@ -203,25 +203,29 @@
   gap: 10px;
 }
 
-/* Resumen compacto (bote, último partido): una línea con título+dato a
-   la izquierda y el valor a la derecha, en vez de una sección entera
-   con su propia cabecera — son datos de un vistazo, no listas. */
-.miniCard {
+/* Resumen compacto (bote, último partido): uno al lado del otro en vez
+   de uno encima de otro, con el dato centrado y grande — son datos de
+   un vistazo, no listas, así que el peso visual va en el valor, no en
+   la etiqueta. */
+.resumenFila {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  padding: 16px 20px;
-  text-decoration: none;
-  color: inherit;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.miniCardTitulo {
+.miniCard {
+  flex: 1 1 140px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 18px 16px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .miniCardEtiqueta {
@@ -230,8 +234,9 @@
 }
 
 .miniCardValor {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .miniCardImporte {

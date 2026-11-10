@@ -277,9 +277,9 @@ export default async function Panel() {
         )}
       </section>
 
-      {partidoAnterior && (
-        <Link href={`/partidos/${partidoAnterior.id}`} className={styles.miniCard}>
-          <span className={styles.miniCardTitulo}>
+      <div className={styles.resumenFila}>
+        {partidoAnterior && (
+          <Link href={`/partidos/${partidoAnterior.id}`} className={styles.miniCard}>
             <span className={styles.miniCardEtiqueta}>
               Último partido · {formatearFecha(partidoAnterior.fechaHora)}
             </span>
@@ -288,14 +288,14 @@ export default async function Panel() {
                 ? resumenResultado(partidoAnterior.generacion.formato, partidoAnterior.enfrentamientos)
                 : "Sin resultado registrado"}
             </span>
-          </span>
-        </Link>
-      )}
+          </Link>
+        )}
 
-      <Link href="/bote" className={styles.miniCard}>
-        <span className={styles.miniCardEtiqueta}>Bote de la peña</span>
-        <span className={styles.miniCardImporte}>{totalBote.toFixed(2)} €</span>
-      </Link>
+        <Link href="/bote" className={styles.miniCard}>
+          <span className={styles.miniCardEtiqueta}>Bote de la peña</span>
+          <span className={styles.miniCardImporte}>{totalBote.toFixed(2)} €</span>
+        </Link>
+      </div>
 
       {mvp && (
         <section className={styles.seccion}>
