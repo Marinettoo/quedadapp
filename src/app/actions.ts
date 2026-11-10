@@ -1,9 +1,8 @@
 "use server";
 
-import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
 import { crearSesion, cerrarSesion } from "@/lib/auth";
+import { validarRegistro, crearCuenta, verificarLogin } from "@/lib/credenciales";
 
 export type ResultadoFormulario = { error: string } | { ok: true } | null;
 
@@ -16,34 +15,15 @@ export async function registrar(
   const password = String(formData.get("password") ?? "");
   const password2 = String(formData.get("password2") ?? "");
 
-  if (nombreUsuario.length < 3) {
-    return { error: "El nombre de usuario debe tener al menos 3 caracteres." };
-  }
-  if (!/^[a-zA-Z0-9_.-]+$/.test(nombreUsuario)) {
-    return { error: "El nombre de usuario solo puede tener letras, números, puntos, guiones y guiones bajos." };
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { error: "El correo no es válido." };
-  }
-  if (password.length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres." };
-  }
-  if (password !== password2) {
-    return { error: "Las contraseñas no coinciden." };
+  const errorValidacion = validarRegistro({ nombreUsuario, email, password, password2 });
+  if (errorValidacion) {
+    return { error: errorValidacion };
   }
 
-  const existente = await prisma.usuario.findFirst({
-    where: { OR: [{ nombreUsuario }, { email }] },
-  });
-  if (existente) {
-    return { error: "Ya existe una cuenta con ese nombre de usuario o correo." };
+  const resultado = await crearCuenta({ nombreUsuario, email, password });
+  if ("error" in resultado) {
+    return resultado;
   }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  await prisma.usuario.create({
-    data: { nombreUsuario, email, passwordHash },
-  });
 
   redirect("/registro/enviado");
 }
@@ -55,20 +35,12 @@ export async function iniciarSesion(
   const nombreUsuario = String(formData.get("nombreUsuario") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  const usuario = await prisma.usuario.findUnique({ where: { nombreUsuario } });
-
-  if (!usuario || !(await bcrypt.compare(password, usuario.passwordHash))) {
-    return { error: "Nombre de usuario o contraseña incorrectos." };
+  const resultado = await verificarLogin(nombreUsuario, password);
+  if ("error" in resultado) {
+    return resultado;
   }
 
-  if (usuario.estado === "PENDIENTE") {
-    return { error: "Tu cuenta está pendiente de aprobación por un administrador." };
-  }
-  if (usuario.estado === "RECHAZADA") {
-    return { error: "Tu solicitud de acceso fue rechazada. Contacta a un administrador." };
-  }
-
-  await crearSesion(usuario.id);
+  await crearSesion(resultado.usuario.id);
   redirect("/panel");
 }
 
