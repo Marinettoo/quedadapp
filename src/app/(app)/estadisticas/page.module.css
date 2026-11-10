@@ -55,17 +55,18 @@
   color: var(--meta);
 }
 
-/* Top 3 de "Más veces MVP": solo la foto (no la carta completa, que a
+/* Top 3 de cada categoría: solo la foto (no la carta completa, que a
    este tamaño no se leería), para que los 3 quepan a la vez en una
-   pantalla, tanto en móvil como en pc. */
-.podioMvp {
+   pantalla, tanto en móvil como en pc. Del 4º en adelante, sin foto
+   (fila de texto normal, ver .fila más arriba). */
+.podioTop3 {
   display: flex;
   justify-content: center;
   gap: 20px;
   flex-wrap: wrap;
 }
 
-.podioMvpPuesto {
+.top3Puesto {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -75,14 +76,14 @@
   width: 100px;
 }
 
-.podioMvpMarco {
+.top3Marco {
   position: relative;
   display: inline-flex;
   border-radius: 50%;
   padding: 3px;
 }
 
-.podioMvpMedalla {
+.top3Medalla {
   position: absolute;
   bottom: -2px;
   right: -2px;
@@ -110,14 +111,14 @@
   background: #cd8b55;
 }
 
-.podioMvpNombre {
+.top3Nombre {
   font-size: 13px;
   font-weight: 600;
   text-align: center;
   margin-top: 2px;
 }
 
-.podioMvpVeces {
+.top3Valor {
   font-size: 11px;
   color: var(--meta);
 }

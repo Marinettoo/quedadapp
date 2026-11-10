@@ -8,68 +8,66 @@ import styles from "./page.module.css";
 
 export const instant = false;
 
-type Fila = { nombre: string; valor: number };
+// `enlace`: a /jugadores/[id] cuando es un jugador real (se puede
+// entrar a su ficha); null para invitados y jugadores eliminados (no
+// tienen ficha a la que ir). `fotoActualizadaEn` siempre null para
+// esos dos casos: nunca tienen foto, así que el top 3 cae solo en las
+// iniciales, sin intentar cargar nada.
+type FilaRanking = {
+  id: string;
+  nombre: string;
+  fotoActualizadaEn: Date | null;
+  enlace: string | null;
+  valor: number;
+};
 
-function Ranking({ titulo, filas, unidad }: { titulo: string; filas: Fila[]; unidad: string }) {
+const MEDALLAS = [styles.medallaOro, styles.medallaPlata, styles.medallaBronce];
+
+// Los 3 primeros de cada categoría se ven como la foto sola (recortada,
+// con marco de medalla), no la carta completa: a tamaño pequeño el
+// nombre y los chips de la carta no se leerían bien, y así caben los 3
+// a la vez en pantalla (móvil o pc) sin hacer scroll. Del 4º en
+// adelante, fila de texto normal, sin foto.
+function Ranking({ titulo, filas, unidad }: { titulo: string; filas: FilaRanking[]; unidad: string }) {
+  const top3 = filas.slice(0, 3);
+  const resto = filas.slice(3);
+
   return (
     <section className={styles.bloque}>
       <h2 className={styles.subtitulo}>{titulo}</h2>
       {filas.length === 0 ? (
         <p className={styles.vacio}>Todavía no hay datos suficientes.</p>
       ) : (
-        <ol className={styles.lista}>
-          {filas.map((f, i) => (
-            <li key={f.nombre} className={styles.fila}>
-              <span className={styles.posicion}>{i + 1}</span>
-              <span className={styles.nombre}>{f.nombre}</span>
-              <span className={styles.valor}>
-                {f.valor} {unidad}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
-  );
-}
-
-type FilaMvp = { id: string; nombre: string; fotoActualizadaEn: Date | null; veces: number };
-
-// Los 3 primeros se ven como la foto sola (recortada, con marco de
-// medalla), no la carta completa: a tamaño pequeño el nombre y los
-// chips de la carta no se leerían bien, y así caben los 3 a la vez en
-// pantalla (móvil o pc) sin tener que hacer scroll. Del 4º en
-// adelante, fila de texto normal como el resto de estadísticas.
-function RankingMvp({ filas }: { filas: FilaMvp[] }) {
-  const top3 = filas.slice(0, 3);
-  const resto = filas.slice(3);
-  const coloresMedalla = [styles.medallaOro, styles.medallaPlata, styles.medallaBronce];
-
-  return (
-    <section className={styles.bloque}>
-      <h2 className={styles.subtitulo}>Más veces MVP</h2>
-      {filas.length === 0 ? (
-        <p className={styles.vacio}>Todavía no hay datos suficientes.</p>
-      ) : (
         <>
-          <div className={styles.podioMvp}>
-            {top3.map((f, i) => (
-              <Link key={f.id} href={`/jugadores/${f.id}`} className={styles.podioMvpPuesto}>
-                <span className={`${styles.podioMvpMarco} ${coloresMedalla[i]}`}>
-                  <AvatarJugador
-                    usuarioId={f.id}
-                    nombre={f.nombre}
-                    fotoActualizadaEn={f.fotoActualizadaEn}
-                    tamano={96}
-                  />
-                  <span className={`${styles.podioMvpMedalla} ${coloresMedalla[i]}`}>{i + 1}</span>
-                </span>
-                <span className={styles.podioMvpNombre}>{f.nombre}</span>
-                <span className={styles.podioMvpVeces}>
-                  {f.veces} {f.veces === 1 ? "vez" : "veces"}
-                </span>
-              </Link>
-            ))}
+          <div className={styles.podioTop3}>
+            {top3.map((f, i) => {
+              const contenido = (
+                <>
+                  <span className={`${styles.top3Marco} ${MEDALLAS[i]}`}>
+                    <AvatarJugador
+                      usuarioId={f.id}
+                      nombre={f.nombre}
+                      fotoActualizadaEn={f.fotoActualizadaEn}
+                      tamano={96}
+                    />
+                    <span className={`${styles.top3Medalla} ${MEDALLAS[i]}`}>{i + 1}</span>
+                  </span>
+                  <span className={styles.top3Nombre}>{f.nombre}</span>
+                  <span className={styles.top3Valor}>
+                    {f.valor} {unidad}
+                  </span>
+                </>
+              );
+              return f.enlace ? (
+                <Link key={f.id} href={f.enlace} className={styles.top3Puesto}>
+                  {contenido}
+                </Link>
+              ) : (
+                <div key={f.id} className={styles.top3Puesto}>
+                  {contenido}
+                </div>
+              );
+            })}
           </div>
 
           {resto.length > 0 && (
@@ -79,7 +77,7 @@ function RankingMvp({ filas }: { filas: FilaMvp[] }) {
                   <span className={styles.posicion}>{i + 4}</span>
                   <span className={styles.nombre}>{f.nombre}</span>
                   <span className={styles.valor}>
-                    {f.veces} {f.veces === 1 ? "vez" : "veces"}
+                    {f.valor} {unidad}
                   </span>
                 </li>
               ))}
@@ -128,13 +126,19 @@ export default async function Estadisticas() {
   const fotoUsuario = new Map(usuarios.map((u) => [u.id, u.fotoActualizadaEn]));
 
   const maxGoleadores = 10;
-  const goleadores: Fila[] = [
+  const goleadores: FilaRanking[] = [
     ...golesUsuarios.map((g) => ({
+      id: g.usuarioId!,
       nombre: nombreUsuario.get(g.usuarioId!) ?? "Jugador eliminado",
+      fotoActualizadaEn: fotoUsuario.get(g.usuarioId!) ?? null,
+      enlace: nombreUsuario.has(g.usuarioId!) ? `/jugadores/${g.usuarioId}` : null,
       valor: g._sum.goles ?? 0,
     })),
     ...golesInvitados.map((g) => ({
+      id: `invitado:${g.invitadoId}`,
       nombre: `${nombreInvitado.get(g.invitadoId!) ?? "Invitado"} (invitado)`,
+      fotoActualizadaEn: null,
+      enlace: null,
       valor: g._sum.goles ?? 0,
     })),
   ]
@@ -143,9 +147,12 @@ export default async function Estadisticas() {
     .slice(0, maxGoleadores);
 
   const maxAsistentes = 10;
-  const asistentes: Fila[] = asistenciasPorUsuario
+  const asistentes: FilaRanking[] = asistenciasPorUsuario
     .map((a) => ({
+      id: a.usuarioId,
       nombre: nombreUsuario.get(a.usuarioId) ?? "Jugador eliminado",
+      fotoActualizadaEn: fotoUsuario.get(a.usuarioId) ?? null,
+      enlace: nombreUsuario.has(a.usuarioId) ? `/jugadores/${a.usuarioId}` : null,
       valor: a._count._all,
     }))
     .filter((f) => f.valor > 0)
@@ -153,14 +160,15 @@ export default async function Estadisticas() {
     .slice(0, maxAsistentes);
 
   const maxMvp = 10;
-  const mvpRanking: FilaMvp[] = vecesMvpPorUsuario
+  const mvpRanking: FilaRanking[] = vecesMvpPorUsuario
     .map((v) => ({
       id: v.ganadorId!,
       nombre: nombreUsuario.get(v.ganadorId!) ?? "Jugador eliminado",
       fotoActualizadaEn: fotoUsuario.get(v.ganadorId!) ?? null,
-      veces: v._count._all,
+      enlace: nombreUsuario.has(v.ganadorId!) ? `/jugadores/${v.ganadorId}` : null,
+      valor: v._count._all,
     }))
-    .sort((a, b) => b.veces - a.veces)
+    .sort((a, b) => b.valor - a.valor)
     .slice(0, maxMvp);
 
   return (
@@ -172,7 +180,7 @@ export default async function Estadisticas() {
 
       <Ranking titulo="Más goles" filas={goleadores} unidad="goles" />
       <Ranking titulo="Más partidos asistidos" filas={asistentes} unidad="partidos" />
-      <RankingMvp filas={mvpRanking} />
+      <Ranking titulo="Más veces MVP" filas={mvpRanking} unidad="veces" />
     </main>
   );
 }
