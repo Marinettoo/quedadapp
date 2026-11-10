@@ -81,7 +81,9 @@ export function resumenResultado(
 
   if (formato === "DOS_EQUIPOS") {
     const r = enfrentamientos[0];
-    return `Equipo 1 ${r.golesLocal} - ${r.golesVisitante} Equipo 2`;
+    // Dos puntos tras "Equipo 1": sin él, el número de equipo pegado al
+    // primer gol ("Equipo 1 3") se leía como "Equipo 13".
+    return `Equipo 1: ${r.golesLocal} - ${r.golesVisitante} Equipo 2`;
   }
 
   const tabla = calcularTabla(enfrentamientos, 3);
