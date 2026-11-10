@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     include: {
       encargado: { select: { nombreUsuario: true } },
       asistencias: { where: { cancelado: false }, select: { usuarioId: true } },
+      generacion: { select: { id: true } },
     },
   });
 
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
       abierto: asistenciaAbierta(p.fechaHora, p.horasCierre),
       cierre: cierreAsistencia(p.fechaHora, p.horasCierre),
       yaApuntado: p.asistencias.some((a) => a.usuarioId === usuario.id),
+      tieneEquipos: p.generacion !== null,
     })),
   });
 }
