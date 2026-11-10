@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { crearNotificacionParaVarios } from "@/lib/notificaciones";
+import { aplicarCierreVotacionMvp } from "@/lib/mvp";
 import type { ResultadoFormulario } from "@/app/actions";
 
 async function exigirUsuarioAprobado() {
@@ -137,16 +138,7 @@ export async function cerrarVotacionMvp(formData: FormData) {
     }
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.votacionMvp.update({
-      where: { id: votacionId },
-      data: { cerrada: true, cerradaEn: new Date(), ganadorId },
-    });
-    if (ganadorId) {
-      await tx.usuario.updateMany({ where: { esMvpActual: true }, data: { esMvpActual: false } });
-      await tx.usuario.update({ where: { id: ganadorId }, data: { esMvpActual: true } });
-    }
-  });
+  const ganador = await aplicarCierreVotacionMvp(votacionId, ganadorId);
 
   revalidatePath(`/votaciones/mvp/${votacionId}`);
   revalidatePath("/votaciones");
@@ -156,9 +148,6 @@ export async function cerrarVotacionMvp(formData: FormData) {
     revalidatePath(`/jugadores/${ganadorId}`);
   }
 
-  const ganador = ganadorId
-    ? await prisma.usuario.findUnique({ where: { id: ganadorId }, select: { nombreUsuario: true } })
-    : null;
   const resto = await prisma.usuario.findMany({
     where: { estado: "APROBADA", id: { not: admin.id } },
     select: { id: true },

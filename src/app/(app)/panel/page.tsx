@@ -10,7 +10,7 @@ import { CreadorModal } from "@/components/CreadorModal";
 import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJugadores";
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { AvatarJugador } from "@/components/AvatarJugador";
-import { abrirVotacionesMvpPendientes } from "@/lib/mvp";
+import { abrirVotacionesMvpPendientes, cerrarVotacionesMvpVencidas } from "@/lib/mvp";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -34,8 +34,10 @@ export default async function Panel() {
   }
 
   // Antes de leer los partidos: si alguno ya ha terminado y todavía no
-  // tiene votación de MVP, se abre sola aquí.
+  // tiene votación de MVP, se abre sola aquí; y si alguna votación ya
+  // lleva más de 3 horas abierta, se cierra sola.
   await abrirVotacionesMvpPendientes();
+  await cerrarVotacionesMvpVencidas();
 
   const ahora = new Date();
   const partidos = await prisma.partido.findMany({
@@ -49,6 +51,17 @@ export default async function Panel() {
   }
 
   const [proximo, ...resto] = partidos;
+
+  // Acceso directo arriba del todo si hay una votación de MVP abierta
+  // de un partido al que fue el usuario (solo esos pueden votar).
+  const votacionMvpAbierta = await prisma.votacionMvp.findFirst({
+    where: {
+      cerrada: false,
+      partido: { asistencias: { some: { usuarioId: usuario.id, cancelado: false } } },
+    },
+    orderBy: { creadaEn: "desc" },
+    include: { partido: { select: { ubicacion: true } } },
+  });
 
   const jugadoresParaCarrusel = await prisma.usuario.findMany({
     where: { estado: "APROBADA" },
@@ -147,6 +160,13 @@ export default async function Panel() {
             Crear partido
           </Link>
         </div>
+      )}
+
+      {votacionMvpAbierta && (
+        <Link href={`/votaciones/mvp/${votacionMvpAbierta.id}`} className={styles.mvpAviso}>
+          <span>🗳️ Hay una votación de MVP abierta: {votacionMvpAbierta.partido.ubicacion}</span>
+          <span className={styles.mvpAvisoFlecha}>Votar →</span>
+        </Link>
       )}
 
       <section className={styles.seccion}>

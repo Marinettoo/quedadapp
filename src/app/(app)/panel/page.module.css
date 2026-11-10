@@ -165,6 +165,29 @@
   opacity: 0.85;
 }
 
+.mvpAviso {
+  /* Bloque de marca (lima): texto siempre negro, no sigue el modo oscuro. */
+  --ink: #000000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--lime);
+  border-radius: var(--radius-block);
+  padding: 14px 20px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.mvpAvisoFlecha {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .destacado {
   /* Bloque de marca (lima): texto siempre negro, no sigue el modo oscuro. */
   --ink: #000000;
