@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
-import { obtenerUsuarioSesion } from "@/lib/auth";
+import { obtenerUsuarioSesion, obtenerUsuarioDesdeRequest } from "@/lib/auth";
 import { rutaFoto } from "@/lib/fotos";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const usuario = await obtenerUsuarioSesion();
+  // Cookie (web) o token Bearer (app nativa): lo primero que valga.
+  const usuario = (await obtenerUsuarioSesion()) ?? (await obtenerUsuarioDesdeRequest(request));
   if (!usuario) {
     return new NextResponse("No autorizado", { status: 401 });
   }
