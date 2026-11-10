@@ -90,6 +90,14 @@ export function extraerBearerToken(request: Request): string | null {
   return cabecera.slice("Bearer ".length).trim() || null;
 }
 
+// Atajo para las rutas de la API: token de la cabecera → usuario, en un
+// solo paso. Devuelve null tanto si falta el token como si no es válido.
+export async function obtenerUsuarioDesdeRequest(request: Request): Promise<Usuario | null> {
+  const token = extraerBearerToken(request);
+  if (!token) return null;
+  return obtenerUsuarioPorToken(token);
+}
+
 export async function invalidarToken(token: string) {
   await prisma.sesion.deleteMany({ where: { id: hashToken(token) } });
 }
