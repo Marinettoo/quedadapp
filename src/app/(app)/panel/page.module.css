@@ -61,6 +61,11 @@
 
 .podioPrimero {
   order: 2;
+  /* Mismo ancho que la ficha de dentro (TarjetaJugador usa
+     min(340px, 100%)): fijarlo aquí también, en vez de dejar que el
+     navegador lo deduzca del contenido, evita un cálculo raro que a
+     veces le daba más ancho del real y descuadraba el podio entero. */
+  width: min(340px, 100%);
 }
 
 .podioSegundo {

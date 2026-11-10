@@ -3,6 +3,11 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  /* No centrado puro: en fotos de cuerpo entero o de grupo, la cara
+     suele quedar en el tercio superior, no justo en el centro. Así se
+     ve bien en más fotos sin que cada uno tenga que recuadrarla a
+     mano (es un recorte automático, no perfecto para todas). */
+  object-position: 50% 22%;
   flex-shrink: 0;
   background: var(--surface);
 }
