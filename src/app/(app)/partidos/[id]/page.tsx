@@ -19,7 +19,6 @@ import {
 import { calcularTabla } from "@/lib/resultados";
 import { AccionBoton } from "@/components/AccionBoton";
 import { ListaAnimada, ItemAnimado } from "@/components/ListaAnimada";
-import { EditarPartido } from "./EditarPartido";
 import { ResultadoForm, type JugadorOpcion } from "./ResultadoForm";
 import styles from "./page.module.css";
 
@@ -81,7 +80,6 @@ export default async function DetallePartido({
   const abierto = asistenciaAbierta(partido.fechaHora, partido.horasCierre);
   const cierre = cierreAsistencia(partido.fechaHora, partido.horasCierre);
   const yaApuntado = asistenciasActivas.some((a) => a.usuarioId === usuario.id);
-  const miAsistencia = asistenciasActivas.find((a) => a.usuarioId === usuario.id);
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
   const esAdmin = usuario.rol === "ADMIN";
 
@@ -190,31 +188,18 @@ export default async function DetallePartido({
             ? `Puedes apuntarte o cancelar hasta ${formatearFecha(cierre)}.`
             : "El plazo para apuntarse o cancelar ya ha cerrado."}
         </p>
-        {(abierto || yaApuntado) && (
+        {abierto && (
           <div className={styles.infoAcciones}>
-            {abierto && (
-              <AccionBoton
-                accion={yaApuntado ? cancelarAsistencia : apuntarse}
-                campos={{ partidoId: partido.id }}
-                className={yaApuntado ? styles.cancelar : styles.apuntarse}
-              >
-                {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
-              </AccionBoton>
-            )}
-            {yaApuntado && (
-              <AccionBoton
-                accion={cambiarMiPortero}
-                campos={{ partidoId: partido.id }}
-                className={styles.pagoBotonSecundario}
-              >
-                {miAsistencia?.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
-              </AccionBoton>
-            )}
+            <AccionBoton
+              accion={yaApuntado ? cancelarAsistencia : apuntarse}
+              campos={{ partidoId: partido.id }}
+              className={yaApuntado ? styles.cancelar : styles.apuntarse}
+            >
+              {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
+            </AccionBoton>
           </div>
         )}
       </div>
-
-      {puedeGenerar && <EditarPartido partido={partido} />}
 
       {generacion && (
         <section>
@@ -406,50 +391,69 @@ export default async function DetallePartido({
           <p className={styles.meta}>Todavía no se ha apuntado nadie.</p>
         ) : (
           <ListaAnimada className={styles.lista}>
-            {asistenciasActivas.map((a, indice) => (
-              <ItemAnimado
-                key={a.id}
-                indice={indice}
-                className={puedeGenerar || esAdmin ? styles.pagoFila : undefined}
-              >
-                <span>
-                  {a.usuario.nombreUsuario}
-                  {a.esPortero && " · 🧤 Portero"}
-                </span>
-                {(puedeGenerar || esAdmin) && (
-                  <div className={styles.filaAcciones}>
-                    {puedeGenerar && (
-                      <AccionBoton
-                        accion={cambiarPorteroDeUsuario}
-                        campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
-                        className={
-                          a.esPortero
-                            ? `${styles.iconoBoton} ${styles.iconoBotonActivo}`
-                            : styles.iconoBoton
-                        }
-                        ariaLabel={
-                          a.esPortero
-                            ? `Quitar a ${a.usuario.nombreUsuario} de portero`
-                            : `Marcar a ${a.usuario.nombreUsuario} de portero`
-                        }
-                      >
-                        🧤
-                      </AccionBoton>
-                    )}
-                    {esAdmin && (
-                      <AccionBoton
-                        accion={quitarAsistenciaUsuario}
-                        campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
-                        className={styles.iconoBoton}
-                        ariaLabel={`Quitar a ${a.usuario.nombreUsuario} de la asistencia`}
-                      >
-                        ✕
-                      </AccionBoton>
-                    )}
-                  </div>
-                )}
-              </ItemAnimado>
-            ))}
+            {asistenciasActivas.map((a, indice) => {
+              const esMiFila = a.usuarioId === usuario.id;
+              const mostrarAcciones = puedeGenerar || esAdmin || esMiFila;
+              return (
+                <ItemAnimado
+                  key={a.id}
+                  indice={indice}
+                  className={mostrarAcciones ? styles.pagoFila : undefined}
+                >
+                  <span>
+                    {a.usuario.nombreUsuario}
+                    {a.esPortero && " · 🧤 Portero"}
+                  </span>
+                  {mostrarAcciones && (
+                    <div className={styles.filaAcciones}>
+                      {puedeGenerar ? (
+                        <AccionBoton
+                          accion={cambiarPorteroDeUsuario}
+                          campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                          className={
+                            a.esPortero
+                              ? `${styles.iconoBoton} ${styles.iconoBotonActivo}`
+                              : styles.iconoBoton
+                          }
+                          ariaLabel={
+                            a.esPortero
+                              ? `Quitar a ${a.usuario.nombreUsuario} de portero`
+                              : `Marcar a ${a.usuario.nombreUsuario} de portero`
+                          }
+                        >
+                          🧤
+                        </AccionBoton>
+                      ) : (
+                        esMiFila && (
+                          <AccionBoton
+                            accion={cambiarMiPortero}
+                            campos={{ partidoId: partido.id }}
+                            className={
+                              a.esPortero
+                                ? `${styles.iconoBoton} ${styles.iconoBotonActivo}`
+                                : styles.iconoBoton
+                            }
+                            ariaLabel={a.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
+                          >
+                            🧤
+                          </AccionBoton>
+                        )
+                      )}
+                      {esAdmin && (
+                        <AccionBoton
+                          accion={quitarAsistenciaUsuario}
+                          campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                          className={styles.iconoBoton}
+                          ariaLabel={`Quitar a ${a.usuario.nombreUsuario} de la asistencia`}
+                        >
+                          ✕
+                        </AccionBoton>
+                      )}
+                    </div>
+                  )}
+                </ItemAnimado>
+              );
+            })}
             {partido.invitados.map((i, indice) => (
               <ItemAnimado key={i.id} indice={asistenciasActivas.length + indice}>
                 {i.nombre} (invitado)

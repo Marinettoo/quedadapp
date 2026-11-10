@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 import { editarPartido, eliminarPartido } from "../actions";
 import type { ResultadoFormulario } from "@/app/actions";
 import { AccionBoton } from "@/components/AccionBoton";
+import { AppHeader } from "@/components/AppHeader";
+import headerStyles from "@/components/AppHeader.module.css";
 import styles from "./page.module.css";
 
 const estadoInicial: ResultadoFormulario = null;
@@ -28,60 +30,62 @@ function paraInputHora(fecha: Date) {
   return local.toISOString().slice(11, 16);
 }
 
-export function EditarPartido({ partido }: { partido: Partido }) {
+// Cabecera del partido con, si eres admin, un lápiz y una papelera para
+// editar o eliminar: antes eran dos botones de texto debajo del cuadro
+// de asistencia, pegados a "Apuntados" sin espacio lateral. Al vivir
+// aquí (en el layout, arriba del todo) quedan accesibles desde
+// cualquier pestaña y solo los ve quien puede usarlos.
+export function CabeceraPartido({
+  titulo,
+  subtitulo,
+  esAdmin,
+  partido,
+}: {
+  titulo: string;
+  subtitulo: string;
+  esAdmin: boolean;
+  partido: Partido;
+}) {
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [confirmarBorrado, setConfirmarBorrado] = useState(false);
   const [estado, formAction, enviando] = useActionState(editarPartido, estadoInicial);
 
   return (
-    <section className={styles.editarSeccion}>
-      <div className={styles.editarAcciones}>
-        <button
-          type="button"
-          className={styles.pagoBotonSecundario}
-          onClick={() => {
-            setMostrarEditar((v) => !v);
-            setConfirmarBorrado(false);
-          }}
-        >
-          {mostrarEditar ? "Cancelar" : "Editar partido"}
-        </button>
+    <>
+      <AppHeader
+        titulo={titulo}
+        subtitulo={subtitulo}
+        acciones={
+          esAdmin && (
+            <>
+              <button
+                type="button"
+                className={headerStyles.iconoAccion}
+                aria-label={mostrarEditar ? "Cancelar edición del partido" : "Editar partido"}
+                onClick={() => {
+                  setMostrarEditar((v) => !v);
+                  setConfirmarBorrado(false);
+                }}
+              >
+                ✏️
+              </button>
+              <button
+                type="button"
+                className={headerStyles.iconoAccion}
+                aria-label="Eliminar partido"
+                onClick={() => {
+                  setConfirmarBorrado((v) => !v);
+                  setMostrarEditar(false);
+                }}
+              >
+                🗑️
+              </button>
+            </>
+          )
+        }
+      />
 
-        {!confirmarBorrado ? (
-          <button
-            type="button"
-            className={styles.pagoBotonSecundario}
-            onClick={() => {
-              setConfirmarBorrado(true);
-              setMostrarEditar(false);
-            }}
-          >
-            Eliminar partido
-          </button>
-        ) : (
-          <>
-            <span className={styles.meta}>
-              ¿Seguro? Se borra todo: asistencia, equipos, pagos y resultados.
-            </span>
-            <AccionBoton
-              accion={eliminarPartido}
-              campos={{ partidoId: partido.id }}
-              className={styles.pagoBoton}
-            >
-              Sí, eliminar
-            </AccionBoton>
-            <button
-              type="button"
-              className={styles.pagoBotonSecundario}
-              onClick={() => setConfirmarBorrado(false)}
-            >
-              Cancelar
-            </button>
-          </>
-        )}
-      </div>
-
-      {mostrarEditar && (
+      {esAdmin && mostrarEditar && (
         <form action={formAction} className={styles.importeForm}>
           <input type="hidden" name="partidoId" value={partido.id} />
           <div className={styles.resultadoForm}>
@@ -117,6 +121,30 @@ export function EditarPartido({ partido }: { partido: Partido }) {
           {estado && "ok" in estado && <p className={styles.aviso}>Cambios guardados.</p>}
         </form>
       )}
-    </section>
+
+      {esAdmin && confirmarBorrado && (
+        <div className={styles.editarSeccion}>
+          <span className={styles.meta}>
+            ¿Seguro? Se borra todo: asistencia, equipos, pagos y resultados.
+          </span>
+          <div className={styles.editarAcciones}>
+            <AccionBoton
+              accion={eliminarPartido}
+              campos={{ partidoId: partido.id }}
+              className={styles.pagoBoton}
+            >
+              Sí, eliminar
+            </AccionBoton>
+            <button
+              type="button"
+              className={styles.pagoBotonSecundario}
+              onClick={() => setConfirmarBorrado(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

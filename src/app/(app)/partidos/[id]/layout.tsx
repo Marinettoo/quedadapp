@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { AppHeader } from "@/components/AppHeader";
 import { Transicion } from "@/components/Transicion";
+import { CabeceraPartido } from "./CabeceraPartido";
 import { SubnavPartido } from "./SubnavPartido";
 import styles from "./page.module.css";
 
@@ -46,7 +46,9 @@ export default async function LayoutPartido({
     select: {
       id: true,
       fechaHora: true,
+      horaFin: true,
       ubicacion: true,
+      horasCierre: true,
       encargado: { select: { nombreUsuario: true } },
     },
   });
@@ -57,9 +59,11 @@ export default async function LayoutPartido({
 
   return (
     <main className={styles.screen}>
-      <AppHeader
+      <CabeceraPartido
         titulo={capitalizar(formatearFecha(partido.fechaHora))}
         subtitulo={`${partido.ubicacion} · encargado: ${partido.encargado.nombreUsuario}`}
+        esAdmin={usuario.rol === "ADMIN"}
+        partido={partido}
       />
 
       <SubnavPartido id={partido.id} />

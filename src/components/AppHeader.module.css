@@ -1,8 +1,42 @@
 .header {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.textos {
+  display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 8px;
+  min-width: 0;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.iconoAccion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.iconoAccion:hover {
+  background: var(--surface);
 }
 
 .titulo {
