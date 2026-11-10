@@ -308,9 +308,22 @@ export default async function Panel() {
               Último partido · {formatearFecha(partidoAnterior.fechaHora)}
             </span>
             <span className={styles.miniCardValor}>
-              {partidoAnterior.generacion
-                ? resumenResultado(partidoAnterior.generacion.formato, partidoAnterior.enfrentamientos)
-                : "Sin resultado registrado"}
+              {!partidoAnterior.generacion ? (
+                "Sin resultado registrado"
+              ) : partidoAnterior.generacion.formato === "DOS_EQUIPOS" &&
+                partidoAnterior.enfrentamientos[0] ? (
+                <span className={styles.marcadorMini}>
+                  <span className={styles.marcadorMiniEquipo}>Equipo 1</span>
+                  <span className={styles.marcadorMiniCifra}>
+                    {partidoAnterior.enfrentamientos[0].golesLocal}
+                    {" – "}
+                    {partidoAnterior.enfrentamientos[0].golesVisitante}
+                  </span>
+                  <span className={styles.marcadorMiniEquipo}>Equipo 2</span>
+                </span>
+              ) : (
+                resumenResultado(partidoAnterior.generacion.formato, partidoAnterior.enfrentamientos)
+              )}
             </span>
           </Link>
         )}

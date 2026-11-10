@@ -277,6 +277,34 @@
   white-space: nowrap;
 }
 
+/* Marcador del último partido (2 equipos): el resultado va en su
+   propio recuadro, separado de los números de equipo — antes "Equipo 1
+   3 – 5 Equipo 2" se leía como "Equipo 13" al estar todo junto y del
+   mismo peso visual. */
+.marcadorMini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.marcadorMiniEquipo {
+  color: var(--meta);
+}
+
+.marcadorMiniCifra {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 4px 12px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
 .destacado {
   /* Bloque de marca (lima): texto siempre negro, no sigue el modo oscuro. */
   --ink: #000000;
