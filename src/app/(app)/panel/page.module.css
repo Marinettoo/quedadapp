@@ -197,6 +197,38 @@
   white-space: nowrap;
 }
 
+/* El aviso de pago pendiente no es una llamada a la acción de marca
+   (como las votaciones): es un recordatorio, así que va en un cuadro
+   con borde en vez de la pastilla lima, para distinguirlo a simple
+   vista sin competir por la misma atención. */
+.avisoPago {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 20px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.avisoPagoTexto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avisoPagoTexto svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .avisos {
   display: flex;
   flex-direction: column;

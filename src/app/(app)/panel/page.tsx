@@ -17,6 +17,16 @@ import styles from "./page.module.css";
 // Página protegida: necesita la sesión (cookie) en cada petición.
 export const instant = false;
 
+function IconoInfo() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="8.3" r="0.9" fill="currentColor" />
+      <path d="M12 11v5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function formatearFecha(fecha: Date) {
   return new Intl.DateTimeFormat("es-ES", {
     weekday: "short",
@@ -220,8 +230,11 @@ export default async function Panel() {
             </Link>
           )}
           {pagoPendienteDeIndicar && proximo && (
-            <Link href={`/partidos/${proximo.id}`} className={styles.aviso}>
-              <span>💳 Te falta indicar tu pago de {proximo.ubicacion}</span>
+            <Link href={`/partidos/${proximo.id}`} className={styles.avisoPago}>
+              <span className={styles.avisoPagoTexto}>
+                <IconoInfo />
+                Te falta indicar tu pago de {proximo.ubicacion}
+              </span>
               <span className={styles.avisoFlecha}>Ver →</span>
             </Link>
           )}

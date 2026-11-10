@@ -315,6 +315,8 @@
   border: 1px solid var(--border);
   background: var(--paper);
   color: var(--ink);
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
 }

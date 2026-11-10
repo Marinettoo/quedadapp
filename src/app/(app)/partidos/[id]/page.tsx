@@ -35,24 +35,6 @@ function formatearFecha(fecha: Date) {
   }).format(fecha);
 }
 
-// Portería en vez de guante: a 17px un guante se vuelve una mancha
-// irreconocible, mientras que el marco de la portería sigue leyéndose
-// bien de pequeño y representa igual de claro "portero".
-function IconoPortero() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M5 20V6h14v14"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M5 10.5h3.5M15.5 10.5H19" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function IconoCerrar() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -461,7 +443,7 @@ export default async function DetallePartido({
                               : `Marcar a ${a.usuario.nombreUsuario} de portero`
                           }
                         >
-                          <IconoPortero />
+                          🧤
                         </AccionBoton>
                       ) : (
                         esMiFila && (
@@ -475,7 +457,7 @@ export default async function DetallePartido({
                             }
                             ariaLabel={a.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
                           >
-                            <IconoPortero />
+                            🧤
                           </AccionBoton>
                         )
                       )}
