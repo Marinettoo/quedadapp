@@ -11,6 +11,7 @@ import { CarruselJugadores, type JugadorCarrusel } from "@/components/CarruselJu
 import { TarjetaJugador } from "@/components/TarjetaJugador";
 import { AvatarJugador } from "@/components/AvatarJugador";
 import { abrirVotacionesMvpPendientes, cerrarVotacionesMvpVencidas } from "@/lib/mvp";
+import { resumenResultado } from "@/lib/resultados";
 import styles from "./page.module.css";
 
 // Página protegida: necesita la sesión (cookie) en cada petición.
@@ -62,6 +63,48 @@ export default async function Panel() {
     orderBy: { creadaEn: "desc" },
     include: { partido: { select: { ubicacion: true } } },
   });
+
+  // Mismo aviso si hay una votación de fecha sin cerrar (cualquiera
+  // puede votar en esta, no hace falta haber ido a ningún partido).
+  const votacionFechaAbierta = await prisma.votacionFecha.findFirst({
+    where: { cerrada: false },
+    orderBy: { creadaEn: "desc" },
+    select: { id: true, titulo: true },
+  });
+
+  // Y si el próximo partido tiene un importe fijado y el usuario está
+  // apuntado pero todavía no ha indicado que ha pagado su parte.
+  let pagoPendienteDeIndicar = false;
+  if (proximo && proximo.importeTotal !== null) {
+    const [miAsistenciaProximo, miPago] = await Promise.all([
+      prisma.asistencia.findFirst({
+        where: { partidoId: proximo.id, usuarioId: usuario.id, cancelado: false },
+      }),
+      prisma.pago.findUnique({
+        where: { partidoId_usuarioId: { partidoId: proximo.id, usuarioId: usuario.id } },
+      }),
+    ]);
+    pagoPendienteDeIndicar = !!miAsistenciaProximo && !miPago?.indicadoEn;
+  }
+
+  // "Resultado del último partido": el más reciente ya jugado que
+  // tenga un resultado registrado (si no, no aporta nada mostrarlo).
+  const partidoAnterior = await prisma.partido.findFirst({
+    where: { fechaHora: { lt: ahora }, enfrentamientos: { some: {} } },
+    orderBy: { fechaHora: "desc" },
+    include: { generacion: true, enfrentamientos: true },
+  });
+
+  // Saldo del bote: igual que en /bote, apuestas falladas y confirmadas
+  // más los ajustes manuales de un admin.
+  const [apuestasConfirmadas, ajustesBote] = await Promise.all([
+    prisma.pronostico.aggregate({
+      where: { confirmadoAporteEn: { not: null } },
+      _sum: { importeDebido: true },
+    }),
+    prisma.ajusteBote.aggregate({ _sum: { importe: true } }),
+  ]);
+  const totalBote = (apuestasConfirmadas._sum.importeDebido ?? 0) + (ajustesBote._sum.importe ?? 0);
 
   const jugadoresParaCarrusel = await prisma.usuario.findMany({
     where: { estado: "APROBADA" },
@@ -162,11 +205,27 @@ export default async function Panel() {
         </div>
       )}
 
-      {votacionMvpAbierta && (
-        <Link href={`/votaciones/mvp/${votacionMvpAbierta.id}`} className={styles.mvpAviso}>
-          <span>🗳️ Hay una votación de MVP abierta: {votacionMvpAbierta.partido.ubicacion}</span>
-          <span className={styles.mvpAvisoFlecha}>Votar →</span>
-        </Link>
+      {(votacionMvpAbierta || votacionFechaAbierta || pagoPendienteDeIndicar) && (
+        <div className={styles.avisos}>
+          {votacionMvpAbierta && (
+            <Link href={`/votaciones/mvp/${votacionMvpAbierta.id}`} className={styles.aviso}>
+              <span>🗳️ Hay una votación de MVP abierta: {votacionMvpAbierta.partido.ubicacion}</span>
+              <span className={styles.avisoFlecha}>Votar →</span>
+            </Link>
+          )}
+          {votacionFechaAbierta && (
+            <Link href={`/votaciones/${votacionFechaAbierta.id}`} className={styles.aviso}>
+              <span>🗓️ Votación abierta: {votacionFechaAbierta.titulo}</span>
+              <span className={styles.avisoFlecha}>Votar →</span>
+            </Link>
+          )}
+          {pagoPendienteDeIndicar && proximo && (
+            <Link href={`/partidos/${proximo.id}`} className={styles.aviso}>
+              <span>💳 Te falta indicar tu pago de {proximo.ubicacion}</span>
+              <span className={styles.avisoFlecha}>Ver →</span>
+            </Link>
+          )}
+        </div>
       )}
 
       <section className={styles.seccion}>
@@ -217,6 +276,26 @@ export default async function Panel() {
           </>
         )}
       </section>
+
+      {partidoAnterior && (
+        <Link href={`/partidos/${partidoAnterior.id}`} className={styles.miniCard}>
+          <span className={styles.miniCardTitulo}>
+            <span className={styles.miniCardEtiqueta}>
+              Último partido · {formatearFecha(partidoAnterior.fechaHora)}
+            </span>
+            <span className={styles.miniCardValor}>
+              {partidoAnterior.generacion
+                ? resumenResultado(partidoAnterior.generacion.formato, partidoAnterior.enfrentamientos)
+                : "Sin resultado registrado"}
+            </span>
+          </span>
+        </Link>
+      )}
+
+      <Link href="/bote" className={styles.miniCard}>
+        <span className={styles.miniCardEtiqueta}>Bote de la peña</span>
+        <span className={styles.miniCardImporte}>{totalBote.toFixed(2)} €</span>
+      </Link>
 
       {mvp && (
         <section className={styles.seccion}>

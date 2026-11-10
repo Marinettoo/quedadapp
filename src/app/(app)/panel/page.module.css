@@ -170,7 +170,11 @@
   opacity: 0.85;
 }
 
-.mvpAviso {
+/* Aviso de bloque de marca (lima), para cualquier acción pendiente que
+   convenga resolver ya (votación de MVP abierta, votación de fecha
+   abierta, pago sin indicar...): mismo estilo para los tres, uno
+   debajo de otro si hay varios a la vez. */
+.aviso {
   /* Bloque de marca (lima): texto siempre negro, no sigue el modo oscuro. */
   --ink: #000000;
 
@@ -188,7 +192,50 @@
   text-decoration: none;
 }
 
-.mvpAvisoFlecha {
+.avisoFlecha {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.avisos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Resumen compacto (bote, último partido): una línea con título+dato a
+   la izquierda y el valor a la derecha, en vez de una sección entera
+   con su propia cabecera — son datos de un vistazo, no listas. */
+.miniCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 16px 20px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.miniCardTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.miniCardEtiqueta {
+  font-size: 13px;
+  color: var(--meta);
+}
+
+.miniCardValor {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.miniCardImporte {
+  font-size: 22px;
   font-weight: 700;
   white-space: nowrap;
 }

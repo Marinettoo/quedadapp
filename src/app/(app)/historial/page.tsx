@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { calcularTabla } from "@/lib/resultados";
+import { resumenResultado } from "@/lib/resultados";
 import { AppHeader } from "@/components/AppHeader";
 import styles from "./page.module.css";
 
@@ -15,22 +15,6 @@ function formatearFecha(fecha: Date) {
     year: "numeric",
     timeZone: "Europe/Madrid",
   }).format(fecha);
-}
-
-function resumenResultado(
-  formato: "TRIANGULAR" | "DOS_EQUIPOS",
-  enfrentamientos: { equipoLocal: number; equipoVisitante: number; golesLocal: number; golesVisitante: number }[],
-) {
-  if (enfrentamientos.length === 0) return "Sin resultado registrado";
-
-  if (formato === "DOS_EQUIPOS") {
-    const r = enfrentamientos[0];
-    return `Equipo 1 ${r.golesLocal} - ${r.golesVisitante} Equipo 2`;
-  }
-
-  const tabla = calcularTabla(enfrentamientos, 3);
-  const ganador = tabla[0];
-  return `Ganador: Equipo ${ganador.equipo} (${ganador.puntos} pts)`;
 }
 
 export default async function Historial() {

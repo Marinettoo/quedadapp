@@ -69,3 +69,22 @@ export function calcularTabla(
     return difB - difA;
   });
 }
+
+// Una línea con el resultado, para listas e historial (y el resumen
+// del último partido en Inicio): no hace falta ver la tabla entera
+// para saber cómo quedó.
+export function resumenResultado(
+  formato: "TRIANGULAR" | "DOS_EQUIPOS",
+  enfrentamientos: EnfrentamientoGen[],
+): string {
+  if (enfrentamientos.length === 0) return "Sin resultado registrado";
+
+  if (formato === "DOS_EQUIPOS") {
+    const r = enfrentamientos[0];
+    return `Equipo 1 ${r.golesLocal} - ${r.golesVisitante} Equipo 2`;
+  }
+
+  const tabla = calcularTabla(enfrentamientos, 3);
+  const ganador = tabla[0];
+  return `Ganador: Equipo ${ganador.equipo} (${ganador.puntos} pts)`;
+}
