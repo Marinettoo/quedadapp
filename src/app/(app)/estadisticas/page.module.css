@@ -54,3 +54,70 @@
   font-size: 14px;
   color: var(--meta);
 }
+
+/* Top 3 de "Más veces MVP": solo la foto (no la carta completa, que a
+   este tamaño no se leería), para que los 3 quepan a la vez en una
+   pantalla, tanto en móvil como en pc. */
+.podioMvp {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.podioMvpPuesto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+  width: 100px;
+}
+
+.podioMvpMarco {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+  padding: 3px;
+}
+
+.podioMvpMedalla {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.medallaOro {
+  background: #f5c64b;
+}
+
+.medallaPlata {
+  background: #c7ccd1;
+}
+
+.medallaBronce {
+  background: #cd8b55;
+}
+
+.podioMvpNombre {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.podioMvpVeces {
+  font-size: 11px;
+  color: var(--meta);
+}
