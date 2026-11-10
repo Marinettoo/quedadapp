@@ -12,13 +12,6 @@ import {
   quitarAsistenciaUsuario,
 } from "../actions";
 import {
-  establecerImporte,
-  indicarPago,
-  deshacerIndicacion,
-  confirmarPago,
-  corregirConfirmacion,
-} from "../pagosActions";
-import {
   agregarEnfrentamiento,
   editarEnfrentamiento,
   eliminarEnfrentamiento,
@@ -104,8 +97,6 @@ export default async function DetallePartido({
         })
       ).filter((u) => !idsApuntados.has(u.id))
     : [];
-  // Confirmar pagos es solo cosa de quien reserva, aunque sea admin.
-  const puedeConfirmarPagos = partido.encargadoId === usuario.id;
 
   const generacion = partido.generacion;
   const numEquipos = generacion?.formato === "TRIANGULAR" ? 3 : 2;
@@ -182,12 +173,6 @@ export default async function DetallePartido({
     usuario.rol === "ADMIN" ||
     partido.encargadoId === usuario.id ||
     asistenciasActivas.some((a) => a.usuarioId === usuario.id);
-  // Un usuario normal (ni admin ni encargado) solo ve su propia fila de
-  // pago, no la del resto.
-  const puedeVerListaPagos = puedeGenerar;
-  const pagosPorClave = new Map(
-    partido.pagos.map((p) => [p.usuarioId ? `u:${p.usuarioId}` : `i:${p.invitadoId}`, p]),
-  );
   const parteImporte =
     partido.importeTotal !== null && asistentesParaPago.length > 0
       ? partido.importeTotal / asistentesParaPago.length
@@ -205,23 +190,27 @@ export default async function DetallePartido({
             ? `Puedes apuntarte o cancelar hasta ${formatearFecha(cierre)}.`
             : "El plazo para apuntarse o cancelar ya ha cerrado."}
         </p>
-        {abierto && (
-          <AccionBoton
-            accion={yaApuntado ? cancelarAsistencia : apuntarse}
-            campos={{ partidoId: partido.id }}
-            className={yaApuntado ? styles.cancelar : styles.apuntarse}
-          >
-            {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
-          </AccionBoton>
-        )}
-        {yaApuntado && (
-          <AccionBoton
-            accion={cambiarMiPortero}
-            campos={{ partidoId: partido.id }}
-            className={styles.pagoBotonSecundario}
-          >
-            {miAsistencia?.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
-          </AccionBoton>
+        {(abierto || yaApuntado) && (
+          <div className={styles.infoAcciones}>
+            {abierto && (
+              <AccionBoton
+                accion={yaApuntado ? cancelarAsistencia : apuntarse}
+                campos={{ partidoId: partido.id }}
+                className={yaApuntado ? styles.cancelar : styles.apuntarse}
+              >
+                {yaApuntado ? "Cancelar asistencia" : "Apuntarme"}
+              </AccionBoton>
+            )}
+            {yaApuntado && (
+              <AccionBoton
+                accion={cambiarMiPortero}
+                campos={{ partidoId: partido.id }}
+                className={styles.pagoBotonSecundario}
+              >
+                {miAsistencia?.esPortero ? "Ya no juego de portero" : "Voy a jugar de portero"}
+              </AccionBoton>
+            )}
+          </div>
         )}
       </div>
 
@@ -427,23 +416,37 @@ export default async function DetallePartido({
                   {a.usuario.nombreUsuario}
                   {a.esPortero && " · 🧤 Portero"}
                 </span>
-                {puedeGenerar && (
-                  <AccionBoton
-                    accion={cambiarPorteroDeUsuario}
-                    campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
-                    className={styles.pagoBotonSecundario}
-                  >
-                    {a.esPortero ? "Quitar portero" : "Marcar portero"}
-                  </AccionBoton>
-                )}
-                {esAdmin && (
-                  <AccionBoton
-                    accion={quitarAsistenciaUsuario}
-                    campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
-                    className={styles.pagoBotonSecundario}
-                  >
-                    Quitar
-                  </AccionBoton>
+                {(puedeGenerar || esAdmin) && (
+                  <div className={styles.filaAcciones}>
+                    {puedeGenerar && (
+                      <AccionBoton
+                        accion={cambiarPorteroDeUsuario}
+                        campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                        className={
+                          a.esPortero
+                            ? `${styles.iconoBoton} ${styles.iconoBotonActivo}`
+                            : styles.iconoBoton
+                        }
+                        ariaLabel={
+                          a.esPortero
+                            ? `Quitar a ${a.usuario.nombreUsuario} de portero`
+                            : `Marcar a ${a.usuario.nombreUsuario} de portero`
+                        }
+                      >
+                        🧤
+                      </AccionBoton>
+                    )}
+                    {esAdmin && (
+                      <AccionBoton
+                        accion={quitarAsistenciaUsuario}
+                        campos={{ partidoId: partido.id, usuarioId: a.usuarioId }}
+                        className={styles.iconoBoton}
+                        ariaLabel={`Quitar a ${a.usuario.nombreUsuario} de la asistencia`}
+                      >
+                        ✕
+                      </AccionBoton>
+                    )}
+                  </div>
                 )}
               </ItemAnimado>
             ))}
@@ -487,113 +490,17 @@ export default async function DetallePartido({
       )}
 
       {puedeVerPagos && asistentesParaPago.length > 0 && (
-        <section>
-          <h2 className={styles.subtitulo}>Pagos</h2>
-
-          {puedeGenerar ? (
-            <form action={establecerImporte} className={styles.importeForm}>
-              <input type="hidden" name="partidoId" value={partido.id} />
-              <label htmlFor="importeTotal" className={styles.meta}>
-                Importe total de la reserva (€)
-              </label>
-              <div className={styles.importeCampos}>
-                <input
-                  id="importeTotal"
-                  name="importeTotal"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  defaultValue={partido.importeTotal ?? ""}
-                  required
-                />
-                <button type="submit" className={styles.generar}>
-                  Guardar
-                </button>
-              </div>
-            </form>
-          ) : (
-            partido.importeTotal !== null && (
-              <p className={styles.meta}>Importe total: {partido.importeTotal.toFixed(2)} €</p>
-            )
-          )}
-
-          {parteImporte !== null && (
-            <div className={styles.importeDestacado}>
-              <span className={styles.importeDestacadoCifra}>{parteImporte.toFixed(2)} €</span>
-              <span className={styles.importeDestacadoEtiqueta}>
-                por jugador ({asistentesParaPago.length}{" "}
-                {asistentesParaPago.length === 1 ? "jugador" : "jugadores"})
-              </span>
-            </div>
-          )}
-
-          <ul className={styles.lista}>
-            {(puedeVerListaPagos
-              ? asistentesParaPago
-              : asistentesParaPago.filter((a) => a.usuario?.id === usuario.id)
-            ).map((a) => {
-              const clave = claveAsignacion(a);
-              const tipo = a.usuario ? "USUARIO" : "INVITADO";
-              const jugadorId = a.usuario ? a.usuario.id : a.invitado!.id;
-              const pago = pagosPorClave.get(clave);
-              const estado = pago?.confirmadoEn
-                ? `Confirmado el ${formatearFecha(pago.confirmadoEn)}`
-                : pago?.indicadoEn
-                  ? "Indicado, pendiente de confirmación"
-                  : "Pendiente de indicar";
-
-              return (
-                <li key={clave} className={styles.pagoFila}>
-                  <div>
-                    <span className={styles.nombre}>{nombreAsignacion(a)}</span>
-                    <span className={styles.meta}> · {estado}</span>
-                  </div>
-                  <div className={styles.pagoAcciones}>
-                    {a.usuario?.id === usuario.id &&
-                      (!pago?.confirmadoEn ? (
-                        !pago?.indicadoEn ? (
-                          <AccionBoton
-                            accion={indicarPago}
-                            campos={{ partidoId: partido.id }}
-                            className={styles.pagoBoton}
-                          >
-                            He pagado
-                          </AccionBoton>
-                        ) : (
-                          <AccionBoton
-                            accion={deshacerIndicacion}
-                            campos={{ partidoId: partido.id }}
-                            className={styles.pagoBotonSecundario}
-                          >
-                            Deshacer
-                          </AccionBoton>
-                        )
-                      ) : null)}
-
-                    {puedeConfirmarPagos &&
-                      (!pago?.confirmadoEn ? (
-                        <AccionBoton
-                          accion={confirmarPago}
-                          campos={{ partidoId: partido.id, jugadorId, tipo }}
-                          className={styles.pagoBoton}
-                        >
-                          Confirmar
-                        </AccionBoton>
-                      ) : (
-                        <AccionBoton
-                          accion={corregirConfirmacion}
-                          campos={{ partidoId: partido.id, jugadorId, tipo }}
-                          className={styles.pagoBotonSecundario}
-                        >
-                          Corregir
-                        </AccionBoton>
-                      ))}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        <Link href={`/partidos/${partido.id}/pagos`} className={styles.pagoResumenEnlace}>
+          <span>
+            💳{" "}
+            {parteImporte !== null
+              ? `${parteImporte.toFixed(2)} € por jugador`
+              : partido.importeTotal === null && puedeGenerar
+                ? "Todavía no has puesto el importe de la reserva"
+                : "Pagos de la reserva"}
+          </span>
+          <span className={styles.avisoFlecha}>Ver pagos →</span>
+        </Link>
       )}
     </>
   );

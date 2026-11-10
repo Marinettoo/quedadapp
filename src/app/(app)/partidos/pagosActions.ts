@@ -64,6 +64,7 @@ export async function establecerImporte(formData: FormData) {
 
   await prisma.partido.update({ where: { id: partidoId }, data: { importeTotal: importe } });
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath(`/partidos/${partidoId}/pagos`);
 }
 
 export async function indicarPago(formData: FormData) {
@@ -81,6 +82,7 @@ export async function indicarPago(formData: FormData) {
   });
 
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath(`/partidos/${partidoId}/pagos`);
 }
 
 export async function deshacerIndicacion(formData: FormData) {
@@ -93,6 +95,7 @@ export async function deshacerIndicacion(formData: FormData) {
   });
 
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath(`/partidos/${partidoId}/pagos`);
 }
 
 export async function confirmarPago(formData: FormData) {
@@ -140,6 +143,7 @@ export async function confirmarPago(formData: FormData) {
   }
 
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath(`/partidos/${partidoId}/pagos`);
 }
 
 export async function corregirConfirmacion(formData: FormData) {
@@ -157,4 +161,5 @@ export async function corregirConfirmacion(formData: FormData) {
   });
 
   revalidatePath(`/partidos/${partidoId}`);
+  revalidatePath(`/partidos/${partidoId}/pagos`);
 }

@@ -30,9 +30,16 @@
   padding: 20px 24px;
 }
 
-.apuntarse,
-.cancelar {
+/* Apuntarme/Cancelar + Voy a jugar de portero, en línea y compactos:
+   antes eran botones grandes apilados que ocupaban media pantalla. */
+.infoAcciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-top: 12px;
+}
+
+.apuntarse {
   align-self: flex-start;
   border: none;
   border-radius: var(--radius-pill);
@@ -40,9 +47,6 @@
   font-size: 15px;
   font-family: inherit;
   cursor: pointer;
-}
-
-.apuntarse {
   background: var(--ink);
   color: var(--paper);
 }
@@ -52,6 +56,12 @@
 }
 
 .cancelar {
+  align-self: flex-start;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
   background: var(--surface);
   color: var(--ink);
   border: 1px solid var(--border);
@@ -283,6 +293,68 @@
 .pagoAcciones {
   display: flex;
   gap: 8px;
+}
+
+/* Acciones de admin por fila de apuntado (portero, quitar): iconos
+   circulares pequeños en vez de botones de texto, para que no se
+   amontonen junto al nombre en pantallas estrechas. */
+.filaAcciones {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iconoBoton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconoBoton:hover {
+  background: var(--surface);
+}
+
+.iconoBotonActivo {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Tarjeta compacta en Resumen que enlaza a la pestaña Pagos, en vez de
+   mostrar ahí todo el importe y la lista de quién ha pagado. */
+.pagoResumenEnlace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  padding: 14px 20px;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pagoResumenEnlace:hover {
+  background: var(--surface);
+}
+
+.avisoFlecha {
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--meta);
 }
 
 .pagoBoton,

@@ -10,6 +10,7 @@ export function SubnavPartido({ id }: { id: string }) {
   const enlaces = [
     { etiqueta: "Resumen", href: `/partidos/${id}` },
     { etiqueta: "Equipos", href: `/partidos/${id}/equipos` },
+    { etiqueta: "Pagos", href: `/partidos/${id}/pagos` },
     { etiqueta: "Apuestas", href: `/partidos/${id}/apuestas` },
   ];
 
