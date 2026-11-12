@@ -61,8 +61,14 @@ export default async function EquiposPartido({
         include: {
           asignaciones: {
             include: {
-              usuario: { select: { id: true, nombreUsuario: true } },
-              invitado: { select: { id: true, nombre: true } },
+              usuario: {
+                select: {
+                  id: true,
+                  nombreUsuario: true,
+                  valoracionesRecibidas: { select: { estrellas: true } },
+                },
+              },
+              invitado: { select: { id: true, nombre: true, estrellas: true } },
             },
           },
         },
@@ -103,6 +109,29 @@ export default async function EquiposPartido({
     return a.usuario ? a.usuario.nombreUsuario : `${a.invitado!.nombre} (invitado)`;
   }
 
+  // Media de estrellas: para un jugador registrado, la media de sus
+  // valoraciones recibidas (como en /jugadores); para un invitado, la
+  // única estrella que le puso quien lo añadió (no hay votos de nadie
+  // más). null si el jugador todavía no tiene ninguna valoración.
+  function mediaDe(a: (typeof equipos)[number][number]): number | null {
+    if (a.usuario) {
+      const valoraciones = a.usuario.valoracionesRecibidas;
+      if (valoraciones.length === 0) return null;
+      return valoraciones.reduce((s, v) => s + v.estrellas, 0) / valoraciones.length;
+    }
+    return a.invitado!.estrellas;
+  }
+
+  // Media del equipo en conjunto (media de las medias de quienes
+  // tienen alguna valoración), para que se vea de un vistazo que los
+  // equipos han quedado equilibrados. null si nadie del equipo tiene
+  // todavía ninguna valoración.
+  function mediaEquipoDe(equipo: (typeof equipos)[number]): number | null {
+    const medias = equipo.map(mediaDe).filter((m): m is number => m !== null);
+    if (medias.length === 0) return null;
+    return medias.reduce((s, m) => s + m, 0) / medias.length;
+  }
+
   function esPorteroDe(a: (typeof equipos)[number][number]) {
     return a.esPortero;
   }
@@ -125,7 +154,9 @@ export default async function EquiposPartido({
             Formato: {FORMATOS[generacion.formato]} · generado el {formatearFecha(generacion.generadoEn)}
           </p>
           <div className={styles.equipos}>
-            {equipos.map((equipo, i) => (
+            {equipos.map((equipo, i) => {
+              const mediaEquipo = mediaEquipoDe(equipo);
+              return (
               <div key={i} className={styles.equipo}>
                 <div className={styles.equipoCabecera}>
                   <h3 className={styles.equipoTitulo}>Equipo {i + 1}</h3>
@@ -145,11 +176,40 @@ export default async function EquiposPartido({
                     />
                   )}
                 </div>
+                {mediaEquipo !== null && (
+                  <p className={styles.meta}>Media del equipo: {mediaEquipo.toFixed(1)} ★</p>
+                )}
                 {equiposSinPortero.includes(i + 1) && (
                   <p className={styles.aviso}>Este equipo se ha quedado sin portero.</p>
                 )}
                 <ListaAnimada className={styles.lista}>
-                  {equipo.map((a, indice) => (
+                  {equipo.map((a, indice) => {
+                    const media = mediaDe(a);
+                    return (
+                      <ItemAnimado
+                        key={a.id}
+                        indice={indice}
+                        className={esYo(a) ? styles.filaYo : undefined}
+                      >
+                        {nombreAsignacion(a)}
+                        {esYo(a) && " (tú)"}
+                        {media !== null && ` · ${media.toFixed(1)} ★`}
+                        {esPorteroDe(a) && " · 🧤 Portero"}
+                      </ItemAnimado>
+                    );
+                  })}
+                </ListaAnimada>
+              </div>
+              );
+            })}
+          </div>
+          {listaEspera.length > 0 && (
+            <div className={styles.equipo}>
+              <h3 className={styles.equipoTitulo}>Lista de espera</h3>
+              <ListaAnimada className={styles.lista}>
+                {listaEspera.map((a, indice) => {
+                  const media = mediaDe(a);
+                  return (
                     <ItemAnimado
                       key={a.id}
                       indice={indice}
@@ -157,28 +217,11 @@ export default async function EquiposPartido({
                     >
                       {nombreAsignacion(a)}
                       {esYo(a) && " (tú)"}
+                      {media !== null && ` · ${media.toFixed(1)} ★`}
                       {esPorteroDe(a) && " · 🧤 Portero"}
                     </ItemAnimado>
-                  ))}
-                </ListaAnimada>
-              </div>
-            ))}
-          </div>
-          {listaEspera.length > 0 && (
-            <div className={styles.equipo}>
-              <h3 className={styles.equipoTitulo}>Lista de espera</h3>
-              <ListaAnimada className={styles.lista}>
-                {listaEspera.map((a, indice) => (
-                  <ItemAnimado
-                    key={a.id}
-                    indice={indice}
-                    className={esYo(a) ? styles.filaYo : undefined}
-                  >
-                    {nombreAsignacion(a)}
-                    {esYo(a) && " (tú)"}
-                    {esPorteroDe(a) && " · 🧤 Portero"}
-                  </ItemAnimado>
-                ))}
+                  );
+                })}
               </ListaAnimada>
             </div>
           )}
