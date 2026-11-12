@@ -2,7 +2,12 @@ import { notFound, redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generarEquiposPartido } from "../../generarActions";
-import { agregarInvitado, quitarInvitado, cambiarEsPorteroInvitado } from "../../invitadosActions";
+import {
+  apuntarInvitadoExistente,
+  crearInvitado,
+  quitarInvitado,
+  cambiarEsPorteroInvitado,
+} from "../../invitadosActions";
 import { establecerColorEquipo } from "../../coloresActions";
 import { crearGrupo, eliminarGrupo } from "../../gruposActions";
 import { AccionBoton } from "@/components/AccionBoton";
@@ -45,7 +50,10 @@ export default async function EquiposPartido({
       asistencias: {
         include: { usuario: { select: { id: true, nombreUsuario: true } } },
       },
-      invitados: { orderBy: { creadoEn: "asc" } },
+      invitados: {
+        orderBy: { creadoEn: "asc" },
+        include: { invitado: { select: { id: true, nombre: true } } },
+      },
       grupos: {
         orderBy: { creadoEn: "asc" },
         include: {
@@ -68,7 +76,7 @@ export default async function EquiposPartido({
                   valoracionesRecibidas: { select: { estrellas: true } },
                 },
               },
-              invitado: { select: { id: true, nombre: true, estrellas: true } },
+              invitado: { select: { id: true, nombre: true } },
             },
           },
         },
@@ -80,6 +88,17 @@ export default async function EquiposPartido({
   if (!partido) {
     notFound();
   }
+
+  // Invitados de la peña que todavía no están en este partido, para
+  // poder reutilizarlos (y que sus goles se sigan sumando a la misma
+  // persona) en vez de crear uno nuevo con el mismo nombre.
+  const idsInvitadosEnPartido = new Set(partido.invitados.map((i) => i.invitadoId));
+  const invitadosParaReutilizar =
+    usuario.rol === "ADMIN"
+      ? (await prisma.invitado.findMany({ orderBy: { nombre: "asc" }, select: { id: true, nombre: true } })).filter(
+          (i) => !idsInvitadosEnPartido.has(i.id),
+        )
+      : [];
 
   const puedeGenerar = usuario.rol === "ADMIN" || partido.encargadoId === usuario.id;
   const generacion = partido.generacion;
@@ -109,17 +128,22 @@ export default async function EquiposPartido({
     return a.usuario ? a.usuario.nombreUsuario : `${a.invitado!.nombre} (invitado)`;
   }
 
+  // Las estrellas de un invitado son propias de cada partido (ver
+  // AsistenciaInvitado), no del Invitado permanente: hace falta este
+  // mapa para encontrarlas a partir de una asignación de equipo.
+  const estrellasInvitadoEnPartido = new Map(partido.invitados.map((i) => [i.invitadoId, i.estrellas]));
+
   // Media de estrellas: para un jugador registrado, la media de sus
   // valoraciones recibidas (como en /jugadores); para un invitado, la
-  // única estrella que le puso quien lo añadió (no hay votos de nadie
-  // más). null si el jugador todavía no tiene ninguna valoración.
+  // única estrella que le puso quien lo apuntó a este partido. null si
+  // el jugador todavía no tiene ninguna valoración.
   function mediaDe(a: (typeof equipos)[number][number]): number | null {
     if (a.usuario) {
       const valoraciones = a.usuario.valoracionesRecibidas;
       if (valoraciones.length === 0) return null;
       return valoraciones.reduce((s, v) => s + v.estrellas, 0) / valoraciones.length;
     }
-    return a.invitado!.estrellas;
+    return estrellasInvitadoEnPartido.get(a.invitado!.id) ?? null;
   }
 
   // Media del equipo en conjunto (media de las medias de quienes
@@ -270,9 +294,9 @@ export default async function EquiposPartido({
                   </label>
                 ))}
               {partido.invitados.map((i) => (
-                <label key={i.id} className={styles.checkboxPortero}>
-                  <input type="checkbox" name="miembros" value={`invitado:${i.id}`} />
-                  {i.nombre} (invitado)
+                <label key={i.invitadoId} className={styles.checkboxPortero}>
+                  <input type="checkbox" name="miembros" value={`invitado:${i.invitadoId}`} />
+                  {i.invitado.nombre} (invitado)
                 </label>
               ))}
             </fieldset>
@@ -305,26 +329,28 @@ export default async function EquiposPartido({
         <section>
           <h2 className={styles.subtitulo}>Invitados</h2>
           <p className={styles.meta}>
-            Jugadores sin cuenta en la app, solo para este partido. Su valoración la
-            pones tú y solo se usa aquí.
+            Jugadores sin cuenta en la app. Su valoración para este partido la pones
+            tú. Si ya jugó otro partido antes, apúntalo como invitado existente en
+            vez de crearlo de nuevo: así sus goles y estadísticas siguen siendo de la
+            misma persona.
           </p>
           {partido.invitados.length > 0 && (
             <ul className={styles.lista}>
               {partido.invitados.map((i) => (
-                <li key={i.id} className={styles.pagoFila}>
+                <li key={i.invitadoId} className={styles.pagoFila}>
                   <span>
-                    {i.nombre} · {i.estrellas} ★{i.esPortero && " · 🧤 Portero"}
+                    {i.invitado.nombre} · {i.estrellas} ★{i.esPortero && " · 🧤 Portero"}
                   </span>
                   <AccionBoton
                     accion={cambiarEsPorteroInvitado}
-                    campos={{ partidoId: partido.id, id: i.id }}
+                    campos={{ partidoId: partido.id, invitadoId: i.invitadoId }}
                     className={styles.pagoBotonSecundario}
                   >
                     {i.esPortero ? "Quitar portero" : "Marcar portero"}
                   </AccionBoton>
                   <AccionBoton
                     accion={quitarInvitado}
-                    campos={{ partidoId: partido.id, id: i.id }}
+                    campos={{ partidoId: partido.id, invitadoId: i.invitadoId }}
                     className={styles.pagoBotonSecundario}
                   >
                     Quitar
@@ -333,7 +359,9 @@ export default async function EquiposPartido({
               ))}
             </ul>
           )}
-          <form action={agregarInvitado} className={styles.resultadoForm}>
+
+          <h3 className={styles.equipoTitulo}>Invitado nuevo</h3>
+          <form action={crearInvitado} className={styles.resultadoForm}>
             <input
               type="text"
               name="nombre"
@@ -357,6 +385,39 @@ export default async function EquiposPartido({
               Añadir invitado
             </button>
           </form>
+
+          {invitadosParaReutilizar.length > 0 && (
+            <>
+              <h3 className={styles.equipoTitulo}>Invitado que ya jugó otro partido</h3>
+              <form action={apuntarInvitadoExistente} className={styles.resultadoForm}>
+                <input type="hidden" name="partidoId" value={partido.id} />
+                <select name="invitadoId" defaultValue="" required>
+                  <option value="" disabled>
+                    Elige un invitado
+                  </option>
+                  {invitadosParaReutilizar.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.nombre}
+                    </option>
+                  ))}
+                </select>
+                <select name="estrellas" defaultValue="3" required>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n} ★
+                    </option>
+                  ))}
+                </select>
+                <label className={styles.checkboxPortero}>
+                  <input type="checkbox" name="esPortero" />
+                  Portero
+                </label>
+                <button type="submit" className={styles.generar}>
+                  Apuntar
+                </button>
+              </form>
+            </>
+          )}
         </section>
       )}
     </>

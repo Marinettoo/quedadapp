@@ -24,7 +24,7 @@ async function jugadorApuntado(partidoId: string, tipo: "USUARIO" | "INVITADO", 
   if (tipo === "USUARIO") {
     return (await prisma.asistencia.findFirst({ where: { partidoId, usuarioId: id, cancelado: false } })) !== null;
   }
-  return (await prisma.invitado.findFirst({ where: { partidoId, id } })) !== null;
+  return (await prisma.asistenciaInvitado.findFirst({ where: { partidoId, invitadoId: id } })) !== null;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {

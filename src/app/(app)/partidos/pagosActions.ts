@@ -48,8 +48,8 @@ async function jugadorApuntado(partidoId: string, tipo: "USUARIO" | "INVITADO", 
     });
     return asistencia !== null;
   }
-  const invitado = await prisma.invitado.findFirst({ where: { partidoId, id } });
-  return invitado !== null;
+  const asistencia = await prisma.asistenciaInvitado.findFirst({ where: { partidoId, invitadoId: id } });
+  return asistencia !== null;
 }
 
 export async function establecerImporte(formData: FormData) {

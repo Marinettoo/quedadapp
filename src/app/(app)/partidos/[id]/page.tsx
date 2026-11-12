@@ -90,7 +90,10 @@ export default async function DetallePartido({
         orderBy: { registradoEn: "asc" },
         include: { goles: true },
       },
-      invitados: { orderBy: { creadoEn: "asc" } },
+      invitados: {
+        orderBy: { creadoEn: "asc" },
+        include: { invitado: { select: { id: true, nombre: true } } },
+      },
     },
   });
 
@@ -143,7 +146,7 @@ export default async function DetallePartido({
   // puede pagar la reserva antes de que se generen los equipos.
   const asistentesParaPago: Jugador[] = [
     ...asistenciasActivas.map((a) => ({ usuario: a.usuario, invitado: null })),
-    ...partido.invitados.map((i) => ({ usuario: null, invitado: i })),
+    ...partido.invitados.map((i) => ({ usuario: null, invitado: i.invitado })),
   ];
 
   type GolesDeEnfrentamiento = {
@@ -477,8 +480,8 @@ export default async function DetallePartido({
               );
             })}
             {partido.invitados.map((i, indice) => (
-              <ItemAnimado key={i.id} indice={asistenciasActivas.length + indice}>
-                {i.nombre} (invitado)
+              <ItemAnimado key={i.invitadoId} indice={asistenciasActivas.length + indice}>
+                {i.invitado.nombre} (invitado)
                 {i.esPortero && " · 🧤 Portero"}
               </ItemAnimado>
             ))}

@@ -47,7 +47,10 @@ export default async function PagosPartido({
         include: { usuario: { select: { id: true, nombreUsuario: true } } },
       },
       pagos: true,
-      invitados: { orderBy: { creadoEn: "asc" } },
+      invitados: {
+        orderBy: { creadoEn: "asc" },
+        include: { invitado: { select: { id: true, nombre: true } } },
+      },
     },
   });
 
@@ -80,7 +83,7 @@ export default async function PagosPartido({
   // puede pagar la reserva antes de que se generen los equipos.
   const asistentesParaPago: Jugador[] = [
     ...partido.asistencias.map((a) => ({ usuario: a.usuario, invitado: null })),
-    ...partido.invitados.map((i) => ({ usuario: null, invitado: i })),
+    ...partido.invitados.map((i) => ({ usuario: null, invitado: i.invitado })),
   ];
 
   const pagosPorClave = new Map(

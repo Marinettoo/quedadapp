@@ -24,7 +24,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         include: { usuario: { select: { id: true, nombreUsuario: true } } },
       },
       pagos: true,
-      invitados: { orderBy: { creadoEn: "asc" } },
+      invitados: {
+        orderBy: { creadoEn: "asc" },
+        include: { invitado: { select: { id: true, nombre: true } } },
+      },
     },
   });
 
@@ -50,7 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   };
   const asistentes: Jugador[] = [
     ...partido.asistencias.map((a) => ({ usuario: a.usuario, invitado: null })),
-    ...partido.invitados.map((i) => ({ usuario: null, invitado: i })),
+    ...partido.invitados.map((i) => ({ usuario: null, invitado: i.invitado })),
   ];
 
   const pagosPorClave = new Map(

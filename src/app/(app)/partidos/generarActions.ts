@@ -27,8 +27,9 @@ export async function generarEquiposPartido(formData: FormData) {
     include: { usuario: { select: { id: true, nombreUsuario: true } } },
     orderBy: { apuntadoEn: "asc" },
   });
-  const invitados = await prisma.invitado.findMany({
+  const invitados = await prisma.asistenciaInvitado.findMany({
     where: { partidoId },
+    include: { invitado: { select: { id: true, nombre: true } } },
     orderBy: { creadoEn: "asc" },
   });
   const grupos = await prisma.grupo.findMany({
@@ -58,8 +59,8 @@ export async function generarEquiposPartido(formData: FormData) {
       fecha: i.creadoEn,
       jugador: {
         tipo: "INVITADO" as const,
-        id: i.id,
-        nombre: `${i.nombre} (invitado)`,
+        id: i.invitadoId,
+        nombre: `${i.invitado.nombre} (invitado)`,
         estrellas: i.estrellas,
         esPortero: i.esPortero,
       },
